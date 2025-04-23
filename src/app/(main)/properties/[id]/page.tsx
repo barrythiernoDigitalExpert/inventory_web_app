@@ -25,7 +25,13 @@ interface InventoryItem {
   notes?: string;
 }
 
-export default function PropertyDetailPage({ params }: { params: { id: string } }) {
+// Define page props type to match Next.js expected interface
+interface PropertyDetailPageProps {
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   const [property, setProperty] = useState<Property | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
