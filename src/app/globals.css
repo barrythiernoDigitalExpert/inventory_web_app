@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#1E1E1E] text-[#FFFFFF];
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+  
+  /* Personnalisation des scrollbars pour un look plus élégant */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1E1E1E;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #D4A017;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #E6B52C;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md transition-colors duration-200 font-medium;
+  }
+  .btn-primary {
+    @apply bg-[#D4A017] text-[#1E1E1E] hover:bg-[#B38A13];
+  }
+  .btn-outline {
+    @apply border border-[#D4A017] text-[#D4A017] hover:bg-[#D4A017] hover:text-[#1E1E1E];
+  }
+  .btn-secondary {
+    @apply bg-[#2D2D2D] text-[#FFFFFF] hover:bg-[#1E1E1E];
+  }
+  .input {
+    @apply px-4 py-2 rounded-md bg-[#2D2D2D] border border-[#2D2D2D] focus:border-[#D4A017] focus:outline-none text-[#FFFFFF] w-full;
+  }
+  .card {
+    @apply bg-[#2D2D2D] rounded-lg p-6 shadow-lg;
+  }
+  
+  /* Nouvelles classes pour un design doré et élégant */
+  .card-gold {
+    @apply bg-gradient-to-br from-[#2D2D2D] to-[#1E1E1E] rounded-lg p-6 shadow-lg border border-[#D4A017]/20 hover:border-[#D4A017]/40 transition-all;
+  }
+  
+  .header-gold {
+    @apply bg-gradient-to-r from-[#2D2D2D] to-[#1E1E1E] rounded-lg p-6 shadow-lg border-l-4 border-[#D4A017];
+  }
+  
+  .gold-accent {
+    @apply text-[#D4A017];
+  }
+  
+  .gold-gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#E6B52C];
+  }
+  
+  .hover-golden {
+    @apply hover:border-[#D4A017]/30 hover:shadow-[0_0_15px_rgba(212,160,23,0.1)];
+  }
+  
+  .tab-button {
+    @apply px-4 py-2 whitespace-nowrap transition-colors;
+  }
+  
+  .tab-button-active {
+    @apply text-[#D4A017] border-b-2 border-[#D4A017];
+  }
+  
+  .tab-button-inactive {
+    @apply text-[#CCCCCC] hover:text-[#D4A017];
+  }
+}

@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Property {
+  id         Int      @id @default(autoincrement())
+  reference  String   @unique
+  name       String?
+  imagePath  String?  @map("image_path")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  rooms      Room[]
+
+  @@map("properties")
+}
+
+model Room {
+  id          Int           @id @default(autoincrement())
+  propertyId  Int           @map("property_id")
+  code        String
+  name        String
+  createdAt   DateTime      @default(now()) @map("created_at")
+  property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  images      RoomImage[]
+  items       InventoryItem[]
+
+  @@map("rooms")
+}
+
+model RoomImage {
+  id        Int      @id @default(autoincrement())
+  roomId    Int      @map("room_id")
+  imagePath String   @map("image_path")
+  createdAt DateTime @default(now()) @map("created_at")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_images")
+}
+
+model InventoryItem {
+  id          Int      @id @default(autoincrement())
+  roomId      Int      @map("room_id")
+  name        String
+  description String?  @db.Text
+  imagePath   String?  @map("image_path")
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("inventory_items")
+}
