@@ -10,7 +10,6 @@ export default function PropertiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  const [sortBy, setSortBy] = useState('reference');
   const [sortOrder, setSortOrder] = useState('asc');
   
   // States for property addition modal
@@ -46,6 +45,7 @@ const [brightness, setBrightness] = useState(100);
 const [contrast, setContrast] = useState(100);
 const [showAdjustControls, setShowAdjustControls] = useState(false);
 const imageEditorRef = useRef<HTMLDivElement>(null);
+const [sortBy, setSortBy] = useState<SortableField>('reference');
 
   // Room categories
   const roomCategories = [
@@ -138,27 +138,38 @@ const imageEditorRef = useRef<HTMLDivElement>(null);
   }, [showAddPropertyModal, currentStep]);
 
   // Filter and sort properties
-  const filteredAndSortedProperties = [...properties]
-    .filter(property => 
-      property.reference.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      const valueA = sortBy === 'createdAt' ? new Date(a[sortBy]) : a[sortBy];
-      const valueB = sortBy === 'createdAt' ? new Date(b[sortBy]) : b[sortBy];
-      
-      if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
-      if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
 
-  const toggleSort = (field : any) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('asc');
-    }
-  };
+  type SortableField = 'reference' | 'createdAt';
+  const filteredAndSortedProperties = [...properties]
+  .filter(property => 
+    property.reference.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+  .sort((a, b) => {
+    // Type-safe accessor function for properties
+    const getValue = (obj: Property, key: SortableField) => {
+      if (key === 'createdAt') {
+        return new Date(obj[key] as string);
+      }
+      return obj[key];
+    };
+    
+    const valueA = getValue(a, sortBy as SortableField);
+    const valueB = getValue(b, sortBy as SortableField);
+    
+    if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
+    if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+// Updated toggle function with type safety
+const toggleSort = (field: SortableField) => {
+  if (sortBy === field) {
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  } else {
+    setSortBy(field);
+    setSortOrder('asc');
+  }
+};
 
   // Function to handle property image upload
   const handlePropertyImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

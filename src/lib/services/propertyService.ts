@@ -81,6 +81,7 @@ export const fetchPropertyById = async (id: string): Promise<Property | null> =>
 // Fonction pour récupérer les pièces d'une propriété
 export const fetchPropertyRooms = async (propertyId: string): Promise<Room[]> => {
   try {
+    console.log(propertyId);
     const response = await fetch(`/api/properties/${propertyId}/rooms`);
     
     if (!response.ok) {

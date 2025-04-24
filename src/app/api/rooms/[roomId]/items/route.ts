@@ -4,10 +4,8 @@ import { prisma } from '@/lib/utils/prisma';
 import { saveItemImage } from '@/lib/utils/fileStorage';
 
 // GET: Récupère les éléments d'une pièce
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { roomId: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ roomId: string }> }) {
+  const params = await props.params;
   try {
     const roomId = parseInt(params.roomId);
     
@@ -45,10 +43,8 @@ export async function GET(
 }
 
 // POST: Ajoute un élément à une pièce
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { roomId: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ roomId: string }> }) {
+  const params = await props.params;
   try {
     const roomId = parseInt(params.roomId);
     

@@ -44,10 +44,10 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
     const loadPropertyDetails = async () => {
       try {
         setIsLoading(true);
-        const propertyData = await fetchPropertyById((await params).id);
+        const propertyData = await fetchPropertyById(id);
         setProperty(propertyData);
         
-        const roomsData = await fetchPropertyRooms((await params).id);
+        const roomsData = await fetchPropertyRooms(id);
         
         // Sort rooms: those with images first, then by name
         const sortedRooms = [...roomsData].sort((a, b) => {

@@ -4,10 +4,8 @@ import { prisma } from '@/lib/utils/prisma';
 import { savePropertyImage, deletePropertyFiles } from '@/lib/utils/fileStorage';
 
 // GET: Récupère une propriété par ID
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = parseInt(params.id);
     
@@ -53,10 +51,8 @@ export async function GET(
 }
 
 // PUT: Met à jour une propriété
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = parseInt(params.id);
     
@@ -102,10 +98,8 @@ export async function PUT(
 }
 
 // DELETE: Supprime une propriété
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = parseInt(params.id);
     
