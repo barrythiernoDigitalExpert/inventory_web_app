@@ -5,7 +5,6 @@ import { saveRoomImages } from '@/lib/utils/fileStorage';
 
 // GET: Récupère les pièces d'une propriété
 export async function GET(
-  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
@@ -82,7 +81,6 @@ export async function POST(
         propertyId,
         code,
         name,
-        type
       }
     });
     

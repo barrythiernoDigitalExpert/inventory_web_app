@@ -40,7 +40,6 @@ export async function GET(
       id: property.id.toString(),
       reference: property.reference,
       name: property.name || '',
-      address: property.address || '',
       image: property.imagePath || '',
       createdAt: property.createdAt.toISOString(),
       totalItems

@@ -1,7 +1,7 @@
 // src/app/(main)/properties/[id]/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { fetchPropertyById, fetchPropertyRooms, Property } from '@/lib/services/propertyService';
@@ -25,12 +25,7 @@ interface InventoryItem {
   notes?: string;
 }
 
-// Use proper type for component props - alternate approach
-type PageParams = {
-  id: string;
-}
-
-export default function PropertyDetailPage({ params }: { params: PageParams }) {
+export default function PropertyDetailPage({ params }: { params:Promise<{ id: string }> }) {
   const [property, setProperty] = useState<Property | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
@@ -42,16 +37,17 @@ export default function PropertyDetailPage({ params }: { params: PageParams }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRoomItemsLoading, setIsRoomItemsLoading] = useState(false);
   const [showFullGallery, setShowFullGallery] = useState(false);
+  const { id } = use(params);
 
   // Load property details and rooms
   useEffect(() => {
     const loadPropertyDetails = async () => {
       try {
         setIsLoading(true);
-        const propertyData = await fetchPropertyById(params.id);
+        const propertyData = await fetchPropertyById((await params).id);
         setProperty(propertyData);
         
-        const roomsData = await fetchPropertyRooms(params.id);
+        const roomsData = await fetchPropertyRooms((await params).id);
         
         // Sort rooms: those with images first, then by name
         const sortedRooms = [...roomsData].sort((a, b) => {
@@ -74,7 +70,7 @@ export default function PropertyDetailPage({ params }: { params: PageParams }) {
     };
 
     loadPropertyDetails();
-  }, [params.id]);
+  }, [id]);
 
   // Filter rooms based on search term
   useEffect(() => {
