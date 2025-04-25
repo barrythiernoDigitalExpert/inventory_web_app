@@ -37,7 +37,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       id: room.id.toString(),
       name: room.name,
       image: room.images.length > 0 ? room.images[0].imagePath : '',
-      itemCount: room.items.length,
+      itemCount: room.images.length,
       hasImages: room.images.length > 0
     }));
     

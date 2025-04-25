@@ -46,7 +46,8 @@ const [contrast, setContrast] = useState(100);
 const [showAdjustControls, setShowAdjustControls] = useState(false);
 const imageEditorRef = useRef<HTMLDivElement>(null);
 const [sortBy, setSortBy] = useState<SortableField>('reference');
-
+// Ajoutez ces états après les autres déclarations d'état
+const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   // Room categories
   const roomCategories = [
     '01 - Entrance hall',
@@ -73,6 +74,12 @@ const [sortBy, setSortBy] = useState<SortableField>('reference');
     '22 - Machine Room',
     '23 - Annex'
   ];
+
+  const checkReferenceExists = (ref: string) => {
+    if (!ref) return false;
+    const formattedRef = "EAV-" + ref;
+    return properties.some(property => property.reference === formattedRef);
+  };
 
   useEffect(() => {
     const loadProperties = async () => {
@@ -140,26 +147,28 @@ const [sortBy, setSortBy] = useState<SortableField>('reference');
   // Filter and sort properties
 
   type SortableField = 'reference' | 'createdAt';
-  const filteredAndSortedProperties = [...properties]
-  .filter(property => 
-    property.reference.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-  .sort((a, b) => {
-    // Type-safe accessor function for properties
-    const getValue = (obj: Property, key: SortableField) => {
-      if (key === 'createdAt') {
-        return new Date(obj[key] as string);
-      }
-      return obj[key];
-    };
-    
-    const valueA = getValue(a, sortBy as SortableField);
-    const valueB = getValue(b, sortBy as SortableField);
-    
-    if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
-    if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
+  const filteredAndSortedProperties = properties.length > 0 
+  ? [...properties]
+    .filter(property => 
+      property.reference && property.reference.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Type-safe accessor function for properties
+      const getValue = (obj: Property, key: SortableField) => {
+        if (key === 'createdAt') {
+          return new Date(obj[key] as string);
+        }
+        return obj[key];
+      };
+      
+      const valueA = getValue(a, sortBy as SortableField);
+      const valueB = getValue(b, sortBy as SortableField);
+      
+      if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
+      if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    })
+  : [];
 
 // Updated toggle function with type safety
 const toggleSort = (field: SortableField) => {
@@ -658,7 +667,11 @@ const toggleSort = (field: SortableField) => {
   const handleSaveProperty = async () => {
     try {
       if (!propertyRef || !uploadedPropertyImage) {
-        alert("Please fill in all required fields");
+        setNotification({
+          show: true,
+          type: 'error',
+          message: 'Please fill in all required fields'
+        });
         return;
       }
       
@@ -669,19 +682,27 @@ const toggleSort = (field: SortableField) => {
         rooms: selectedRooms.map(room => ({
           code: room.code,
           name: room.name,
-          // Don't include the type field that doesn't exist in the schema
           images: room.images
         }))
       };
       
       // Show loading indicator if needed
-      setIsLoading?.(true);
+      setIsLoading(true);
       
       // API call
       const result = await createProperty(propertyData);
       
       if (result.success) {
-        alert("Reference added successfully!");
+        // Refresh data from server instead of manual update
+        const refreshedData = await fetchProperties();
+        setProperties(refreshedData);
+        
+        // Show success notification
+        setNotification({
+          show: true,
+          type: 'success',
+          message: 'Reference added successfully!'
+        });
         
         // Reset form
         setCurrentStep(1);
@@ -692,12 +713,20 @@ const toggleSort = (field: SortableField) => {
         setBedroomCount(1);
         setBathroomCount(1);
         setShowAddPropertyModal(false);
+        
+        // Hide notification after 3 seconds
+        setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred: " + (error as Error).message);
+      setNotification({
+        show: true,
+        type: 'error',
+        message: `An error occurred`
+      });
+      setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
     } finally {
-      setIsLoading?.(false);
+      setIsLoading(false);
     }
   };
 
@@ -716,6 +745,26 @@ const toggleSort = (field: SortableField) => {
 
   return (
     <div>
+      {notification.show && (
+  <div className={`fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg ${
+    notification.type === 'success' 
+      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' 
+      : 'bg-gradient-to-r from-red-500 to-red-600 text-white'
+  }`}>
+    <div className="flex items-center">
+      {notification.type === 'success' ? (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )}
+      <p>{notification.message}</p>
+    </div>
+  </div>
+)}
       {/* Header with title and filtering options */}
       <div className="bg-gradient-to-r from-[#2D2D2D] to-[#1E1E1E] rounded-lg p-6 shadow-lg mb-6 border-l-4 border-[#D4A017]">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
@@ -812,7 +861,7 @@ const toggleSort = (field: SortableField) => {
                   />
                   <div className="absolute top-0 right-0 m-2">
                     <span className="bg-[#D4A017] text-[#1E1E1E] text-xs font-bold px-2 py-1 rounded">
-                      {property.totalItems || 0} items
+                      {property.totalItems} items
                     </span>
                   </div>
                 </Link>
@@ -1031,21 +1080,24 @@ const toggleSort = (field: SortableField) => {
                   
                   {/* Reference */}
                   <div className="mb-4">
-                    <label className="block text-[#FFFFFF] mb-2 font-medium">Reference</label>
-                    <div className="flex">
-                      <div className="bg-[#2D2D2D] px-3 py-2 rounded-l-md text-[#D4A017] border-y border-l border-[#2D2D2D]">
-                        EAV-
-                      </div>
-                      <input
-                        type="text"
-                        value={propertyRef}
-                        onChange={(e) => setPropertyRef(e.target.value)}
-                        className="w-full p-2 rounded-r-md bg-[#2D2D2D] border border-[#2D2D2D] focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]"
-                        placeholder="12345"
-                      />
-                    </div>
-                    <p className="text-xs text-[#CCCCCC] mt-1">Enter only the numerical part of the reference</p>
-                  </div>
+  <label className="block text-[#FFFFFF] mb-2 font-medium">Reference</label>
+  <div className="flex">
+    <div className="bg-[#2D2D2D] px-3 py-2 rounded-l-md text-[#D4A017] border-y border-l border-[#2D2D2D]">
+      EAV-
+    </div>
+    <input
+      type="text"
+      value={propertyRef}
+      onChange={(e) => setPropertyRef(e.target.value)}
+      className="w-full p-2 rounded-r-md bg-[#2D2D2D] border border-[#2D2D2D] focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]"
+      placeholder="12345"
+    />
+  </div>
+  {propertyRef && checkReferenceExists(propertyRef) && (
+    <p className="text-xs text-red-500 mt-1">This reference already exists. Please choose another one.</p>
+  )}
+  <p className="text-xs text-[#CCCCCC] mt-1">Enter only the numerical part of the reference</p>
+</div>
                 </div>
                 
                 {/* Navigation buttons */}
@@ -1057,16 +1109,27 @@ const toggleSort = (field: SortableField) => {
                     Cancel
                   </button>
                   <button 
-                    onClick={() => setCurrentStep(2)}
-                    disabled={!uploadedPropertyImage || !propertyRef}
-                    className={`px-4 py-2 rounded-md ${
-                      !uploadedPropertyImage || !propertyRef
-                        ? 'bg-[#2D2D2D] text-[#CCCCCC] cursor-not-allowed'
-                        : 'bg-[#D4A017] text-[#1E1E1E] hover:bg-[#B38A13]'
-                    }`}
-                  >
-                    Next
-                  </button>
+  onClick={async () => {
+    if (await checkReferenceExists(propertyRef)) {
+      setNotification({
+        show: true,
+        type: 'error',
+        message: 'This reference already exists. Please choose another one.'
+      });
+      setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
+    } else {
+      setCurrentStep(2)
+    }
+  }}
+  disabled={!uploadedPropertyImage || !propertyRef}
+  className={`px-4 py-2 rounded-md ${
+    !uploadedPropertyImage || !propertyRef
+      ? 'bg-[#2D2D2D] text-[#CCCCCC] cursor-not-allowed'
+      : 'bg-[#D4A017] text-[#1E1E1E] hover:bg-[#B38A13]'
+  }`}
+>
+  Next
+</button>
                 </div>
               </div>
             )}

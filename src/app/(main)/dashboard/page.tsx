@@ -114,10 +114,10 @@ export default function Dashboard() {
               placeholder="blur"
               blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P//fwAJMAP4xMZa5AAAAABJRU5ErkJggg=="
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-70"></div>
-            <div className="absolute bottom-0 left-0 p-2 text-white">
-              <div className="text-xs text-[#D4A017]">{property.reference}</div>
-              <div className="font-semibold truncate">{property.name}</div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 p-3 w-full">
+              <div className="bg-[#D4A017] text-black px-2 py-1 rounded text-xs font-medium inline-block mb-1">{property.reference}</div>
+              <div className="font-semibold text-white truncate">{property.name}</div>
             </div>
           </div>
         </div>

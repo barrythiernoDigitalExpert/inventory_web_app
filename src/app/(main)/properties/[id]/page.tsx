@@ -4,9 +4,10 @@
 import { use, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchPropertyById, fetchPropertyRooms, Property } from '@/lib/services/propertyService';
+import { fetchPropertyById, fetchPropertyRooms, fetchRoomItems, Property } from '@/lib/services/propertyService';
+import { fetchRoomImages, RoomImage, getPlaceholderImages } from '@/lib/services/roomImageService';
+import { toast } from 'react-hot-toast';
 
-// Type for a property room
 interface Room {
   id: string;
   name: string;
@@ -15,7 +16,6 @@ interface Room {
   hasImages?: boolean;
 }
 
-// Type for an inventory item
 interface InventoryItem {
   id: string;
   name: string;
@@ -25,21 +25,22 @@ interface InventoryItem {
   notes?: string;
 }
 
-export default function PropertyDetailPage({ params }: { params:Promise<{ id: string }> }) {
+export default function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [property, setProperty] = useState<Property | null>(null);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [roomItems, setRoomItems] = useState<InventoryItem[]>([]);
-  const [roomImages, setRoomImages] = useState<string[]>([]);
+  const [roomImages, setRoomImages] = useState<RoomImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isRoomItemsLoading, setIsRoomItemsLoading] = useState(false);
+  const [isRoomImagesLoading, setIsRoomImagesLoading] = useState(false);
   const [showFullGallery, setShowFullGallery] = useState(false);
   const { id } = use(params);
 
-  // Load property details and rooms
+
   useEffect(() => {
     const loadPropertyDetails = async () => {
       try {
@@ -49,10 +50,10 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
         
         const roomsData = await fetchPropertyRooms(id);
         
-        // Sort rooms: those with images first, then by name
         const sortedRooms = [...roomsData].sort((a, b) => {
-          if (a.hasImages && !b.hasImages) return -1;
-          if (!a.hasImages && b.hasImages) return 1;
+          if (a.itemCount !== b.itemCount) {
+            return b.itemCount - a.itemCount;
+          }
           return a.name.localeCompare(b.name);
         });
         
@@ -64,6 +65,7 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
         }
       } catch (error) {
         console.error('Error loading property details:', error);
+        toast.error('Failed to load property details');
       } finally {
         setIsLoading(false);
       }
@@ -72,7 +74,6 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
     loadPropertyDetails();
   }, [id]);
 
-  // Filter rooms based on search term
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredRooms(rooms);
@@ -84,90 +85,66 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
     }
   }, [searchTerm, rooms]);
 
-  // Load items for the selected room
   useEffect(() => {
     const loadRoomItems = async () => {
       if (!selectedRoom) return;
       
       try {
         setIsRoomItemsLoading(true);
-        // Simulating an API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Simulated data
-        setRoomItems([
-          {
-            id: '1',
-            name: 'Beige Sofa',
-            description: 'Beige 3-seater fabric sofa',
-            condition: 'Good',
-            image: '/images/items/sofa.jpg',
-            notes: 'Slight wear on the right armrest'
-          },
-          {
-            id: '2',
-            name: 'Wooden Coffee Table',
-            description: 'Rectangular coffee table in solid wood',
-            condition: 'Good',
-            image: '/images/items/table.jpg'
-          },
-          {
-            id: '3',
-            name: 'Floor Lamp',
-            description: 'Black floor lamp with white lampshade',
-            condition: 'New',
-            image: '/images/items/lamp.jpg'
-          },
-          {
-            id: '4',
-            name: 'Oriental Rug',
-            description: 'Rectangular rug with oriental patterns 200x300cm',
-            condition: 'Fair',
-            image: '/images/items/carpet.jpg',
-            notes: 'Some visible stains'
-          }
-        ]);
+        const roomItemsData = await fetchRoomItems(selectedRoom);
+        setRoomItems(roomItemsData);
       } catch (error) {
         console.error('Error loading room items:', error);
+        toast.error('Failed to load room items');
+        setRoomItems([]);
       } finally {
         setIsRoomItemsLoading(false);
       }
     };
 
     loadRoomItems();
-  }, [selectedRoom]);
+  }, [selectedRoom, id]);
 
-  // Load images for the selected room
   useEffect(() => {
     const loadRoomImages = async () => {
       if (!selectedRoom) return;
       
-      // Simulate loading images for the selected room
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // The selected room
-      const room = rooms.find(r => r.id === selectedRoom);
-      
-      if (room?.hasImages) {
-        // Simulated images for the selected room
-        setRoomImages([
-          '/images/rooms/room-view-1.jpg',
-          '/images/rooms/room-view-2.jpg',
-          '/images/rooms/room-view-3.jpg',
-          '/images/rooms/room-view-4.jpg',
-        ]);
-      } else {
-        // Just the main image if no multiple images
-        setRoomImages([room?.image || '/images/room-placeholder.jpg']);
+      try {
+        setIsRoomImagesLoading(true);
+        const roomImagesData = await fetchRoomImages(id, selectedRoom);
+        
+        if (roomImagesData && roomImagesData.length > 0) {
+          setRoomImages(roomImagesData);
+        } else {
+          setRoomImages([]);
+        }
+        
+        setCurrentImageIndex(0);
+      } catch (error) {
+        console.error('Error loading room images:', error);
+        toast.error('Failed to load room images');
+        
+        setRoomImages([]);
+      } finally {
+        setIsRoomImagesLoading(false);
       }
-      
-      setCurrentImageIndex(0);
     };
     
     loadRoomImages();
-  }, [selectedRoom, rooms]);
+  }, [selectedRoom, id, rooms]);
 
-  // Loading state
+  const getConditionColor = (condition: string): string => {
+    const colors: Record<string, string> = {
+      'New': 'bg-green-600',
+      'Good': 'bg-blue-600',
+      'Fair': 'bg-yellow-600',
+      'Poor': 'bg-red-600'
+    };
+    return colors[condition] || 'bg-gray-600';
+  };
+
+  const currentRoom = rooms.find(r => r.id === selectedRoom);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -181,7 +158,6 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
     );
   }
 
-  // Property not found
   if (!property) {
     return (
       <div className="text-center py-8">
@@ -196,20 +172,8 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
     );
   }
 
-  // Function to get color based on condition
-  const getConditionColor = (condition: string): string => {
-    const colors: Record<string, string> = {
-      'New': 'bg-green-600',
-      'Good': 'bg-blue-600',
-      'Fair': 'bg-yellow-600',
-      'Poor': 'bg-red-600'
-    };
-    return colors[condition] || 'bg-gray-600';
-  };
-
   return (
     <div className="space-y-6">
-      {/* Navigation bar and actions */}
       <div className="header-gold flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Link href="/properties" className="gold-accent hover:text-[#E6B52C] flex items-center">
@@ -232,7 +196,6 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
         </button>
       </div>
 
-      {/* Property information */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 card-gold hover-golden">
           <div className="relative h-48 w-full">
@@ -255,26 +218,14 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
                 <p className="text-[#CCCCCC] text-sm">Creation Date</p>
                 <p className="text-[#FFFFFF] font-medium">{new Date(property.createdAt).toLocaleDateString()}</p>
               </div>
-              <div className="col-span-2">
-                <p className="text-[#CCCCCC] text-sm">Address</p>
-                <p className="text-[#FFFFFF] font-medium">{property.address}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-[#CCCCCC] text-sm">Description</p>
-                <p className="text-[#FFFFFF]">
-                  Luxurious villa with private pool, offering panoramic sea views and high-end amenities for optimal comfort.
-                </p>
-              </div>
             </div>
           </div>
         </div>
 
         <div className="lg:col-span-2">
-          {/* Improved section for rooms and inventory - side by side view */}
           <div className="card-gold">
             <h2 className="text-xl font-bold text-[#FFFFFF] mb-4">Rooms & Inventory</h2>
             
-            {/* Search bar */}
             <div className="mb-4 flex justify-between items-center">
               <div className="relative w-full max-w-xs">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -296,9 +247,7 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
               </div>
             </div>
 
-            {/* Two-column layout */}
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-              {/* Left column - Room grid */}
               <div className="lg:w-1/3 overflow-y-auto pr-1" style={{ maxHeight: '500px' }}>
                 <div className="grid grid-cols-2 gap-2">
                   {filteredRooms.map((room) => (
@@ -313,10 +262,13 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
                     >
                       <div className="w-full aspect-square relative mb-2 rounded-md overflow-hidden">
                         <Image
-                          src={room.image || '/images/room-placeholder.jpg'}
+                          src={room.image || '/images/logo.png'}
                           alt={room.name}
                           fill
-                          style={{ objectFit: 'cover' }}
+                          style={{ 
+                            objectFit: !room.image ? 'contain' : 'contain',
+                            backgroundColor: !room.image ? '#2D2D2D' : 'transparent'
+                          }}
                           className={`transition-all ${selectedRoom === room.id ? 'brightness-110' : 'brightness-75 hover:brightness-100'}`}
                         />
                         {room.hasImages && (
@@ -331,30 +283,33 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
                         {room.name}
                       </span>
                       <span className="text-xs bg-[#D4A017]/20 text-[#D4A017] rounded-full px-2 py-0.5 mt-1">
-                        {room.itemCount}
+                        {room.itemCount} {room.itemCount === 1 ? 'item' : 'items'}
                       </span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Right column - Detailed content of the selected room */}
               <div className="lg:w-2/3 bg-[#1E1E1E] rounded-lg p-4 overflow-y-auto" style={{ maxHeight: '500px' }}>
                 {selectedRoom ? (
                   <>
-                    {/* Room title and details */}
                     <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#2D2D2D]">
                       <div className="flex items-center">
                         <h3 className="text-lg font-bold text-[#FFFFFF]">
-                          {rooms.find(r => r.id === selectedRoom)?.name}
+                          {currentRoom?.name}
                         </h3>
                         <span className="ml-2 px-2 py-0.5 text-xs bg-[#D4A017]/20 text-[#D4A017] rounded-full">
-                          {rooms.find(r => r.id === selectedRoom)?.itemCount} items
+                          {currentRoom?.itemCount} {currentRoom?.itemCount === 1 ? 'item' : 'items'}
                         </span>
                       </div>
+                      
                       {roomImages.length > 1 && (
-                        <button className="text-xs text-[#D4A017] hover:text-[#E6B52C] flex items-center" onClick={() => setShowFullGallery(true)}>
-                          All photos
+                        <button 
+                          className="text-xs text-[#D4A017] hover:text-[#E6B52C] flex items-center" 
+                          onClick={() => setShowFullGallery(true)}
+                          disabled={isRoomImagesLoading}
+                        >
+                          All photos ({roomImages.length})
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                           </svg>
@@ -362,82 +317,157 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
                       )}
                     </div>
 
-                    {/* Main room image */}
-                    <div className="relative h-40 w-full rounded-lg overflow-hidden mb-4">
-                      <Image
-                        src={roomImages[currentImageIndex]}
-                        alt={rooms.find(r => r.id === selectedRoom)?.name || ''}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        placeholder="blur"
-                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P//fwAJMAP4xMZa5AAAAABJRU5ErkJggg=="
-                      />
-                      
-                      {roomImages.length > 1 && (
-                        <div className="absolute bottom-2 right-2 flex space-x-1">
-                          <button
-                            onClick={() => setCurrentImageIndex(prev => (prev === 0 ? roomImages.length - 1 : prev - 1))}
-                            className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => setCurrentImageIndex(prev => (prev === roomImages.length - 1 ? 0 : prev + 1))}
-                            className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    <div className="relative h-60 w-full rounded-lg overflow-hidden mb-4">
+  {isRoomImagesLoading ? (
+    <div className="flex justify-center items-center h-full bg-[#2D2D2D]">
+      <div className="text-[#D4A017]">
+        <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    </div>
+  ) : roomImages.length > 0 ? (
+    <>
+      <Image
+        src={roomImages[currentImageIndex]?.url || '/images/room-placeholder.jpg'}
+        alt={currentRoom?.name || ''}
+        fill
+        style={{ 
+          objectFit: 'contain',
+          backgroundColor: '#2D2D2D'
+        }}
+        placeholder="blur"
+        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P//fwAJMAP4xMZa5AAAAABJRU5ErkJggg=="
+      />
+      
+      {roomImages.length > 1 && (
+        <div className="absolute bottom-2 right-2 flex space-x-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentImageIndex(prev => (prev === 0 ? roomImages.length - 1 : prev - 1));
+            }}
+            className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentImageIndex(prev => (prev === roomImages.length - 1 ? 0 : prev + 1));
+            }}
+            className="p-1 rounded-full bg-black/50 hover:bg-black/70 text-white"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      )}
+      
+      {roomImages.length > 1 && (
+        <div className="absolute bottom-2 left-2 bg-black/50 rounded-full px-2 py-0.5 text-xs text-white">
+          {currentImageIndex + 1} / {roomImages.length}
+        </div>
+      )}
+    </>
+  ) : (
+    <div className="flex flex-col items-center justify-center h-full bg-[#2D2D2D]">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#CCCCCC] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <p className="text-[#CCCCCC] text-sm">No images available</p>
+    </div>
+  )}
+</div>
 
-                    {/* Inventory items list */}
-                    <div>
-                      {isRoomItemsLoading ? (
-                        <div className="flex justify-center items-center h-32">
-                          <div className="text-[#D4A017]">
-                            <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {roomItems.map((item) => (
-                            <div key={item.id} className="bg-[#2D2D2D] rounded-lg p-3 flex hover-golden border border-transparent">
-                              <div className="relative h-16 w-16 flex-shrink-0">
-                                <Image
-                                  src={item.image || '/images/item-placeholder.jpg'}
-                                  alt={item.name}
-                                  fill
-                                  style={{ objectFit: 'cover' }}
-                                  className="rounded"
-                                  placeholder="blur"
-                                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P//fwAJMAP4xMZa5AAAAABJRU5ErkJggg=="
-                                />
-                              </div>
-                              <div className="ml-3 flex-grow">
-                                <div className="flex justify-between">
-                                  <h3 className="text-[#FFFFFF] font-medium">{item.name}</h3>
-                                  <span className={`text-xs px-2 py-0.5 rounded-full text-white ${getConditionColor(item.condition)}`}>
-                                    {item.condition}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-[#CCCCCC] mt-1">{item.description}</p>
-                                {item.notes && (
-                                  <p className="text-xs text-[#CCCCCC] mt-1 italic">Note: {item.notes}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+<div>
+  <div className="flex justify-between items-center mb-2">
+    <h4 className="text-sm font-medium text-[#D4A017]">Inventory Items</h4>
+    {roomImages.length > 8 && (
+      <span className="text-xs text-[#CCCCCC]">Showing {Math.min(8, roomImages.length)} of {roomImages.length} items</span>
+    )}
+  </div>
+  
+  {isRoomImagesLoading ? (
+    <div className="flex justify-center items-center h-32">
+      <div className="text-[#D4A017]">
+        <svg className="animate-spin h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    </div>
+  ) : roomImages.length > 0 ? (
+    <div className="space-y-3">
+      {/* Limiter l'affichage à 8 éléments maximum pour éviter une liste trop longue */}
+      {roomImages.slice(0, 8).map((image, index) => {
+        // Générer une description de test unique pour chaque image
+        const itemDescriptions = [
+          "Main view of the room showing furniture arrangement",
+          "Corner view highlighting the decor elements",
+          "Detailed view of the built-in furnishings",
+          "Window view showing natural lighting conditions",
+          "Close-up of special features in the room"
+        ];
+        const description = itemDescriptions[index % itemDescriptions.length];
+        
+        return (
+          <div 
+            key={image.id} 
+            className={`bg-[#2D2D2D] rounded-lg p-3 flex hover-golden border ${
+              index === currentImageIndex ? 'border-[#D4A017]' : 'border-transparent'
+            } cursor-pointer transition-all duration-200`}
+            onClick={() => setCurrentImageIndex(index)}
+          >
+            <div className="relative h-16 w-16 flex-shrink-0">
+              <Image
+                src={image.url}
+                alt={`Item ${index + 1}`}
+                fill
+                style={{ objectFit: 'cover' }}
+                className="rounded"
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P//fwAJMAP4xMZa5AAAAABJRU5ErkJggg=="
+              />
+            </div>
+            <div className="ml-3 flex-grow">
+              <div className="flex justify-between">
+                <h3 className="text-[#FFFFFF] font-medium">Item {index + 1}</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full text-white bg-blue-600">
+                  Photo
+                </span>
+              </div>
+              <p className="text-sm text-[#CCCCCC] mt-1">Room image of {currentRoom?.name}</p>
+              <p className="text-xs text-[#CCCCCC] mt-1">{description}</p>
+            </div>
+          </div>
+        );
+      })}
+      
+      {/* Afficher un bouton pour voir toutes les images dans la galerie si plus de 8 images */}
+      {roomImages.length > 8 && (
+        <button 
+          onClick={() => setShowFullGallery(true)}
+          className="w-full py-2 rounded-md bg-[#2D2D2D] text-[#D4A017] text-sm hover:bg-[#3D3D3D] transition-colors"
+        >
+          View all {roomImages.length} items in gallery
+        </button>
+      )}
+    </div>
+  ) : (
+    <div className="flex flex-col items-center justify-center h-32 bg-[#2D2D2D]/50 rounded-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-[#CCCCCC] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <p className="text-[#CCCCCC] text-sm">No images available for this room</p>
+    </div>
+  )}
+</div>
+                    
                   </>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-center py-12">
@@ -453,13 +483,12 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
         </div>
       </div>
 
-      {/* Modal for full image gallery */}
-      {showFullGallery && (
+      {showFullGallery && selectedRoom && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
           <div className="relative bg-[#1E1E1E] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b border-[#2D2D2D] flex justify-between items-center">
               <h3 className="text-lg font-bold text-[#FFFFFF]">
-                {rooms.find(r => r.id === selectedRoom)?.name} - Gallery
+                {currentRoom?.name} - Gallery ({roomImages.length} photos)
               </h3>
               <button 
                 onClick={() => setShowFullGallery(false)}
@@ -472,52 +501,94 @@ export default function PropertyDetailPage({ params }: { params:Promise<{ id: st
             </div>
             
             <div className="relative h-[60vh]">
-              <Image
-                src={roomImages[currentImageIndex]}
-                alt={rooms.find(r => r.id === selectedRoom)?.name || ''}
-                fill
-                style={{ objectFit: 'contain' }}
-                placeholder="blur"
-                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P//fwAJMAP4xMZa5AAAAABJRU5ErkJggg=="
-              />
-              
-              <button
-                onClick={() => setCurrentImageIndex(prev => (prev === 0 ? roomImages.length - 1 : prev - 1))}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              
-              <button
-                onClick={() => setCurrentImageIndex(prev => (prev === roomImages.length - 1 ? 0 : prev + 1))}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+              {isRoomImagesLoading ? (
+                <div className="flex justify-center items-center h-full">
+                  <div className="text-[#D4A017]">
+                    <svg className="animate-spin h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                  </div>
+                </div>
+              ) : roomImages.length > 0 ? (
+                <>
+                  <Image
+                    src={roomImages[currentImageIndex]?.url || '/images/room-placeholder.jpg'}
+                    alt={currentRoom?.name || ''}
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    placeholder="blur"
+                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN88P//fwAJMAP4xMZa5AAAAABJRU5ErkJggg=="
+                  />
+                  
+                  {roomImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentImageIndex(prev => (prev === 0 ? roomImages.length - 1 : prev - 1))}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      
+                      <button
+                        onClick={() => setCurrentImageIndex(prev => (prev === roomImages.length - 1 ? 0 : prev + 1))}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-[#CCCCCC] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-[#CCCCCC]">No images available for this room</p>
+                </div>
+              )}
             </div>
             
-            <div className="p-4 flex justify-center items-center">
-              <div className="flex space-x-1">
-                {roomImages.map((_, index) => (
-                  <button 
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`w-3 h-3 rounded-full ${
-                      index === currentImageIndex 
-                        ? 'bg-[#D4A017]' 
-                        : 'bg-[#CCCCCC] hover:bg-[#FFFFFF]'
-                    }`}
-                  />
-                ))}
+            {roomImages.length > 1 && !isRoomImagesLoading && (
+              <div className="p-4 border-t border-[#2D2D2D]">
+                <div className="flex overflow-x-auto space-x-2 pb-2">
+                  {roomImages.map((image, index) => (
+                    <button 
+                      key={image.id}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`relative flex-shrink-0 h-16 w-16 rounded-md overflow-hidden border-2 ${
+                        index === currentImageIndex 
+                          ? 'border-[#D4A017]' 
+                          : 'border-transparent hover:border-[#D4A017]/50'
+                      }`}
+                    >
+                      <Image
+                        src={image.url}
+                        alt={`Image ${index + 1}`}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="mt-2 flex justify-between items-center">
+                  <div className="text-sm text-[#CCCCCC]">
+                    Image {currentImageIndex + 1} of {roomImages.length}
+                  </div>
+                  
+                  <div className="text-xs text-[#CCCCCC]">
+                    {roomImages[currentImageIndex]?.createdAt && (
+                      <>Added: {new Date(roomImages[currentImageIndex].createdAt).toLocaleDateString()}</>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="ml-4 text-sm text-[#CCCCCC]">
-                {currentImageIndex + 1} / {roomImages.length}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}

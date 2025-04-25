@@ -51,7 +51,26 @@ export const fetchProperties = async (): Promise<Property[]> => {
       throw new Error('Failed to fetch properties');
     }
     
-    return await response.json();
+    const properties: Property[] = await response.json();
+    
+    // Pour chaque propriété, récupérer le total d'images à partir des pièces
+    for (let i = 0; i < properties.length; i++) {
+      try {
+        const rooms = await fetchPropertyRooms(properties[i].id);
+        console.log(rooms);        
+        // Calculer le total d'images en additionnant itemCount de chaque pièce
+        // itemCount représente déjà le nombre d'images par pièce selon votre API
+        const totalImages = rooms.reduce((total, room) => total + (room.itemCount || 0), 0);
+        
+        properties[i].totalItems = totalImages;
+
+      } catch (error) {
+        console.error(`Error calculating totalItems for property ${properties[i].id}:`, error);
+        properties[i].totalItems = 0;
+      }
+    }
+    
+    return properties;
   } catch (error) {
     console.error('Error fetching properties:', error);
     throw error;
@@ -71,7 +90,25 @@ export const fetchPropertyById = async (id: string): Promise<Property | null> =>
       throw new Error('Failed to fetch property');
     }
     
-    return await response.json();
+    const property: Property = await response.json();
+    
+    // Récupérer les pièces et calculer le total d'images
+    try {
+      const rooms = await fetchPropertyRooms(property.id);
+      
+      // Chaque pièce a déjà son itemCount (nombre d'images)
+      // Calculer le total pour la propriété
+      property.totalItems = rooms.reduce((total, room) => total + (room.itemCount || 0), 0);
+      
+      // Garder les informations des pièces avec leur compte d'images
+      // Vous pouvez les ajouter à la propriété si vous en avez besoin
+      // property.rooms = rooms;
+    } catch (error) {
+      console.error(`Error calculating totalItems for property ${property.id}:`, error);
+      property.totalItems = 0;
+    }
+    
+    return property;
   } catch (error) {
     console.error(`Error fetching property ${id}:`, error);
     throw error;
@@ -81,14 +118,13 @@ export const fetchPropertyById = async (id: string): Promise<Property | null> =>
 // Fonction pour récupérer les pièces d'une propriété
 export const fetchPropertyRooms = async (propertyId: string): Promise<Room[]> => {
   try {
-    console.log(propertyId);
     const response = await fetch(`/api/properties/${propertyId}/rooms`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch rooms');
     }
-    
-    return await response.json();
+    const rooms = await response.json();    
+    return rooms;
   } catch (error) {
     console.error(`Error fetching rooms for property ${propertyId}:`, error);
     throw error;
@@ -143,7 +179,9 @@ export const createProperty = async (propertyData: {
   reference: string;
   image: string;
   rooms: any[];
-}): Promise<{ success: boolean; propertyId?: string }> => {
+}): Promise<{
+  data: any; success: boolean; propertyId?: string 
+}> => {
   try {
     const response = await fetch('/api/properties', {
       method: 'POST',
