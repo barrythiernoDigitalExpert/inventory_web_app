@@ -207,7 +207,7 @@ export const savePropertyImage = async (base64Image: string, propertyRef: string
   try {
     const buffer = base64ToBuffer(base64Image);
 
-    const dirPath = path.join(process.cwd(), 'public', 'uploads', 'properties', propertyRef);
+    const dirPath = path.join('public', 'uploads', 'properties', propertyRef);
     await ensureDirectory(dirPath);
 
     const filename = 'main.jpg';
