@@ -1,7 +1,7 @@
 // src/app/api/properties/[id]/rooms/[roomId]/images/[imageId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
-import { deleteRoomImage } from '@/lib/utils/fileStorage';
+import { deleteRoomImage, saveRoomImages } from '@/lib/utils/fileStorage';
 
 // GET: Récupère une image spécifique
 export async function GET(
@@ -140,7 +140,7 @@ export async function DELETE(
   }
 }
 
-// PATCH: Met à jour les informations d'une image
+// PATCH: Met à jour une image existante
 export async function PATCH(
   request: NextRequest,
   props: { params: Promise<{ id: string; roomId: string; imageId: string }> }
@@ -156,6 +156,27 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'Invalid property ID, room ID, or image ID' },
         { status: 400 }
+      );
+    }
+    
+    // Récupérer les données de la requête
+    const body = await request.json();
+    if (!body.image) {
+      return NextResponse.json(
+        { error: 'No image data provided' },
+        { status: 400 }
+      );
+    }
+    
+    // Vérifier si la propriété existe
+    const property = await prisma.property.findUnique({
+      where: { id: propertyId }
+    });
+    
+    if (!property) {
+      return NextResponse.json(
+        { error: 'Property not found' },
+        { status: 404 }
       );
     }
     
@@ -189,19 +210,43 @@ export async function PATCH(
       );
     }
     
-    // Note: Puisque le modèle RoomImage n'a pas de champ caption, 
-    // cette fonction pourrait être utilisée pour d'autres mises à jour,
-    // comme changer l'ordre des images ou mettre à jour d'autres propriétés
-    // qui pourraient être ajoutées à l'avenir.
-    // Pour l'instant, nous allons simplement confirmer que l'image existe.
+    // 1. Supprimer l'ancienne image du système de fichiers
+    await deleteRoomImage(existingImage.imagePath);
+    
+    // 2. Sauvegarder la nouvelle image
+    // Puisque saveRoomImages prend un tableau de base64, nous créons un tableau avec un seul élément
+    const savedImagePaths = await saveRoomImages(
+      [body.image], 
+      property.reference,
+      room.code
+    );
+    
+    if (savedImagePaths.length === 0) {
+      return NextResponse.json(
+        { error: 'Failed to save new image' },
+        { status: 500 }
+      );
+    }
+    
+    const newImagePath = savedImagePaths[0];
+    
+    // 3. Mettre à jour le chemin dans la base de données
+    const updatedImage = await prisma.roomImage.update({
+      where: {
+        id: imageId,
+      },
+      data: {
+        imagePath: newImagePath,
+      },
+    });
     
     return NextResponse.json({ 
       image: {
-        id: existingImage.id.toString(),
-        url: existingImage.imagePath,
-        createdAt: existingImage.createdAt.toISOString()
+        id: updatedImage.id.toString(),
+        url: updatedImage.imagePath,
+        createdAt: updatedImage.createdAt.toISOString()
       },
-      message: 'Image verified successfully'
+      message: 'Image updated successfully'
     });
   } catch (error) {
     console.error('Error updating room image:', error);

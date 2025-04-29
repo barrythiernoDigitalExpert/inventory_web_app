@@ -5,8 +5,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 // Base directory for file storage
-const STORAGE_DIR = process.env.STORAGE_DIR || path.join(process.cwd(), 'public', 'uploads');
-
+const STORAGE_DIR = path.join('/tmp', 'uploads');
 /**
  * Ensures a directory exists
  */

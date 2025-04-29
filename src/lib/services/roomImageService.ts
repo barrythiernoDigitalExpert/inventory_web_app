@@ -201,3 +201,33 @@ export async function uploadRoomImages(
     return null;
   }
 }
+
+export async function updateRoomImage(
+  propertyId: string,
+  roomId: string,
+  imageId: string,
+  imageData: string
+): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/properties/${propertyId}/rooms/${roomId}/images/${imageId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: imageData }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update image');
+    }
+
+    // Attendez la réponse et analysez-la
+    const result = await response.json();
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateRoomImage:', error);
+    return false;
+  }
+}
