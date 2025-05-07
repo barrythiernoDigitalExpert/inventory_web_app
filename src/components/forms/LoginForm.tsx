@@ -1,35 +1,38 @@
+// components/forms/LoginForm.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/context/AuthContext';
+import { LoginCredentials } from '@/types/auth';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   
+  const { login, isLoading } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
     
+    const credentials: LoginCredentials = {
+      email,
+      password,
+      remember
+    };
+    
     try {
-      // This would be replaced with your actual authentication logic
-      // For now, we'll simulate a successful login
-      setTimeout(() => {
-        // Store token, user info etc. in localStorage or cookies
-        localStorage.setItem('isLoggedIn', 'true');
-        
-        // Redirect to dashboard
-        router.push('/dashboard');
-      }, 1000);
+      await login(email, password);
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
-    } finally {
-      setIsLoading(false);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Authentication failed. Please try again.');
+      }
     }
   };
 
@@ -75,13 +78,15 @@ export const LoginForm = () => {
             id="remember"
             type="checkbox"
             className="w-4 h-4 border rounded bg-secondary-light border-secondary-light focus:ring-primary"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
           />
           <label htmlFor="remember" className="ml-2 text-sm">
             Remember me
           </label>
         </div>
         
-        <a href="#" className="text-sm text-primary hover:text-primary-light">
+        <a href="/forgot-password" className="text-sm text-primary hover:text-primary-light">
           Forgot password?
         </a>
       </div>
@@ -91,7 +96,7 @@ export const LoginForm = () => {
         className="btn btn-primary w-full"
         disabled={isLoading}
       >
-        {isLoading ? 'Logging in...' : 'Sign In'}
+        {isLoading ? 'Signing in...' : 'Sign In'}
       </button>
     </form>
   );

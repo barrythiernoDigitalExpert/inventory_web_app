@@ -20,29 +20,11 @@ export async function GET() {
     });
     
     // Propriétés avec inventaires
-    const propertiesWithItems = await prisma.property.findMany({
-      include: {
-        rooms: {
-          include: {
-            items: true
-          }
-        }
-      }
-    });
     
     // Nombre d'inventaires complétés (avec plus de 10 éléments)
     let completedInventories = 0;
     let pendingInventories = 0;
     
-    propertiesWithItems.forEach((property: { rooms: any[]; }) => {
-      const totalItems = property.rooms.reduce((sum, room) => sum + room.items.length, 0);
-      
-      if (totalItems >= 10) {
-        completedInventories++;
-      } else {
-        pendingInventories++;
-      }
-    });
     
     return NextResponse.json({
       totalProperties,

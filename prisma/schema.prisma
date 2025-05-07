@@ -4,6 +4,68 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "mysql"
+//   url      = env("DATABASE_URL")
+// }
+
+// model Property {
+//   id         Int      @id @default(autoincrement())
+//   reference  String   @unique
+//   name       String?
+//   imagePath  String?  @map("image_path")
+//   createdAt  DateTime @default(now()) @map("created_at")
+//   updatedAt  DateTime @updatedAt @map("updated_at")
+//   rooms      Room[]
+
+//   @@map("properties")
+// }
+
+// model Room {
+//   id          Int           @id @default(autoincrement())
+//   propertyId  Int           @map("property_id")
+//   code        String
+//   name        String
+//   createdAt   DateTime      @default(now()) @map("created_at")
+//   property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+//   images      RoomImage[]
+//   items       InventoryItem[]
+
+//   @@map("rooms")
+// }
+
+// model RoomImage {
+//   id        Int      @id @default(autoincrement())
+//   roomId    Int      @map("room_id")
+//   imagePath String   @map("image_path")
+//   createdAt DateTime @default(now()) @map("created_at")
+//   room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+//   @@map("room_images")
+// }
+
+// model InventoryItem {
+//   id          Int      @id @default(autoincrement())
+//   roomId      Int      @map("room_id")
+//   name        String
+//   description String?  @db.Text
+//   imagePath   String?  @map("image_path")
+//   notes       String?  @db.Text
+//   createdAt   DateTime @default(now()) @map("created_at")
+//   room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+//   @@map("inventory_items")
+// }
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,50 +75,119 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User model with role enum
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum AuthType {
+  LOCAL
+  GOOGLE
+}
+
+model User {
+  id                Int               @id @default(autoincrement())
+  email             String            @unique
+  name              String
+  password          String?           // Optional as Google auth won't need it
+  role              UserRole          @default(USER)
+  authType          AuthType          @default(LOCAL) @map("auth_type")
+  googleId          String?           @unique @map("google_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  properties        Property[]        // Properties created by this user
+  sharedProperties  PropertyShare[]   // Properties shared with this user
+
+  @@map("users")
+}
+
 model Property {
-  id         Int      @id @default(autoincrement())
-  reference  String   @unique
-  name       String?
-  imagePath  String?  @map("image_path")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  rooms      Room[]
+  id              Int               @id @default(autoincrement())
+  reference       String            @unique
+  name            String?
+  // Address fields
+  street          String?
+  city            String?
+  state           String?
+  postalCode      String?           @map("postal_code")
+  country         String?
+  address         String?
+  // End of address fields
+  imagePath       String?           @map("image_path")
+  // Summary data for performance optimization
+  roomCount       Int               @default(0) @map("room_count")
+  imageCount      Int               @default(0) @map("image_count")
+  // Timestamps
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  // Relations
+  userId          Int               @map("user_id")
+  user            User              @relation(fields: [userId], references: [id])
+  rooms           Room[]
+  sharedWith      PropertyShare[]
+  // Client information fields
+
+  listingPerson   String?           @map("listing_person")
 
   @@map("properties")
+  @@index([userId])
+}
+
+// Model for sharing properties with other users
+model PropertyShare {
+  id          Int       @id @default(autoincrement())
+  propertyId  Int       @map("property_id")
+  userId      Int       @map("user_id")
+  canEdit     Boolean   @default(false) @map("can_edit")
+  canDelete   Boolean   @default(false) @map("can_delete")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, userId])
+  @@map("property_shares")
+  @@index([propertyId])
+  @@index([userId])
 }
 
 model Room {
-  id          Int           @id @default(autoincrement())
-  propertyId  Int           @map("property_id")
+  id          Int             @id @default(autoincrement())
+  propertyId  Int             @map("property_id")
   code        String
   name        String
-  createdAt   DateTime      @default(now()) @map("created_at")
-  property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  // Summary data for performance optimization
+  imageCount  Int             @default(0) @map("image_count")
+  // Add common query filter fields
+  sortOrder   Int             @default(0) @map("sort_order")
+  // Timestamps
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  // Relations
+  property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   images      RoomImage[]
-  items       InventoryItem[]
 
   @@map("rooms")
+  @@index([propertyId])
+  @@index([propertyId, sortOrder])
 }
 
 model RoomImage {
-  id        Int      @id @default(autoincrement())
-  roomId    Int      @map("room_id")
-  imagePath String   @map("image_path")
-  createdAt DateTime @default(now()) @map("created_at")
-  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  id          Int       @id @default(autoincrement())
+  roomId      Int       @map("room_id")
+  imagePath   String    @map("image_path")
+  description String?   @db.Text
+  // Add common query filter fields
+  sortOrder   Int       @default(0) @map("sort_order")
+  isMainImage Boolean   @default(false) @map("is_main_image")
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  // Relations
+  room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@map("room_images")
-}
-
-model InventoryItem {
-  id          Int      @id @default(autoincrement())
-  roomId      Int      @map("room_id")
-  name        String
-  description String?  @db.Text
-  imagePath   String?  @map("image_path")
-  notes       String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at")
-  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-  @@map("inventory_items")
+  @@index([roomId])
+  @@index([roomId, sortOrder])
+  @@index([roomId, isMainImage])
 }

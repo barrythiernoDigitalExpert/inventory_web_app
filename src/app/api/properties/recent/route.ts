@@ -12,9 +12,7 @@ export async function GET() {
       take: 5,
       include: {
         rooms: {
-          include: {
-            items: true
-          }
+          
         }
       }
     });

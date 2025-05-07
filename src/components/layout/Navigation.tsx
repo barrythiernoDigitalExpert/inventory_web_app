@@ -4,17 +4,22 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
+import { useSession } from 'next-auth/react';
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
-  const handleLogout = () => {
-    // Clear authentication tokens/state
-    localStorage.removeItem('isLoggedIn');
-    // Redirect to login
-    router.push('/auth/login');
+  const isAdmin = session?.user?.role === 'ADMIN';
+
+
+
+  const handleLogout = async () => {
+    // Use the signOut function from next-auth
+    const { signOut } = await import('next-auth/react');
+    await signOut({ redirect: true, callbackUrl: '/login' });
   };
 
   const toggleMenu = () => {
@@ -48,6 +53,14 @@ export const Navigation = () => {
               >
                 Properties
               </Link>
+              {isAdmin && (
+                <Link 
+                  href="/users" 
+                  className="border-transparent text-neutral-gray hover:text-white hover:border-primary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
+                  Users
+                </Link>
+              )}
             </div>
           </div>
           
@@ -64,7 +77,7 @@ export const Navigation = () => {
                 >
                   <span className="sr-only">Open user menu</span>
                   <div className="h-8 w-8 rounded-full bg-primary text-secondary flex items-center justify-center">
-                    U
+                  {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                 </button>
               </div>
@@ -169,17 +182,26 @@ export const Navigation = () => {
             >
               Properties
             </Link>
+            {isAdmin && (
+              <Link
+                href="/users"
+                className="text-neutral-gray hover:bg-secondary-light hover:text-white block pl-3 pr-4 py-2 text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Users
+              </Link>
+            )}
           </div>
           <div className="pt-4 pb-3 border-t border-secondary-light">
             <div className="flex items-center px-4">
               <div className="flex-shrink-0">
                 <div className="h-10 w-10 rounded-full bg-primary text-secondary flex items-center justify-center">
-                  U
+                {session?.user?.name ? session.user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               </div>
               <div className="ml-3">
-                <div className="text-base font-medium text-white">User Name</div>
-                <div className="text-sm font-medium text-neutral-gray">user@example.com</div>
+                <div className="text-base font-medium text-white">{session?.user?.name || 'User'}</div>
+                <div className="text-sm font-medium text-neutral-gray">{session?.user?.email || 'user@example.com'}</div>
               </div>
             </div>
             <div className="mt-3 space-y-1">

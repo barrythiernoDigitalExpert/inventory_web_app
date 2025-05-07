@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { saveRoomImages } from '@/lib/utils/fileStorage';
 
-// GET: Récupère toutes les images d'une pièce
+// GET: Retrieve all images for a room
 export async function GET(
   request: NextRequest,
   props: { params: Promise<{ id: string; roomId: string }> }
@@ -21,7 +21,7 @@ export async function GET(
       );
     }
     
-    // Vérifier si la pièce appartient à la propriété
+    // Verify room belongs to property
     const room = await prisma.room.findFirst({
       where: {
         id: roomId,
@@ -36,21 +36,25 @@ export async function GET(
       );
     }
     
-    // Récupérer toutes les images de la pièce
+    // Get all images for the room with sorting
     const images = await prisma.roomImage.findMany({
       where: {
         roomId: roomId,
       },
       orderBy: {
-        createdAt: 'asc', // Trier par date de création
+        sortOrder: 'asc',
       },
     });
     
-    // Formater les données pour correspondre à l'interface attendue
+    // Format response
     const formattedImages = images.map(image => ({
       id: image.id.toString(),
-      url: image.imagePath, // Utiliser imagePath au lieu de url
-      createdAt: image.createdAt.toISOString()
+      url: image.imagePath,
+      isMainImage: image.isMainImage,
+      sortOrder: image.sortOrder,
+      description: image.description,
+      createdAt: image.createdAt.toISOString(),
+      updatedAt: image.updatedAt.toISOString()
     }));
     
     return NextResponse.json({ images: formattedImages });
@@ -63,7 +67,7 @@ export async function GET(
   }
 }
 
-// POST: Ajoute des images à une pièce
+// POST: Add images to a room
 export async function POST(
   request: NextRequest,
   props: { params: Promise<{ id: string; roomId: string }> }
@@ -81,7 +85,7 @@ export async function POST(
       );
     }
     
-    // Vérifier si la pièce appartient à la propriété
+    // Verify room belongs to property
     const room = await prisma.room.findFirst({
       where: {
         id: roomId,
@@ -96,7 +100,7 @@ export async function POST(
       );
     }
     
-    // Obtenir la référence de la propriété pour le stockage des fichiers
+    // Get property reference for file storage
     const property = await prisma.property.findUnique({
       where: { id: propertyId }
     });
@@ -108,8 +112,8 @@ export async function POST(
       );
     }
     
-    // Récupérer les images du body
-    const { images } = await request.json();
+    // Parse request body
+    const { images, descriptions, mainImageIndex } = await request.json();
     
     if (!images || !Array.isArray(images) || images.length === 0) {
       return NextResponse.json(
@@ -118,26 +122,57 @@ export async function POST(
       );
     }
     
-    // Sauvegarder les images
+    // Save images to storage
     const imagePaths = await saveRoomImages(images, property.reference, room.code);
     
-    // Créer les entrées pour les images
+    // Get the current maximum sortOrder
+    const maxOrderResult = await prisma.roomImage.findFirst({
+      where: { roomId },
+      orderBy: { sortOrder: 'desc' },
+      select: { sortOrder: true }
+    });
+    
+    let nextSortOrder = (maxOrderResult?.sortOrder || 0) + 1;
+    
+    // Create database entries for the images
     const createdImages = await Promise.all(
-      imagePaths.map(imagePath => 
+      imagePaths.map((imagePath, index) => 
         prisma.roomImage.create({
           data: {
             roomId,
-            imagePath
+            imagePath,
+            description: descriptions?.[index] || null,
+            isMainImage: index === (mainImageIndex || 0),
+            sortOrder: nextSortOrder + index
           }
         })
       )
     );
     
-    // Formater les données pour correspondre à l'interface attendue
+    // Update room and property image counts
+    await prisma.room.update({
+      where: { id: roomId },
+      data: { 
+        imageCount: { increment: imagePaths.length }
+      }
+    });
+    
+    await prisma.property.update({
+      where: { id: propertyId },
+      data: { 
+        imageCount: { increment: imagePaths.length }
+      }
+    });
+    
+    // Format response
     const formattedImages = createdImages.map(image => ({
       id: image.id.toString(),
       url: image.imagePath,
-      createdAt: image.createdAt.toISOString()
+      isMainImage: image.isMainImage,
+      sortOrder: image.sortOrder,
+      description: image.description,
+      createdAt: image.createdAt.toISOString(),
+      updatedAt: image.updatedAt.toISOString()
     }));
     
     return NextResponse.json({ 

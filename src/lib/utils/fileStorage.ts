@@ -1,182 +1,4 @@
-// // src/lib/utils/fileStorage.ts
-// import { promises as fsPromises } from 'fs';
-// import fs from 'fs';
-// import path from 'path';
-// import { v4 as uuidv4 } from 'uuid';
-
-// // Base directory for file storage
-// const STORAGE_DIR = process.env.STORAGE_DIR || path.join(process.cwd(), 'public', 'uploads');
-
-// /**
-//  * Ensures a directory exists
-//  */
-// async function ensureDirectory(dirPath: string): Promise<void> {
-//   try {
-//     await fsPromises.mkdir(dirPath, { recursive: true });
-//   } catch (error) {
-//     console.error(`Error creating directory ${dirPath}:`, error);
-//     throw error;
-//   }
-// }
-
-// /**
-//  * Converts base64 to buffer
-//  */
-// const base64ToBuffer = (base64Image: string): Buffer => {
-//   const matches = base64Image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  
-//   if (!matches || matches.length !== 3) {
-//     throw new Error('Invalid image data');
-//   }
-  
-//   return Buffer.from(matches[2], 'base64');
-// };
-
-// /**
-//  * Saves the main image for a property
-//  */
-// export const savePropertyImage = async (base64Image: string, propertyRef: string): Promise<string> => {
-//   try {
-//     const buffer = base64ToBuffer(base64Image);
-    
-//     const dirPath = path.join(STORAGE_DIR, 'properties', propertyRef);
-//     await ensureDirectory(dirPath);
-    
-//     const filename = 'main.jpg';
-//     const filePath = path.join(dirPath, filename);
-//     await fsPromises.writeFile(filePath, buffer);
-    
-//     return `/uploads/properties/${propertyRef}/${filename}`;
-//   } catch (error) {
-//     console.error('Error saving property image:', error);
-//     throw error;
-//   }
-// };
-
-// /**
-//  * Saves multiple images for a room
-//  */
-// export const saveRoomImages = async (
-//   base64Images: string[], 
-//   propertyRef: string, 
-//   roomCode: string
-// ): Promise<string[]> => {
-//   try {
-//     const dirPath = path.join(STORAGE_DIR, 'properties', propertyRef, 'rooms', roomCode);
-//     await ensureDirectory(dirPath);
-    
-//     const savedPaths: string[] = [];
-    
-//     for (const [index, base64Image] of base64Images.entries()) {
-//       try {
-//         const matches = base64Image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-      
-//         if (!matches || matches.length !== 3) {
-//           throw new Error('Invalid base64 image format');
-//         }
-        
-//         const type = matches[1];
-//         const data = matches[2];
-//         const buffer = Buffer.from(data, 'base64');
-        
-//         // Determine file extension based on MIME type
-//         let extension = 'jpg';
-//         if (type.includes('png')) {
-//           extension = 'png';
-//         } else if (type.includes('webp')) {
-//           extension = 'webp';
-//         } else if (type.includes('gif')) {
-//           extension = 'gif';
-//         }
-        
-//         // Generate unique filename
-//         const fileName = `${uuidv4()}.${extension}`;
-//         const filePath = path.join(dirPath, fileName);
-        
-//         await fsPromises.writeFile(filePath, buffer);
-//         savedPaths.push(`/uploads/properties/${propertyRef}/rooms/${roomCode}/${fileName}`);
-//       } catch (error) {
-//         console.error(`Error saving room image ${index}:`, error);
-//       }
-//     }
-    
-//     return savedPaths;
-//   } catch (error) {
-//     console.error('Error saving room images:', error);
-//     throw error;
-//   }
-// };
-
-// /**
-//  * Saves an image for an inventory item
-//  */
-// export const saveItemImage = async (
-//   base64Image: string, 
-//   propertyRef: string, 
-//   roomCode: string, 
-//   itemId: string
-// ): Promise<string> => {
-//   try {
-//     const buffer = base64ToBuffer(base64Image);
-    
-//     const dirPath = path.join(STORAGE_DIR, 'properties', propertyRef, 'rooms', roomCode, 'items');
-//     await ensureDirectory(dirPath);
-    
-//     const filename = `item-${itemId}.jpg`;
-//     const filePath = path.join(dirPath, filename);
-//     await fsPromises.writeFile(filePath, buffer);
-    
-//     return `/uploads/properties/${propertyRef}/rooms/${roomCode}/items/${filename}`;
-//   } catch (error) {
-//     console.error('Error saving item image:', error);
-//     throw error;
-//   }
-// };
-
-// /**
-//  * Deletes all files associated with a property
-//  */
-// export const deletePropertyFiles = async (propertyRef: string): Promise<void> => {
-//   try {
-//     const dirPath = path.join(STORAGE_DIR, 'properties', propertyRef);
-//     if (fs.existsSync(dirPath)) {
-//       fs.rmSync(dirPath, { recursive: true, force: true });
-//     }
-//   } catch (error) {
-//     console.error('Error deleting property files:', error);
-//     throw error;
-//   }
-// };
-
-// /**
-//  * Deletes a room image based on its path
-//  */
-// export const deleteRoomImage = async (imagePath: string): Promise<boolean> => {
-//   try {
-//     const relativePath = imagePath.startsWith('/uploads/') 
-//       ? imagePath.substring('/uploads/'.length) 
-//       : imagePath;
-    
-//     const fullPath = path.join(STORAGE_DIR, relativePath);
-    
-//     try {
-//       await fsPromises.access(fullPath);
-//     } catch (error) {
-//       console.warn(`File ${fullPath} does not exist or is not accessible.`);
-//       return true;
-//     }
-    
-//     await fsPromises.unlink(fullPath);
-    
-//     console.log(`File successfully deleted: ${fullPath}`);
-//     return true;
-//   } catch (error) {
-//     console.error(`Error deleting image ${imagePath}:`, error);
-//     return false;
-//   }
-// };
-
-// src/lib/utils/fileStorage.ts
+// src/lib/utils/fileStorage.ts - correction de l'erreur de typage avec Cloudinary
 import { v4 as uuidv4 } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -189,9 +11,10 @@ cloudinary.config({
 });
 
 /**
- * Converts base64 to file upload format for Cloudinary
+ * Convertit une image base64 au format accepté par Cloudinary
  */
 const base64ToCloudinaryFormat = (base64Image: string): string => {
+  // Vérifie si l'image est bien formatée en base64
   const matches = base64Image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
   
   if (!matches || matches.length !== 3) {
@@ -202,7 +25,7 @@ const base64ToCloudinaryFormat = (base64Image: string): string => {
 };
 
 /**
- * Saves the main image for a property
+ * Sauvegarde l'image principale d'une propriété
  */
 export const savePropertyImage = async (base64Image: string, propertyRef: string): Promise<string> => {
   try {
@@ -212,7 +35,7 @@ export const savePropertyImage = async (base64Image: string, propertyRef: string
       folder: `properties/${propertyRef}`,
       public_id: 'main',
       overwrite: true,
-      resource_type: 'image'
+      resource_type: 'image' // Utiliser la valeur littérale correcte
     });
     
     return result.secure_url;
@@ -223,7 +46,7 @@ export const savePropertyImage = async (base64Image: string, propertyRef: string
 };
 
 /**
- * Saves multiple images for a room
+ * Sauvegarde plusieurs images pour une pièce
  */
 export const saveRoomImages = async (
   base64Images: string[], 
@@ -235,21 +58,30 @@ export const saveRoomImages = async (
     
     for (const [index, base64Image] of base64Images.entries()) {
       try {
-        const matches = base64Image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-      
-        if (!matches || matches.length !== 3) {
-          throw new Error('Invalid base64 image format');
+        // Validation du format de l'image
+        if (!base64Image.startsWith('data:')) {
+          console.error(`Image ${index} is not in base64 format`);
+          continue;
         }
         
-        // Generate unique identifier
+        // Générer un identifiant unique
         const uniqueId = uuidv4();
         
-        const result = await cloudinary.uploader.upload(base64Image, {
+        // Définir les options d'upload avec le bon typage
+        const uploadOptions = {
           folder: `properties/${propertyRef}/rooms/${roomCode}`,
           public_id: uniqueId,
-          resource_type: 'image'
-        });
+          resource_type: 'image' as 'image', // Utiliser "as" pour le typage correct
+          transformation: [
+            { quality: 'auto' },
+            { fetch_format: 'auto' }
+          ]
+        };
         
+        // Télécharger l'image vers Cloudinary
+        const result = await cloudinary.uploader.upload(base64Image, uploadOptions);
+        
+        // Ajouter l'URL de l'image sauvegardée
         savedUrls.push(result.secure_url);
       } catch (error) {
         console.error(`Error saving room image ${index} to Cloudinary:`, error);
@@ -264,7 +96,7 @@ export const saveRoomImages = async (
 };
 
 /**
- * Saves an image for an inventory item
+ * Sauvegarde une image pour un élément d'inventaire
  */
 export const saveItemImage = async (
   base64Image: string, 
@@ -279,7 +111,7 @@ export const saveItemImage = async (
       folder: `properties/${propertyRef}/rooms/${roomCode}/items`,
       public_id: `item-${itemId}`,
       overwrite: true,
-      resource_type: 'image'
+      resource_type: 'image' as 'image' // Utiliser "as" pour le typage correct
     });
     
     return result.secure_url;
@@ -290,11 +122,11 @@ export const saveItemImage = async (
 };
 
 /**
- * Deletes all files associated with a property
+ * Supprime tous les fichiers associés à une propriété
  */
 export const deletePropertyFiles = async (propertyRef: string): Promise<void> => {
   try {
-    // Delete folder and all nested resources
+    // Supprimer dossier et toutes les ressources imbriquées
     await cloudinary.api.delete_resources_by_prefix(`properties/${propertyRef}/`);
     await cloudinary.api.delete_folder(`properties/${propertyRef}`);
   } catch (error) {
@@ -304,11 +136,11 @@ export const deletePropertyFiles = async (propertyRef: string): Promise<void> =>
 };
 
 /**
- * Deletes a room image based on its public ID or URL
+ * Supprime une image de pièce en fonction de son URL Cloudinary
  */
 export const deleteRoomImage = async (imageUrl: string): Promise<boolean> => {
   try {
-    // Extract public ID from URL
+    // Extraire l'ID public de l'URL
     const publicId = extractPublicIdFromUrl(imageUrl);
     
     if (!publicId) {
@@ -327,17 +159,29 @@ export const deleteRoomImage = async (imageUrl: string): Promise<boolean> => {
 };
 
 /**
- * Helper function to extract Cloudinary public ID from URL
+ * Fonction auxiliaire pour extraire l'ID public Cloudinary d'une URL
  */
 const extractPublicIdFromUrl = (url: string): string | null => {
   try {
-    // Typical Cloudinary URL format:
+    if (!url || typeof url !== 'string') {
+      return null;
+    }
+
+    // Format typique d'URL Cloudinary:
     // https://res.cloudinary.com/cloud-name/image/upload/v1234567890/folder/public-id.jpg
     const regex = /\/v\d+\/(.+?)(?:\.[^.]+)?$/;
     const match = url.match(regex);
     
     if (match && match[1]) {
       return match[1];
+    }
+    
+    // Si le format standard ne correspond pas, essayez un format alternatif
+    const altRegex = /\/upload\/(.+?)(?:\.[^.]+)?(?:\?.*)?$/;
+    const altMatch = url.match(altRegex);
+    
+    if (altMatch && altMatch[1]) {
+      return altMatch[1];
     }
     
     return null;

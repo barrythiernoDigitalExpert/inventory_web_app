@@ -1,33 +1,32 @@
-import type { Metadata } from 'next';
-import { Inter, Montserrat } from 'next/font/google';
+import { ReactNode } from 'react';
+import { Inter } from 'next/font/google';
+import { SessionProvider } from 'next-auth/react';
+import { AuthProvider } from '@/lib/context/AuthContext';
 import './globals.css';
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-});
+const inter = Inter({ subsets: ['latin'] });
 
-const montserrat = Montserrat({ 
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-montserrat',
-});
-
-export const metadata: Metadata = {
-  title: 'Exclusive Algarve Villas - Inventory Management',
-  description: 'Property inventory management system',
+export const metadata = {
+  title: 'Inventory Management System',
+  description: 'Property inventory management solution',
 };
 
+// app/layout.tsx
+import { Providers } from './providers'
+
 export default function RootLayout({
-  children,
+  children
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${montserrat.variable}`}>
-      <body className="bg-secondary min-h-screen text-neutral">
-        {children}
+    <html lang="en">
+      <body className={`${inter.className} bg-[#121212] text-gray-200`}>
+        <Providers>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

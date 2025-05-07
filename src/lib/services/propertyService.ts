@@ -1,86 +1,136 @@
+// src/lib/services/propertyService.ts
 export interface Room {
   id: string;
+  code: string;
   name: string;
   image: string;
-  itemCount: number;
-  hasImages?: boolean;
-}
-
-export interface InventoryItem {
-  id: string;
-  name: string;
-  description: string;
-  condition: 'New' | 'Good' | 'Fair' | 'Poor';
-  image?: string;
-  notes?: string;
+  hasImages: boolean;
+  imageCount: number;
+  images?: {
+    id: string;
+    path: string;
+    isMain: boolean;
+    description?: string;
+  }[];
 }
 
 export interface Property {
   id: string;
   reference: string;
   name: string;
-  address: string;
+  address?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
   image: string;
+  roomCount: number;
+  imageCount: number;
   createdAt: string;
-  totalItems?: number;
+  updatedAt: string;
+  listingPerson:string,
+  owner?: {
+    name: string;
+    email: string;
+  };
+  sharedWith?: {
+    user: {
+      name: string;
+      email: string;
+    };
+    canEdit: boolean;
+    canDelete: boolean;
+  }[];
+  rooms?: Room[];
+}
+
+export interface DashboardStats {
+  totalProperties: number;
+  recentlyUpdated: number;
+  completedInventories: number;
+  pendingInventories: number;
+}
+
+export interface RecentProperty {
+  id: string;
+  reference: string;
+  name: string;
+  image: string;
+  lastUpdated: string;
+  status?: 'Completed' | 'In Progress' | 'Pending';
 }
 
 export interface DashboardData {
-  stats: {
-    totalProperties: number;
-    recentlyUpdated: number;
-    completedInventories: number;
-    pendingInventories: number;
-  };
-  recentProperties: {
-    id: string;
-    reference: string;
-    name: string;
-    image: string;
-    lastUpdated: string;
-    status?: 'Completed' | 'In Progress' | 'Pending';
-  }[];
+  stats: DashboardStats;
+  recentProperties: RecentProperty[];
 }
 
-// Fonction pour récupérer toutes les propriétés
+export interface RoomImage {
+  id: string;
+  url: string;
+  isMainImage: boolean;
+  description?: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+/**
+ * Fetches images for a room
+ */
+export const fetchImagesByRoom = async (roomId: string): Promise<RoomImage[]> => {
+  try {
+    const response = await fetch(`/api/rooms/${roomId}/items`, {
+      cache: 'no-store'
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch room images');
+    }
+    
+    const images = await response.json();
+    return images.map((image: any) => ({
+      id: image.id,
+      url: image.url,
+      isMainImage: image.isMainImage,
+      description: image.description || '',
+      sortOrder: image.sortOrder,
+      createdAt: image.createdAt,
+      updatedAt: image.updatedAt
+    }));
+  } catch (error) {
+    console.error(`Error fetching images for room ${roomId}:`, error);
+    throw error;
+  }
+};
+
+
+/**
+ * Fetches all properties with optional filtering
+ */
 export const fetchProperties = async (): Promise<Property[]> => {
   try {
-    const response = await fetch('/api/properties');
+    const response = await fetch(`${API_URL}/properties`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch properties');
     }
     
-    const properties: Property[] = await response.json();
-    
-    // Pour chaque propriété, récupérer le total d'images à partir des pièces
-    for (let i = 0; i < properties.length; i++) {
-      try {
-        const rooms = await fetchPropertyRooms(properties[i].id);
-        console.log(rooms);        
-        // Calculer le total d'images en additionnant itemCount de chaque pièce
-        // itemCount représente déjà le nombre d'images par pièce selon votre API
-        const totalImages = rooms.reduce((total, room) => total + (room.itemCount || 0), 0);
-        
-        properties[i].totalItems = totalImages;
-
-      } catch (error) {
-        console.error(`Error calculating totalItems for property ${properties[i].id}:`, error);
-        properties[i].totalItems = 0;
-      }
-    }
-    
-    return properties;
+    return await response.json();
   } catch (error) {
     console.error('Error fetching properties:', error);
     throw error;
   }
 };
 
-// Fonction pour récupérer une propriété par ID
+/**
+ * Fetches a property by ID with all related data
+ */
 export const fetchPropertyById = async (id: string): Promise<Property | null> => {
   try {
-    const response = await fetch(`/api/properties/${id}`);
+    const response = await fetch(`${API_URL}/properties/${id}`);
     
     if (response.status === 404) {
       return null;
@@ -90,75 +140,45 @@ export const fetchPropertyById = async (id: string): Promise<Property | null> =>
       throw new Error('Failed to fetch property');
     }
     
-    const property: Property = await response.json();
-    
-    // Récupérer les pièces et calculer le total d'images
-    try {
-      const rooms = await fetchPropertyRooms(property.id);
-      
-      // Chaque pièce a déjà son itemCount (nombre d'images)
-      // Calculer le total pour la propriété
-      property.totalItems = rooms.reduce((total, room) => total + (room.itemCount || 0), 0);
-      
-      // Garder les informations des pièces avec leur compte d'images
-      // Vous pouvez les ajouter à la propriété si vous en avez besoin
-      // property.rooms = rooms;
-    } catch (error) {
-      console.error(`Error calculating totalItems for property ${property.id}:`, error);
-      property.totalItems = 0;
-    }
-    
-    return property;
+    return await response.json();
   } catch (error) {
     console.error(`Error fetching property ${id}:`, error);
     throw error;
   }
 };
 
-// Fonction pour récupérer les pièces d'une propriété
+/**
+ * Fetches rooms for a property with images
+ */
 export const fetchPropertyRooms = async (propertyId: string): Promise<Room[]> => {
   try {
-    const response = await fetch(`/api/properties/${propertyId}/rooms`);
+    const response = await fetch(`${API_URL}/properties/${propertyId}/rooms`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch rooms');
     }
-    const rooms = await response.json();    
-    return rooms;
+    
+    return await response.json();
   } catch (error) {
     console.error(`Error fetching rooms for property ${propertyId}:`, error);
     throw error;
   }
 };
 
-// Fonction pour récupérer les éléments d'inventaire d'une pièce
-export const fetchRoomItems = async (roomId: string): Promise<InventoryItem[]> => {
-  try {
-    const response = await fetch(`/api/rooms/${roomId}/items`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch inventory items');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error(`Error fetching items for room ${roomId}:`, error);
-    throw error;
-  }
-};
-
-// Fonction pour récupérer les données du tableau de bord
+/**
+ * Fetches dashboard data including stats and recent properties
+ */
 export const fetchDashboardData = async (): Promise<DashboardData> => {
   try {
-    // Récupérer les statistiques
-    const statsResponse = await fetch('/api/dashboard/stats');
+    // Fetch stats
+    const statsResponse = await fetch(`${API_URL}/dashboard/stats`);
     if (!statsResponse.ok) {
       throw new Error('Failed to fetch dashboard stats');
     }
     const stats = await statsResponse.json();
     
-    // Récupérer les propriétés récentes
-    const recentPropertiesResponse = await fetch('/api/properties/recent');
+    // Fetch recent properties
+    const recentPropertiesResponse = await fetch(`${API_URL}/properties/recent`);
     if (!recentPropertiesResponse.ok) {
       throw new Error('Failed to fetch recent properties');
     }
@@ -174,16 +194,23 @@ export const fetchDashboardData = async (): Promise<DashboardData> => {
   }
 };
 
-// Fonction pour créer une propriété
+/**
+ * Creates a new property
+ */
 export const createProperty = async (propertyData: {
   reference: string;
-  image: string;
-  rooms: any[];
-}): Promise<{
-  data: any; success: boolean; propertyId?: string 
-}> => {
+  name?: string;
+  address?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  image?: string;
+  listingPerson?: string;
+}): Promise<{ success: boolean; propertyId?: string; data?: any }> => {
   try {
-    const response = await fetch('/api/properties', {
+    const response = await fetch(`${API_URL}/properties`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -199,6 +226,87 @@ export const createProperty = async (propertyData: {
     return await response.json();
   } catch (error) {
     console.error('Error creating property:', error);
+    throw error;
+  }
+};
+
+/**
+ * Updates an existing property
+ */
+export const updateProperty = async (
+  propertyId: string,
+  propertyData: Partial<Property>
+): Promise<{ success: boolean }> => {
+  try {
+    const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(propertyData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update property');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`Error updating property ${propertyId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Deletes a property
+ */
+export const deleteProperty = async (propertyId: string): Promise<{ success: boolean }> => {
+  try {
+    const response = await fetch(`${API_URL}/properties/${propertyId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete property');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`Error deleting property ${propertyId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Adds a room to a property
+ */
+export const addPropertyRoom = async (
+  propertyId: string,
+  roomData: {
+    code: string;
+    name: string;
+    images?: string[];
+  }
+): Promise<{ success: boolean; room?: Room }> => {
+  try {
+    const response = await fetch(`${API_URL}/properties/${propertyId}/rooms`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(roomData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add room');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`Error adding room to property ${propertyId}:`, error);
     throw error;
   }
 };

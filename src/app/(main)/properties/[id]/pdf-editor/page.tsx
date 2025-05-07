@@ -21,8 +21,7 @@ interface ControlButtonsProps {
 interface SectionState {
   basic: boolean;
   propertyInfo: boolean;
-  rooms: boolean;
-  roomImages: boolean;
+ 
 }
 interface DraggableItem {
   id: string
@@ -76,8 +75,7 @@ export default function PDFEditorPage ({
   const [sectionsOpen, setSectionsOpen] = useState({
     basic: true,
     propertyInfo: true,
-    rooms: true,
-    roomImages: true
+   
   })
   type SectionKey = keyof SectionState;
 
@@ -301,7 +299,8 @@ export default function PDFEditorPage ({
         // Loop through ALL images for this room
         roomImgs.forEach((img, imgIndex) => {
           // Check if we need a new page before adding the image
-          if (currentY + 230 > pageEndY) { // Image + description is about 230px high
+          // Increased height requirements for larger images
+          if (currentY + 330 > pageEndY) { // Increased from 230 to 330 for larger images
             currentPage++;
             currentY = pageStartY;
             
@@ -317,13 +316,13 @@ export default function PDFEditorPage ({
             });
           }
           
-          // Add the image
+          // Add the image with increased size
           newItems.push({
             id: `room-image-${room.id}-${imgIndex}`,
             type: 'image',
             content: `Image from ${room.name}`,
             position: { x: 50, y: currentY },
-            size: { width: 300, height: 200 },
+            size: { width: 400, height: 300 }, // Increased size from 300x200 to 400x300
             zIndex: 5,
             imageUrl: img.url,
             description: `${room.name} - Item ${imgIndex + 1}`,
@@ -335,14 +334,14 @@ export default function PDFEditorPage ({
             id: `room-desc-${room.id}-${imgIndex}`,
             type: 'text',
             content: `This image shows an essential aspect of ${room.name}. Items are sold as is, as shown in this photo.`,
-            position: { x: 370, y: currentY + 20 },
-            size: { width: 380, height: 160 },
+            position: { x: 470, y: currentY + 20 }, // Adjusted position to account for larger image
+            size: { width: 280, height: 160 }, // Adjusted width to fit next to larger image
             zIndex: 5,
             editable: true,
             page: currentPage
           });
           
-          currentY += 230; // Space for image + description
+          currentY += 330; // Increased space for larger image + description
         });
       } else {
         // No images message
@@ -1233,179 +1232,7 @@ const generatePDF = async () => {
           )}
         </div>
 
-        {/* Rooms */}
-        <div className='mb-4'>
-          <div
-            onClick={() => toggleSection('rooms')}
-            className='flex justify-between items-center cursor-pointer text-[#D4A017] text-xs uppercase tracking-wider mb-2 p-1 hover:bg-[#3D3D3D] rounded'
-          >
-            <h3>Rooms</h3>
-            <svg
-              xmlns='http:www.w3.org/2000/svg'
-              className={`h-4 w-4 transition-transform ${
-                sectionsOpen.rooms ? 'transform rotate-180' : ''
-              }`}
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M19 9l-7 7-7-7'
-              />
-            </svg>
-          </div>
-
-          {sectionsOpen.rooms && (
-            <div className='grid grid-cols-2 gap-2'>
-              {rooms.map((room: any) => (
-                <div
-                  key={room.id}
-                  className='bg-[#1E1E1E] p-2 rounded cursor-pointer hover:bg-[#333333]'
-                  onClick={() => {
-                    addItemToCanvas(
-                      'room',
-                      room.name,
-                      { width: 200, height: 30 },
-                      room.id
-                    )
-                    setSelectedRoomForImages(room.id)
-                  }}
-                >
-                  <div className='flex items-center text-[#FFFFFF]'>
-                    <svg
-                      xmlns='http:www.w3.org/2000/svg'
-                      className='h-4 w-4 mr-2 text-[#D4A017]'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h2a1 1 0 001-1v-7m-6 0l2-2m0 0l2 2'
-                      />
-                    </svg>
-                    {room.name} ({roomImages[room.id]?.length || 0})
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Room Images - Only shown when a room is selected */}
-        {/* Room Images - Version corrigée */}
-        {selectedRoomForImages && (
-          <div className='mb-4'>
-            <div
-              onClick={() => toggleSection('roomImages')}
-              className='flex justify-between items-center cursor-pointer text-[#D4A017] text-xs uppercase tracking-wider mb-2 p-1 hover:bg-[#3D3D3D] rounded'
-            >
-              <h3>
-                Images:{' '}
-                {rooms.find(r => r.id === selectedRoomForImages)?.name ||
-                  'Room'}
-              </h3>
-              <svg
-                xmlns='http:www.w3.org/2000/svg'
-                className={`h-4 w-4 transition-transform ${
-                  sectionsOpen.roomImages ? 'transform rotate-180' : ''
-                }`}
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M19 9l-7 7-7-7'
-                />
-              </svg>
-            </div>
-
-            {sectionsOpen.roomImages &&
-              (() => {
-                const room = rooms.find(r => r.id === selectedRoomForImages)
-                const images = roomImages[selectedRoomForImages] || []
-
-                if (images.length === 0) {
-                  return (
-                    <div className='bg-[#1E1E1E] rounded p-4 text-center text-[#CCCCCC] text-sm'>
-                      No images available for this room
-                    </div>
-                  )
-                }
-
-                return (
-                  <div>
-                    <div className='flex justify-between items-center mb-2'>
-                      <h4 className='text-[#CCCCCC] text-xs'>
-                        {room?.name} ({images.length} images)
-                      </h4>
-                      <div className='text-xs text-[#CCCCCC]'>
-                        Click to add to canvas
-                      </div>
-                    </div>
-
-                    {/* Grille d'images avec taille augmentée pour prendre tout l'espace disponible */}
-                    <div className='grid grid-cols-2 gap-2 max-h-[calc(100vh-380px)] overflow-y-auto pb-1'>
-                      {images.map((image, index) => (
-                        <div
-                          key={image.id}
-                          className='bg-[#1E1E1E] rounded cursor-pointer hover:bg-[#333333] p-1 border border-transparent hover:border-[#D4A017] transition-colors'
-                          onClick={() =>
-                            addItemToCanvas(
-                              'image',
-                              `Image from ${room?.name}`,
-                              { width: 200, height: 150 },
-                              selectedRoomForImages,
-                              image.url,
-                              `${room?.name} - Item ${index + 1}`
-                            )
-                          }
-                        >
-                          <div className='relative h-16 w-full mb-1'>
-                            <Image
-                              src={image.url}
-                              alt={`Image from ${room?.name}`}
-                              fill
-                              className='object-cover rounded'
-                            />
-                            <div className='absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-black/30 transition-opacity'>
-                              <svg
-                                xmlns='http:www.w3.org/2000/svg'
-                                className='h-6 w-6 text-white'
-                                fill='none'
-                                viewBox='0 0 24 24'
-                                stroke='currentColor'
-                              >
-                                <path
-                                  strokeLinecap='round'
-                                  strokeLinejoin='round'
-                                  strokeWidth={2}
-                                  d='M12 4v16m8-8H4'
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                          <div className='text-[#FFFFFF] text-xs flex justify-between'>
-                            <span className='truncate'>
-                              {room?.name} - Item {index + 1}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })()}
-          </div>
-        )}
+        
       </div>
 
       {/* Right side - Canvas and toolbar */}
