@@ -173,6 +173,7 @@ export default function UsersPage() {
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       setIsLoading(true)
+      console.log(newRole)
       const result = await updateUserRole(userId, newRole)
       
       if (result) {

@@ -9,10 +9,19 @@ import { authOptions } from '@/lib/utils/auth';
 async function checkPropertyAccess(propertyId: number, userEmail: string) {
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
-    select: { id: true }
+    select: { id: true , role:true}
   });
+
   
   if (!user) return null;
+
+  if (user.role === 'ADMIN') {
+    const property = await prisma.property.findUnique({
+      where: { id: propertyId }
+    });
+    
+    return property ? { property, userId: user.id, isAdmin: true } : null;
+  }
   
   const property = await prisma.property.findFirst({
     where: {

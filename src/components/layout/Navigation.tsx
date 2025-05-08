@@ -212,13 +212,7 @@ export const Navigation = () => {
               >
                 Profile
               </Link>
-              <Link
-                href="/settings"
-                className="block px-4 py-2 text-base font-medium text-neutral-gray hover:text-white hover:bg-secondary-light"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Settings
-              </Link>
+             
               <button
                 className="block w-full text-left px-4 py-2 text-base font-medium text-neutral-gray hover:text-white hover:bg-secondary-light"
                 onClick={handleLogout}

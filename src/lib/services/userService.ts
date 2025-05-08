@@ -124,3 +124,30 @@ export async function resetUserPassword(userId: string, newPassword: string): Pr
     return false;
   }
 }
+
+export async function searchUsers(searchTerm: string): Promise<User[]> {
+  try {
+    // Make sure the search term is properly encoded
+    const encodedSearchTerm = encodeURIComponent(searchTerm);
+    
+    // Update the path to match the App Router format
+    const response = await fetch(`/api/users/search?q=${encodedSearchTerm}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Add cache control for improved performance
+      cache: 'no-store' // Prevent caching to always get fresh results
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to search users');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error searching users:', error);
+    throw error;
+  }
+}

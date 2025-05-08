@@ -76,6 +76,19 @@ export interface RoomImage {
   updatedAt: string;
 }
 
+export interface PropertyShare {
+  id: string;
+  propertyId: string;
+  userId: string;
+  canEdit: boolean;
+  canDelete: boolean;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 /**
  * Fetches images for a room
@@ -310,3 +323,72 @@ export const addPropertyRoom = async (
     throw error;
   }
 };
+
+export async function getPropertyShares(propertyId: string): Promise<PropertyShare[]> {
+  try {
+    const response = await fetch(`/api/properties/${propertyId}/shares`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+       cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch property shares');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching property shares:', error);
+    throw error;
+  }
+}
+
+export async function sharePropertyWithUser(
+  propertyId: string,
+  userId: string,
+  permissions: { canEdit: boolean; canDelete: boolean }
+): Promise<PropertyShare> {
+  try {
+    const response = await fetch(`/api/properties/${propertyId}/shares`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        ...permissions,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to share property');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error sharing property:', error);
+    throw error;
+  }
+}
+
+export async function removePropertyShare(propertyId: string, shareId: string): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/properties/${propertyId}/shares/${shareId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to remove property share');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error removing property share:', error);
+    throw error;
+  }
+}

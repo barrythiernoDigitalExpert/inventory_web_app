@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
+import { useSession } from 'next-auth/react';
 
 // Services
 import {
@@ -103,6 +104,12 @@ export default function PropertyDetailPage ({
   // Router and ID
   const { id } = use(params)
   const router = useRouter()
+  const { data: session } = useSession(); // Adjust based on your auth system
+  const user = {
+    id: session?.user?.id,
+    role: session?.user?.role,
+    email: session?.user?.email // Make sure this email is included
+  };
 
   // Load property details on mount
   useEffect(() => {
@@ -919,7 +926,7 @@ export default function PropertyDetailPage ({
       {/* Main content */}
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         {/* Property sidebar */}
-        <PropertySidebar property={property} />
+        <PropertySidebar property={property} currentUser={user} />
 
         {/* Rooms & Images Section */}
         <div className='lg:col-span-2'>

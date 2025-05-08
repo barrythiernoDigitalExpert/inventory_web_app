@@ -9,10 +9,21 @@ import { authOptions } from '@/lib/utils/auth';
 async function checkRoomAccess(roomId: number, userEmail: string) {
   const user = await prisma.user.findUnique({
     where: { email: userEmail },
-    select: { id: true }
+    select: { id: true , role: true }
   });
   
   if (!user) return null;
+
+  if (user.role === 'ADMIN') {
+    const room = await prisma.room.findUnique({
+      where: { id: roomId },
+      include: {
+        property: true
+      }
+    });
+    
+    return room ? { room, userId: user.id, isAdmin: true } : null;
+  }
   
   const room = await prisma.room.findFirst({
     where: {
@@ -106,7 +117,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ room
     }
     
     // Check edit permission if shared
-    if (access.room.property.userId !== access.userId) {
+    if (!access.isAdmin && access.room.property.userId !== access.userId) {
       const sharePermission = await prisma.propertyShare.findUnique({
         where: {
           propertyId_userId: {
