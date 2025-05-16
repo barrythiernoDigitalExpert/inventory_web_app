@@ -31,6 +31,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if user is active
+    if (!user.isActive) {
+      return NextResponse.json(
+        { message: 'Account is inactive. Please contact administration.' },
+        { status: 403 }
+      );
+    }
+
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password || '');
     if (!passwordMatch) {
@@ -45,7 +53,8 @@ export async function POST(request: Request) {
       { 
         id: user.id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isActive: user.isActive
       },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -58,6 +67,7 @@ export async function POST(request: Request) {
         email: user.email,
         name: user.name,
         role: user.role,
+        isActive: user.isActive
       },
       token,
     });

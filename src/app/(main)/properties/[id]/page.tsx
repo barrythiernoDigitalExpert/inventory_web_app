@@ -5,7 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
-import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react'
+import ImageUploadComponent from '@/components/property/ImageUploadComponent'
+import { generateImageDescription } from '@/lib/utils/descriptionGenerator'
 
 // Services
 import {
@@ -104,12 +106,57 @@ export default function PropertyDetailPage ({
   // Router and ID
   const { id } = use(params)
   const router = useRouter()
-  const { data: session } = useSession(); // Adjust based on your auth system
+  const { data: session } = useSession() // Adjust based on your auth system
   const user = {
     id: session?.user?.id,
     role: session?.user?.role,
     email: session?.user?.email // Make sure this email is included
-  };
+  }
+
+  const handleImagesUploadWithDescriptions = async (
+    images: { dataUrl: string; description: string; file: File }[]
+  ) => {
+    if (!selectedRoom || images.length === 0) return
+
+    const toastId = toast.loading(`Uploading ${images.length} images...`)
+    try {
+      // Convertir les images en format attendu par l'API
+      const formData = new FormData()
+
+      // Ajouter chaque fichier image
+      images.forEach((image, index) => {
+        formData.append(`images[${index}]`, image.file)
+        formData.append(`descriptions[${index}]`, image.description)
+      })
+
+      // Préparer l'URL de l'API
+      const url = `/api/properties/${id}/rooms/${selectedRoom}/images`
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to upload images')
+      }
+
+      const data = await response.json()
+
+      // Mettre à jour le compteur d'images
+      updateRoomImageCount(selectedRoom, images.length)
+
+      // Recharger les images
+      await loadRoomImages(selectedRoom)
+
+      toast.dismiss(toastId)
+      toast.success(`${images.length} image(s) uploaded successfully`)
+    } catch (error) {
+      console.error('Error uploading images:', error)
+      toast.dismiss(toastId)
+      toast.error('Failed to upload images')
+    }
+  }
 
   // Load property details on mount
   useEffect(() => {
@@ -998,26 +1045,34 @@ export default function PropertyDetailPage ({
 
                       <div className='flex items-center space-x-2'>
                         {/* Add images button */}
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className='p-1 rounded-full bg-[#D4A017] hover:bg-[#E6B52C] text-black flex items-center justify-center'
-                          title='Add new images'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-5 w-5'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M12 4v16m8-8H4'
-                            />
-                          </svg>
-                        </button>
+                        {currentRoom && (
+                          <div className='ml-2'>
+                            <button
+                              onClick={() =>
+                                document
+                                  .getElementById('image-upload-modal')
+                                  ?.classList.remove('hidden')
+                              }
+                              className='p-1 rounded-full bg-[#D4A017] hover:bg-[#E6B52C] text-black flex items-center justify-center'
+                              title='Add new images'
+                            >
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='h-5 w-5'
+                                fill='none'
+                                viewBox='0 0 24 24'
+                                stroke='currentColor'
+                              >
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M12 4v16m8-8H4'
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
 
                         {/* Show all photos button */}
                         {roomImages.length > 1 && (
@@ -1416,7 +1471,11 @@ export default function PropertyDetailPage ({
 
                           {/* Add more images button */}
                           <button
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() =>
+                              document
+                                .getElementById('image-upload-modal')
+                                ?.classList.remove('hidden')
+                            }
                             className='w-full py-2 mt-2 rounded-md bg-[#2D2D2D] text-[#D4A017] text-sm hover:bg-[#3D3D3D] transition-colors border border-dashed border-[#D4A017] flex items-center justify-center'
                           >
                             <svg
@@ -1560,6 +1619,52 @@ export default function PropertyDetailPage ({
           onResizeCrop={handleResizeCrop}
         />
       )}
+
+      {/* Image Upload Modal */}
+      <div
+        id='image-upload-modal'
+        className='fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden'
+      >
+        <div className='bg-[#1E1E1E] rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto'>
+          <div className='p-4 border-b border-[#2D2D2D] flex justify-between items-center'>
+            <h2 className='text-xl font-bold text-[#FFFFFF]'>
+              Upload Images to {currentRoom?.name || 'Room'}
+            </h2>
+            <button
+              onClick={() =>
+                document
+                  .getElementById('image-upload-modal')
+                  ?.classList.add('hidden')
+              }
+              className='text-[#CCCCCC] hover:text-[#FFFFFF]'
+            >
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='h-6 w-6'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M6 18L18 6M6 6l12 12'
+                />
+              </svg>
+            </button>
+          </div>
+          <div className='p-6'>
+            {currentRoom && (
+              <ImageUploadComponent
+                roomName={currentRoom.name}
+                onUpload={handleImagesUploadWithDescriptions}
+                generateDescription={generateImageDescription}
+              />
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Hidden file inputs */}
       <input

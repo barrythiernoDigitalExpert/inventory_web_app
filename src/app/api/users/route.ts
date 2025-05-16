@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         role: true,
         createdAt: true,
         updatedAt: true,
+        isActive:true,
         _count: {
           select: {
             properties: true,
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
         name: user.name,
         email: user.email,
         role: user.role,
+        isActive: user.isActive,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
         propertiesCount: user._count.properties,
@@ -89,7 +91,8 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
-        role: role === 'ADMIN' ? UserRole.ADMIN : UserRole.USER
+        role: role === 'ADMIN' ? UserRole.ADMIN : UserRole.USER,
+        isActive: true,
       }
     });
     
@@ -99,6 +102,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         email: user.email,
         role: user.role,
+        isActive: user.isActive,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString()
       }

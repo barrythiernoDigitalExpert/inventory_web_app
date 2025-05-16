@@ -6,6 +6,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
   propertiesCount?: number;
@@ -31,6 +32,7 @@ export async function fetchUsers(): Promise<User[]> {
     }
 
     const data = await response.json();
+    console.log("afficher touts les users"+data.users)
     return data.users;
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -98,6 +100,35 @@ export async function updateUserRole(userId: string, role: string): Promise<User
     return null;
   }
 }
+
+/**
+ * Toggles a user's active status
+ */
+export async function toggleUserActiveStatus(userId: string, isActive: boolean): Promise<User | null> {
+  try {
+    const response = await fetch(`/api/users/${userId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ isActive }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update user status');
+    }
+
+    const data = await response.json();
+    toast.success(`User ${isActive ? 'activated' : 'deactivated'} successfully`);
+    return data.user;
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    toast.error('Failed to update user status');
+    return null;
+  }
+}
+
 
 /**
  * Resets a user's password

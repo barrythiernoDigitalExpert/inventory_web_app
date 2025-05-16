@@ -12,16 +12,15 @@ import { fetchRoomImages } from '@/lib/services/roomImageService'
 import { toast } from 'react-hot-toast'
 
 interface ControlButtonsProps {
-  id: string; // Type explicite string au lieu de React.SetStateAction<string | null>
-  content: { 
-    value: string 
-  };
+  id: string // Type explicite string au lieu de React.SetStateAction<string | null>
+  content: {
+    value: string
+  }
 }
 
 interface SectionState {
-  basic: boolean;
-  propertyInfo: boolean;
- 
+  basic: boolean
+  propertyInfo: boolean
 }
 interface DraggableItem {
   id: string
@@ -44,6 +43,8 @@ interface DraggableItem {
   description?: string
   isResizing?: boolean
   page?: number
+  isHeader?: boolean
+  isRoomHeader?: boolean
 }
 
 export default function PDFEditorPage ({
@@ -74,10 +75,9 @@ export default function PDFEditorPage ({
   const [initialSize, setInitialSize] = useState({ width: 0, height: 0 })
   const [sectionsOpen, setSectionsOpen] = useState({
     basic: true,
-    propertyInfo: true,
-   
+    propertyInfo: true
   })
-  type SectionKey = keyof SectionState;
+  type SectionKey = keyof SectionState
 
   useEffect(() => {
     if (canvasItems.length > 0) {
@@ -102,93 +102,6 @@ export default function PDFEditorPage ({
           imagesData[room.id] = roomImages
         }
         setRoomImages(imagesData)
-
-        const currentDate = new Date().toLocaleDateString()
-
-        const getPropertyMainImage = () => {
-          if (propertyData?.image) {
-            return propertyData.image
-          }
-
-          for (const roomId in imagesData) {
-            const images = imagesData[roomId]
-            if (images && images.length > 0) {
-              return images[0].url
-            }
-          }
-
-          return '/images/property-placeholder.jpg'
-        }
-
-        setCanvasItems([
-          {
-            id: 'title',
-            type: 'heading',
-            content: 'PROPERTY INVENTORY',
-            position: { x: 150, y: 50 },
-            size: { width: 500, height: 60 },
-            zIndex: 10,
-            editable: true
-          },
-
-          {
-            id: 'property-image',
-            type: 'image',
-            content: '',
-            position: { x: 50, y: 150 },
-            size: { width: 350, height: 250 },
-            zIndex: 5,
-            imageUrl: getPropertyMainImage(),
-            description: propertyData?.name || 'Property Image'
-          },
-
-          {
-            id: 'reference-number',
-            type: 'property-field',
-            content: {
-              label: 'Reference Number',
-              value: propertyData?.reference || 'N/A'
-            },
-            position: { x: 350, y: 160 },
-            size: { width: 500, height: 60 },
-            zIndex: 5
-          },
-
-          {
-            id: 'property-address',
-            type: 'property-field',
-            content: {
-              label: 'Property Address',
-              value: propertyData?.address || 'Not specified'
-            },
-            position: { x: 350, y: 210 },
-            size: { width: 300, height: 50 },
-            zIndex: 5
-          },
-
-          {
-            id: 'inventory-info-group',
-            type: 'property-info',
-            content: {
-              date: currentDate,
-              listingPerson: 'Not specified',
-              owners: []
-            },
-            position: { x: 350, y: 275 },
-            size: { width: 300, height: 110 },
-            zIndex: 5
-          },
-
-          {
-            id: 'disclaimer',
-            type: 'disclaimer',
-            content:
-              'Disclaimer: Inventory items are in used condition. Exclusive Living Mediaçao Imobiliaria does not hold any responsibility for the condition the articles sold and their condition at the time of deeds.',
-            position: { x: 50, y: 1030 },
-            size: { width: 700, height: 40 },
-            zIndex: 5
-          }
-        ])
       } catch (error) {
         console.error('Error loading data:', error)
         toast.error('Failed to load property data')
@@ -223,164 +136,458 @@ export default function PDFEditorPage ({
   }
 
   const addRoomSectionsToCanvas = () => {
-    // First, clear any previously generated room sections to avoid duplication
-    setCanvasItems(prev => 
-      prev.filter(item => 
-        !item.id.includes('room-title-') && 
-        !item.id.includes('room-image-') && 
-        !item.id.includes('room-desc-') && 
-        !item.id.includes('room-no-images-') &&
-        !item.id.includes('attractive-title-') &&
-        !item.id.includes('disclaimer-page-')
+    // Nettoyer les éléments précédemment générés
+    setCanvasItems(prev =>
+      prev.filter(
+        item =>
+          !item.id.includes('room-title-') &&
+          !item.id.includes('room-image-') &&
+          !item.id.includes('room-desc-') &&
+          !item.id.includes('room-no-images-') &&
+          !item.id.includes('attractive-title-') &&
+          !item.id.includes('disclaimer-page-') &&
+          !item.id.includes('header-') &&
+          !item.id.includes('cover-') &&
+          !item.id.includes('summary-') &&
+          !item.id.includes('room-intro-') &&
+          !item.id.includes('page-number-')
       )
-    );
-    
-    // Define our page boundaries
-    const page1StartY = 450; // Start after property info on page 1
-    const pageStartY = 100;  // Start position for pages 2+
-    const pageEndY = 1000;   // End before disclaimer on all pages
-    const roomSpacing = 40;  // Space between rooms
-    
-    // Start on page 1
-    let currentY = page1StartY;
-    let currentPage = 1;
-    const newItems: DraggableItem[] = [];
-    // Add attractive title on page 1
+    )
+
+    // Crée les nouveaux éléments à ajouter
+    const newItems: DraggableItem[] = []
+console.log(property);
+    // ---- CRÉATION DE LA PAGE DE COUVERTURE (PAGE 1) ----
+
+    // Ajout de l'en-tête "Inventário em estado de usado" également sur la page 1
     newItems.push({
-      id: `attractive-title-${Date.now()}`,
+      id: 'header-page-1',
+      type: 'text',
+      content: 'Inventário em estado de usado',
+      position: { x: 0, y: 0 },
+      size: { width: 800, height: 25 },
+      zIndex: 20,
+      page: 1,
+      editable: true,
+      isHeader: true
+    })
+
+    // Récupération d'une image principale de la propriété
+    const mainImageUrl = getPropertyMainImage()
+    const currentDate = new Date().toLocaleDateString()
+    const totalRooms = rooms.length
+    let totalImages = 0
+    rooms.forEach(room => {
+      const roomImgs = roomImages[room.id] || []
+      totalImages += roomImgs.length
+    })
+
+    newItems.push({
+      id: 'cover-main-title',
       type: 'heading',
-      content: ' Explore Every Room in Detail',
-      position: { x: 100, y: currentY },
-      size: { width: 600, height: 60 },
+      content: 'PROPERTY INVENTORY',
+      position: { x: 100, y: 70 }, // Position Y augmentée pour descendre le titre (de 30 à 70)
+      size: { width: 600, height: 80 }, // Taille agrandie (hauteur augmentée de 60 à 80, largeur de 500 à 600)
       zIndex: 10,
       editable: true,
-      page: 1 // Mark this as page 1 item
-    });
-    
-    currentY += 80; // Move down for first room
-    
-    // Loop through each room
+      page: 1
+    })
+
+    // Logo - ajusté pour remplir toute la zone à droite sans espace blanc
+    newItems.push({
+      id: 'cover-logo',
+      type: 'logo',
+      content: 'logo',
+      position: { x: 600, y: 35 }, // Position X ajustée pour étendre jusqu'au bord
+      size: { width: 190, height: 120 }, // Largeur augmentée pour remplir tout l'espace à droite
+      zIndex: 15,
+      page: 1
+    })
+
+    // Image principale de la propriété (agrandie x2)
+    newItems.push({
+      id: 'cover-property-image',
+      type: 'image',
+      content: '',
+      position: { x: 150, y: 170 }, // Ajusté pour accommoder le titre descendu
+      size: { width: 500, height: 350 }, // Taille doublée (de 400x280 à 500x350)
+      zIndex: 5,
+      imageUrl: mainImageUrl,
+      page: 1
+    })
+
+    // Encadré d'informations de la propriété - agrandi
+    newItems.push({
+      id: 'cover-info-box',
+      type: 'text',
+      content: 'PROPERTY INFORMATION',
+      position: { x: 150, y: 530 }, // Position ajustée après l'image agrandie
+      size: { width: 500, height: 50 }, // Taille augmentée
+      zIndex: 15,
+      editable: true,
+      page: 1,
+      isHeader: true
+    })
+
+    // Informations de référence - agrandi
+    newItems.push({
+      id: 'cover-reference-number',
+      type: 'property-field',
+      content: {
+        label: 'Reference Number',
+        value: property?.reference || 'N/A'
+      },
+      position: { x: 150, y: 590 }, // Position ajustée
+      size: { width: 500, height: 40 }, // Taille augmentée
+      zIndex: 5,
+      page: 1
+    })
+
+    // Adresse de la propriété - agrandi
+    newItems.push({
+      id: 'cover-property-address',
+      type: 'property-field',
+      content: {
+        label: 'Property Address',
+        value: property?.address || 'Not specified'
+      },
+      position: { x: 150, y: 640 }, // Position ajustée
+      size: { width: 500, height: 40 }, // Taille augmentée
+      zIndex: 5,
+      page: 1
+    })
+
+    // Date et informations sur l'inventaire - agrandi
+    newItems.push({
+      id: 'cover-inventory-info',
+      type: 'property-info',
+      content: {
+        date: currentDate,
+    listingPerson: property?.listingPerson || 'Not specified',
+    owners: property?.owner ? property.owner.name : 'Not specified'
+      },
+      position: { x: 150, y: 690 }, // Position ajustée
+      size: { width: 500, height: 160 }, // Taille augmentée
+      zIndex: 5,
+      page: 1
+    })
+
+    // Section résumé (titre) - agrandi
+    newItems.push({
+      id: 'cover-summary-title',
+      type: 'text',
+      content: 'INVENTORY SUMMARY',
+      position: { x: 50, y: 860 }, // Position ajustée après les informations agrandies
+      size: { width: 700, height: 50 }, // Taille augmentée
+      zIndex: 10,
+      editable: true,
+      page: 1,
+      isHeader: true
+    })
+
+    // Statistiques globales - agrandi
+    newItems.push({
+      id: 'cover-summary-stats',
+      type: 'text',
+      content: `This inventory contains ${totalRooms} rooms with a total of ${totalImages} images documenting all items in the property. Each room has been carefully cataloged with detailed images of all included furniture and fixtures.`,
+      position: { x: 50, y: 920 }, // Position ajustée
+      size: { width: 700, height: 80 }, // Taille augmentée
+      zIndex: 5,
+      editable: true,
+      page: 1
+    })
+
+    // Disclaimer (position maintenue car en bas de page)
+    newItems.push({
+      id: 'cover-disclaimer',
+      type: 'disclaimer',
+      content:
+        'Disclaimer: Inventory items are in used condition. Exclusive Living Mediaçao Imobiliaria does not hold any responsibility for the condition the articles sold and their condition at the time of deeds.',
+      position: { x: 50, y: 1030 },
+      size: { width: 700, height: 40 },
+      zIndex: 5,
+      page: 1
+    })
+
+    // ---- CRÉATION DES PAGES D'INVENTAIRE DÉTAILLÉ (À PARTIR DE LA PAGE 2) ----
+
+    // Le reste du code reste identique...
+
+    // Commencer à la page 2
+    let currentPage = 2
+    const pageStartY = 100
+    const pageEndY = 1000
+
+    // Ajouter en-tête sur chaque page
+    newItems.push({
+      id: `header-page-${currentPage}`,
+      type: 'text',
+      content: 'Inventário em estado de usado',
+      position: { x: 0, y: 0 },
+      size: { width: 800, height: 25 },
+      zIndex: 20,
+      page: currentPage,
+      editable: true,
+      isHeader: true
+    })
+
+    // Ajouter le logo (plus petit) sur les pages suivantes
+    newItems.push({
+      id: `logo-page-${currentPage}`,
+      type: 'logo',
+      content: 'logo',
+      position: { x: 680, y: 30 },
+      size: { width: 100, height: 50 },
+      zIndex: 15,
+      page: currentPage
+    })
+
+    // Titre de la section d'inventaire
+    newItems.push({
+      id: `inventory-title-${currentPage}`,
+      type: 'heading',
+      content: 'DETAILED INVENTORY',
+      position: { x: 300, y: 50 },
+      size: { width: 400, height: 50 },
+      zIndex: 10,
+      editable: true,
+      page: currentPage
+    })
+
+    // Ajouter un disclaimer sur chaque page
+    newItems.push({
+      id: `disclaimer-page-${currentPage}`,
+      type: 'disclaimer',
+      content:
+        'Disclaimer: Inventory items are in used condition. Exclusive Living Mediaçao Imobiliaria does not hold any responsibility for the condition the articles sold and their condition at the time of deeds.',
+      position: { x: 50, y: 1030 },
+      size: { width: 700, height: 40 },
+      zIndex: 5,
+      page: currentPage
+    })
+
+    // Définir la position Y initiale après les titres
+    let currentY = pageStartY + 60
+
+    // Parcourir chaque pièce
     rooms.forEach((room, roomIndex) => {
-      // Check if we need to start a new page
-      if (currentY + 100 > pageEndY) {
-        currentPage++;
-        currentY = pageStartY; // Start at top for page 2+
-        
-        // Add a disclaimer for the new page
+      // Si on n'a pas assez de place pour la pièce complète, passer à la page suivante
+      if (currentY + 150 > pageEndY) {
+        currentPage++
+        currentY = pageStartY
+
+        // Ajouter en-tête pour la nouvelle page
+        newItems.push({
+          id: `header-page-${currentPage}`,
+          type: 'text',
+          content: 'Inventário em estado de usado',
+          position: { x: 0, y: 0 },
+          size: { width: 800, height: 25 },
+          zIndex: 20,
+          page: currentPage,
+          editable: true,
+          isHeader: true
+        })
+
+        // Ajouter le logo (plus petit) sur la nouvelle page
+        newItems.push({
+          id: `logo-page-${currentPage}`,
+          type: 'logo',
+          content: 'logo',
+          position: { x: 680, y: 30 },
+          size: { width: 100, height: 50 },
+          zIndex: 15,
+          page: currentPage
+        })
+
+        // Ajouter un disclaimer pour la nouvelle page
         newItems.push({
           id: `disclaimer-page-${currentPage}`,
           type: 'disclaimer',
-          content: 'Disclaimer: Inventory items are in used condition. Exclusive Living Mediaçao Imobiliaria does not hold any responsibility for the condition the articles sold and their condition at the time of deeds.',
+          content:
+            'Disclaimer: Inventory items are in used condition. Exclusive Living Mediaçao Imobiliaria does not hold any responsibility for the condition the articles sold and their condition at the time of deeds.',
           position: { x: 50, y: 1030 },
           size: { width: 700, height: 40 },
           zIndex: 5,
           page: currentPage
-        });
+        })
       }
-      
-      // Add room header
+
+      // Ajouter titre de la pièce (en-tête de pièce)
       newItems.push({
         id: `room-title-${room.id}`,
         type: 'room',
-        content: `Room ${roomIndex + 1} - ${room.name}`,
-        position: { x: 50, y: currentY },
-        size: { width: 700, height: 40 },
+        content: room.name,
+        position: { x: 0, y: currentY },
+        size: { width: 800, height: 70 },
         zIndex: 5,
         roomId: room.id,
-        page: currentPage
-      });
-      
-      currentY += 60; // Space for room header
-      
-      // Get all images for this room
-      const roomImgs = roomImages[room.id] || [];
-      
+        page: currentPage,
+        isRoomHeader: true
+      })
+
+      currentY += 80
+
+      // Obtenir les images pour cette pièce
+      const roomImgs = roomImages[room.id] || []
+
+      // Ajouter une introduction/résumé pour la pièce
       if (roomImgs.length > 0) {
-        // Loop through ALL images for this room
-        roomImgs.forEach((img, imgIndex) => {
-          // Check if we need a new page before adding the image
-          // Increased height requirements for larger images
-          if (currentY + 330 > pageEndY) { // Increased from 230 to 330 for larger images
-            currentPage++;
-            currentY = pageStartY;
-            
-            // Add a disclaimer for the new page
-            newItems.push({
-              id: `disclaimer-page-${currentPage}`,
-              type: 'disclaimer',
-              content: 'Disclaimer: Inventory items are in used condition. Exclusive Living Mediaçao Imobiliaria does not hold any responsibility for the condition the articles sold and their condition at the time of deeds.',
-              position: { x: 50, y: 1030 },
-              size: { width: 700, height: 40 },
-              zIndex: 5,
-              page: currentPage
-            });
-          }
-          
-          // Add the image with increased size
-          newItems.push({
-            id: `room-image-${room.id}-${imgIndex}`,
-            type: 'image',
-            content: `Image from ${room.name}`,
-            position: { x: 50, y: currentY },
-            size: { width: 400, height: 300 }, // Increased size from 300x200 to 400x300
-            zIndex: 5,
-            imageUrl: img.url,
-            description: `${room.name} - Item ${imgIndex + 1}`,
-            page: currentPage
-          });
-          
-          // Add a description to the right of the image
-          newItems.push({
-            id: `room-desc-${room.id}-${imgIndex}`,
-            type: 'text',
-            content: `This image shows an essential aspect of ${room.name}. Items are sold as is, as shown in this photo.`,
-            position: { x: 470, y: currentY + 20 }, // Adjusted position to account for larger image
-            size: { width: 280, height: 160 }, // Adjusted width to fit next to larger image
-            zIndex: 5,
-            editable: true,
-            page: currentPage
-          });
-          
-          currentY += 330; // Increased space for larger image + description
-        });
-      } else {
-        // No images message
         newItems.push({
-          id: `room-no-images-${room.id}`,
+          id: `room-intro-${room.id}`,
           type: 'text',
-          content: `No images available for ${room.name}.`,
+          content: `This room contains ${roomImgs.length} cataloged images. All images are sold as shown and in their current condition.`,
           position: { x: 50, y: currentY },
           size: { width: 700, height: 40 },
           zIndex: 5,
           editable: true,
           page: currentPage
-        });
-        
-        currentY += 40;
-      }
-      
-      // Add spacing between rooms
-      currentY += roomSpacing;
-    });
-    
-    // Add all new items to canvas
-    setCanvasItems(prev => [...prev, ...newItems]);
-    
-    // Update the total number of pages
-    setTotalPages(Math.max(currentPage, totalPages));
-    
-    // Make sure first page is active to see results
-    setCurrentPage(1);
-  };
+        })
 
+        currentY += 60
+
+        // Traiter chaque image de la pièce
+        roomImgs.forEach((img, imgIndex) => {
+          // Vérifier s'il faut passer à une nouvelle page
+          if (currentY + 410 > pageEndY) {
+            currentPage++
+            currentY = pageStartY / 2
+
+            // Ajouter en-tête pour la nouvelle page
+            newItems.push({
+              id: `header-page-${currentPage}`,
+              type: 'text',
+              content: 'Inventário em estado de usado',
+              position: { x: 0, y: 0 },
+              size: { width: 800, height: 25 },
+              zIndex: 20,
+              page: currentPage,
+              editable: true,
+              isHeader: true
+            })
+
+            // Ajouter le logo (plus petit) sur la nouvelle page
+            newItems.push({
+              id: `logo-page-${currentPage}`,
+              type: 'logo',
+              content: 'logo',
+              position: { x: 680, y: 30 },
+              size: { width: 100, height: 50 },
+              zIndex: 15,
+              page: currentPage
+            })
+
+            // Ajouter un en-tête de pièce pour rappel sur la nouvelle page
+            newItems.push({
+              id: `room-header-${room.id}-${imgIndex}`,
+              type: 'text',
+              content: `${room.name} (continued)`,
+              position: { x: 300, y: currentY },
+              size: { width: 800, height: 30 },
+              zIndex: 5,
+              page: currentPage,
+              editable: true,
+              isRoomHeader: true
+            })
+
+            currentY += 50
+
+            // Ajouter un disclaimer pour la nouvelle page
+            newItems.push({
+              id: `disclaimer-page-${currentPage}`,
+              type: 'disclaimer',
+              content:
+                'Disclaimer: Inventory items are in used condition. Exclusive Living Mediaçao Imobiliaria does not hold any responsibility for the condition the articles sold and their condition at the time of deeds.',
+              position: { x: 50, y: 1030 },
+              size: { width: 700, height: 40 },
+              zIndex: 5,
+              page: currentPage
+            })
+          }
+
+          // Ajouter l'image avec une numérotation claire
+          newItems.push({
+            id: `room-image-${room.id}-${imgIndex}`,
+            type: 'image',
+            content: `${room.name} - Image ${imgIndex + 1}/${roomImgs.length}`,
+            position: { x: 0, y: currentY },
+            size: { width: 550, height: 390 },
+            zIndex: 5,
+            imageUrl: img.url,
+            page: currentPage,
+            description: `${room.name} - Image ${imgIndex + 1}/${
+              roomImgs.length
+            }`
+          })
+
+          // Ajouter une description à droite de l'image (plus détaillée)
+          const defaultDesc =
+            img.description ||
+            `This image shows essential items in the ${room.name}. All furniture and fixtures shown are included in the inventory and are sold in their current condition. The buyer accepts the items as shown in this photograph.`
+
+          newItems.push({
+            id: `room-desc-${room.id}-${imgIndex}`,
+            type: 'text',
+            content: defaultDesc,
+            position: { x: 560, y: currentY + 50 },
+            size: { width: 220, height: 240 },
+            zIndex: 5,
+            editable: true,
+            page: currentPage
+          })
+
+          // Ajouter un numéro pour cette image
+          newItems.push({
+            id: `page-number-${room.id}-${imgIndex}`,
+            type: 'text',
+            content: ``,
+            position: { x: 560, y: currentY + 20 },
+            size: { width: 220, height: 30 },
+            zIndex: 5,
+            editable: true,
+            page: currentPage
+          })
+
+          // Augmenter la position Y pour la prochaine image
+          currentY += 410 + 30
+        })
+      } else {
+        // Message pour les pièces sans images
+        newItems.push({
+          id: `room-no-images-${room.id}`,
+          type: 'text',
+          content: `No images available for ${room.name}.`,
+          position: { x: 300, y: currentY },
+          size: { width: 700, height: 40 },
+          zIndex: 5,
+          editable: true,
+          page: currentPage
+        })
+
+        currentY += 50
+      }
+
+      // Ajouter un espacement entre les pièces
+      currentY += 60
+    })
+
+    // Ajouter tous les nouveaux éléments au canvas
+    setCanvasItems(prev => [...prev, ...newItems])
+
+    // Mettre à jour le nombre total de pages
+    setTotalPages(Math.max(currentPage, totalPages))
+
+    // S'assurer que la première page est active pour voir les résultats
+    setCurrentPage(1)
+  }
   const getItemsForCurrentPage = () => {
     return canvasItems.filter(item => {
-      // Éléments des autres pages (avec leur propriété 'page' définie)
+      // Éléments explicitement associés à la page courante
       if (item.page === currentPage) {
-        return true;
+        return true
       }
-      
-      // Page 1 uniquement: titre principal, image de propriété, info de propriété
+
+      // Éléments standards de la page 1 (si on est sur la page 1)
       if (currentPage === 1) {
         if (
           item.id === 'title' ||
@@ -388,41 +595,46 @@ export default function PDFEditorPage ({
           item.id === 'reference-number' ||
           item.id === 'property-address' ||
           item.id === 'inventory-info-group' ||
-          item.id === 'disclaimer'
+          item.id === 'disclaimer' ||
+          item.id.startsWith('cover-')
         ) {
-          return true;
+          return true
         }
       }
-      
-      // Disclaimer pour les pages > 1 (le disclaimer principal est déjà géré pour page 1)
+
+      // Disclaimer pour les pages > 1
       if (currentPage > 1 && item.id === 'disclaimer') {
-        return true;
+        return true
       }
-      
-      // Pour les éléments manuellement ajoutés sans propriété 'page'
-      // qui ne sont pas des éléments standards ou générés par le système
-      if (item.page === undefined && 
-          !item.id.includes('room-') && 
-          !item.id.includes('attractive-title-') &&
-          !item.id.includes('disclaimer-page-') &&
-          item.id !== 'title' &&
-          item.id !== 'property-image' &&
-          item.id !== 'reference-number' &&
-          item.id !== 'property-address' &&
-          item.id !== 'inventory-info-group') {
-        return true;
+
+      // Éléments ajoutés manuellement sans page spécifiée et qui ne sont pas des éléments générés
+      if (
+        item.page === undefined &&
+        !item.id.includes('room-') &&
+        !item.id.includes('attractive-title-') &&
+        !item.id.includes('disclaimer-page-') &&
+        !item.id.includes('cover-') &&
+        !item.id.includes('page-number-') &&
+        !item.id.includes('summary-') &&
+        item.id !== 'title' &&
+        item.id !== 'property-image' &&
+        item.id !== 'reference-number' &&
+        item.id !== 'property-address' &&
+        item.id !== 'inventory-info-group'
+      ) {
+        return true
       }
-      
-      return false;
-    });
-  };
+
+      return false
+    })
+  }
 
   const toggleSection = (section: SectionKey) => {
     setSectionsOpen(prev => ({
       ...prev,
       [section]: !prev[section]
-    }));
-  };
+    }))
+  }
 
   const handleDrag = (e: React.MouseEvent) => {
     if (!activeDrag || !canvasRef.current) return
@@ -674,178 +886,237 @@ export default function PDFEditorPage ({
     setEditText('')
   }
 
-// Fonction d'exportation PDF complètement revue
-const generatePDF = async () => {
-  // Sauvegarder la page actuelle
-  const currentPageBackup = currentPage;
-  
-  // Créer un conteneur d'impression visible
-  const printContainer = document.createElement('div');
-  printContainer.id = 'print-container';
-  printContainer.style.position = 'fixed';
-  printContainer.style.top = '0';
-  printContainer.style.left = '0';
-  printContainer.style.width = '100%';
-  printContainer.style.height = '100%';
-  printContainer.style.zIndex = '9999';
-  printContainer.style.backgroundColor = 'white';
-  printContainer.style.overflow = 'auto';
-  document.body.appendChild(printContainer);
-  
-  // Ajouter un message de chargement
-  const loadingMessage = document.createElement('div');
-  loadingMessage.style.position = 'fixed';
-  loadingMessage.style.top = '50%';
-  loadingMessage.style.left = '50%';
-  loadingMessage.style.transform = 'translate(-50%, -50%)';
-  loadingMessage.style.padding = '20px';
-  loadingMessage.style.background = 'rgba(0,0,0,0.7)';
-  loadingMessage.style.color = 'white';
-  loadingMessage.style.borderRadius = '10px';
-  loadingMessage.style.fontSize = '18px';
-  loadingMessage.style.zIndex = '10000';
-  loadingMessage.innerText = 'Préparation du PDF...';
-  document.body.appendChild(loadingMessage);
-  
-  try {
-    // Fonction qui rend une page et renvoie son HTML
-    const renderPage = async (pageNum: number): Promise<HTMLElement | null> => {
-      return new Promise(resolve => {
-        // Passer à la page à capturer
-        setCurrentPage(pageNum);
-        
-        // Attendre le rendu complet
-        setTimeout(() => {
-          if (canvasRef.current) {
-            // Créer une copie du contenu
-            const pageClone =canvasRef.current.cloneNode(true) as HTMLElement;
-            
-            // Supprimer les contrôles d'édition
-            pageClone.querySelectorAll('.opacity-0, button, .group-hover\\:opacity-100').forEach(el => {
-              if (el.parentNode) {
-                el.parentNode.removeChild(el);
-              }
-            });
-            
-            resolve(pageClone);
-          } else {
-            resolve(null);
-          }
-        }, 300); // Délai suffisant pour le rendu
-      });
-    };
-    
-    // Préparer toutes les pages séquentiellement et les ajouter au conteneur
-    for (let i = 1; i <= totalPages; i++) {
-      const pageContent = await renderPage(i);
-      
-      if (pageContent) {
-        const pageWrapper = document.createElement('div');
-        pageWrapper.style.width = '800px';
-        pageWrapper.style.height = '1100px';
-        pageWrapper.style.margin = '0 auto 20px auto';
-        pageWrapper.style.position = 'relative'; 
-        pageWrapper.style.pageBreakAfter = 'always';
-        pageWrapper.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
-        pageWrapper.style.backgroundColor = 'white';
-        
-        // Ajouter un numéro de page
-        const pageNumber = document.createElement('div');
-        pageNumber.style.position = 'absolute';
-        pageNumber.style.bottom = '10px';
-        pageNumber.style.right = '10px';
-        pageNumber.style.fontSize = '12px';
-        pageNumber.style.color = '#666';
-        pageNumber.innerText = `Page ${i} / ${totalPages}`;
-        
-        pageWrapper.appendChild(pageContent);
-        pageWrapper.appendChild(pageNumber);
-        printContainer.appendChild(pageWrapper);
-        
-        // Mettre à jour le message de chargement
-        loadingMessage.innerText = `Préparation du PDF... (${i}/${totalPages})`;
+  // Fonction d'exportation PDF complètement revue
+  const generatePDF = async () => {
+    // Sauvegarder la page actuelle
+    const currentPageBackup = currentPage
+
+    // Créer un conteneur d'impression visible
+    const printContainer = document.createElement('div')
+    printContainer.id = 'print-container'
+    printContainer.style.position = 'fixed'
+    printContainer.style.top = '0'
+    printContainer.style.left = '0'
+    printContainer.style.width = '100%'
+    printContainer.style.height = '100%'
+    printContainer.style.zIndex = '9999'
+    printContainer.style.backgroundColor = 'white'
+    printContainer.style.overflow = 'auto'
+    document.body.appendChild(printContainer)
+
+    // Ajouter un message de chargement
+    const loadingMessage = document.createElement('div')
+    loadingMessage.style.position = 'fixed'
+    loadingMessage.style.top = '50%'
+    loadingMessage.style.left = '50%'
+    loadingMessage.style.transform = 'translate(-50%, -50%)'
+    loadingMessage.style.padding = '20px'
+    loadingMessage.style.background = 'rgba(0,0,0,0.7)'
+    loadingMessage.style.color = 'white'
+    loadingMessage.style.borderRadius = '10px'
+    loadingMessage.style.fontSize = '18px'
+    loadingMessage.style.zIndex = '10000'
+    loadingMessage.innerText = 'Préparation du PDF...'
+    document.body.appendChild(loadingMessage)
+
+    try {
+      // Fonction qui rend une page et renvoie son HTML
+      const renderPage = async (
+        pageNum: number
+      ): Promise<HTMLElement | null> => {
+        return new Promise(resolve => {
+          // Passer à la page à capturer
+          setCurrentPage(pageNum)
+
+          // Attendre le rendu complet
+          setTimeout(() => {
+            if (canvasRef.current) {
+              // Créer une copie du contenu
+              const pageClone = canvasRef.current.cloneNode(true) as HTMLElement
+
+              // Supprimer les contrôles d'édition
+              pageClone
+                .querySelectorAll(
+                  '.opacity-0, button, .group-hover\\:opacity-100'
+                )
+                .forEach(el => {
+                  if (el.parentNode) {
+                    el.parentNode.removeChild(el)
+                  }
+                })
+
+              // Appliquer les styles spécifiques pour l'impression
+              pageClone
+                .querySelectorAll('[data-is-header="true"]')
+                .forEach(el => {
+                  el.classList.add('header-inventario')
+                })
+
+              // Appliquer le style aux en-têtes de pièce
+              pageClone
+                .querySelectorAll('[data-is-room-header="true"]')
+                .forEach(el => {
+                  el.setAttribute(
+                    'style',
+                    'background-color: white !important; color: black !important; border-top: 2px solid #F0CA44 !important; border-bottom: 2px solid #F0CA44 !important; text-align: center !important; padding: 12px !important; width: 100% !important; font-size: 18px !important; font-weight: bold !important;'
+                  )
+                })
+
+              resolve(pageClone)
+            } else {
+              resolve(null)
+            }
+          }, 300) // Délai suffisant pour le rendu
+        })
       }
-    }
-    
-    // Supprimer le message de chargement
-    document.body.removeChild(loadingMessage);
-    
-    // Ajouter les styles d'impression
-    const printStyle = document.createElement('style');
-    printStyle.id = 'print-style';
-    printStyle.textContent = `
+
+      // Préparer toutes les pages séquentiellement et les ajouter au conteneur
+      for (let i = 1; i <= totalPages; i++) {
+        const pageContent = await renderPage(i)
+
+        if (pageContent) {
+          const pageWrapper = document.createElement('div')
+          pageWrapper.style.width = '800px'
+          pageWrapper.style.height = '1100px'
+          pageWrapper.style.margin = '0 auto 20px auto'
+          pageWrapper.style.position = 'relative'
+          pageWrapper.style.pageBreakAfter = 'always'
+          pageWrapper.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)'
+          pageWrapper.style.backgroundColor = 'white'
+
+          // Ajouter un numéro de page
+          const pageNumber = document.createElement('div')
+          pageNumber.style.position = 'absolute'
+          pageNumber.style.bottom = '10px'
+          pageNumber.style.right = '10px'
+          pageNumber.style.fontSize = '12px'
+          pageNumber.style.color = '#666'
+          pageNumber.innerText = `Page ${i} / ${totalPages}`
+
+          pageWrapper.appendChild(pageContent)
+          pageWrapper.appendChild(pageNumber)
+          printContainer.appendChild(pageWrapper)
+
+          // Mettre à jour le message de chargement
+          loadingMessage.innerText = `Préparation du PDF... (${i}/${totalPages})`
+        }
+      }
+
+      // Supprimer le message de chargement
+      document.body.removeChild(loadingMessage)
+
+      // Ajouter les styles d'impression
+      const printStyle = document.createElement('style')
+      printStyle.id = 'print-style'
+      printStyle.textContent = `
       @media print {
-        body * {
-          visibility: hidden;
-        }
-        #print-container, #print-container * {
-          visibility: visible;
-        }
-        #print-container {
-          position: absolute !important;
-          left: 0;
-          top: 0;
-          overflow: visible !important;
-          height: auto !important;
-        }
-        @page {
-          size: A4 portrait;
-          margin: 0;
-        }
-        .page-break {
-          page-break-after: always;
-          height: 0;
-          margin: 0;
-        }
-      }
-    `;
-    document.head.appendChild(printStyle);
-    
-    // Lancer l'impression avec un léger délai pour s'assurer que tout est chargé
-    setTimeout(() => {
-      window.print();
-      
-      // Nettoyer après l'impression
-      setTimeout(() => {
-        document.body.removeChild(printContainer);
-        document.head.removeChild(printStyle);
-        setCurrentPage(currentPageBackup);
-      }, 1000);
-    }, 500);
-    
-  } catch (error) {
-    
-    // En cas d'erreur, nettoyer et revenir à l'état initial
-    if (document.body.contains(loadingMessage)) {
-      document.body.removeChild(loadingMessage);
-    }
-    
-    // Créer un message d'erreur
-    const errorMessage = document.createElement('div');
-    errorMessage.style.position = 'fixed';
-    errorMessage.style.top = '50%';
-    errorMessage.style.left = '50%';
-    errorMessage.style.transform = 'translate(-50%, -50%)';
-    errorMessage.style.padding = '20px';
-    errorMessage.style.background = 'rgba(220,53,69,0.9)';
-    errorMessage.style.color = 'white';
-    errorMessage.style.borderRadius = '10px';
-    errorMessage.style.fontSize = '18px';
-    errorMessage.style.zIndex = '10000';
-    errorMessage.innerText = 'Erreur lors de la création du PDF. Veuillez réessayer.';
-    document.body.appendChild(errorMessage);
-    
-    // Supprimer le message d'erreur après quelques secondes
-    setTimeout(() => {
-      if (document.body.contains(errorMessage)) {
-        document.body.removeChild(errorMessage);
-      }
-      
-      // Revenir à la page d'origine
-      setCurrentPage(currentPageBackup);
-    }, 3000);
+  body * {
+    visibility: hidden;
   }
-};
+  #print-container, #print-container * {
+    visibility: visible;
+  }
+  #print-container {
+    position: absolute !important;
+    left: 0;
+    top: 0;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  .page-break {
+    page-break-after: always;
+    height: 0;
+    margin: 0;
+  }
+
+  /* Styles spécifiques pour l'impression */
+  .header-inventario {
+    background-color: #B8A150 !important;
+    color: white !important;
+    width: 100% !important;
+    text-align: center !important;
+    padding: 8px 0 !important;
+    font-weight: 500 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  [data-is-room-header="true"] {
+    padding: 12px !important;
+    background-color: white !important;
+    color: black !important;
+    font-weight: bold !important;
+    font-size: 18px !important;
+    text-align: center !important;
+    border-top: 2px solid #F0CA44 !important;
+    border-bottom: 2px solid #F0CA44 !important;
+    width: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  /* Ensures all background-colors and colors print properly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+ 
+}
+    `
+      document.head.appendChild(printStyle)
+
+      // Lancer l'impression avec un léger délai pour s'assurer que tout est chargé
+      setTimeout(() => {
+        window.print()
+
+        // Nettoyer après l'impression
+        setTimeout(() => {
+          document.body.removeChild(printContainer)
+          document.head.removeChild(printStyle)
+          setCurrentPage(currentPageBackup)
+        }, 1000)
+      }, 500)
+    } catch (error) {
+      // En cas d'erreur, nettoyer et revenir à l'état initial
+      if (document.body.contains(loadingMessage)) {
+        document.body.removeChild(loadingMessage)
+      }
+
+      // Créer un message d'erreur
+      const errorMessage = document.createElement('div')
+      errorMessage.style.position = 'fixed'
+      errorMessage.style.top = '50%'
+      errorMessage.style.left = '50%'
+      errorMessage.style.transform = 'translate(-50%, -50%)'
+      errorMessage.style.padding = '20px'
+      errorMessage.style.background = 'rgba(220,53,69,0.9)'
+      errorMessage.style.color = 'white'
+      errorMessage.style.borderRadius = '10px'
+      errorMessage.style.fontSize = '18px'
+      errorMessage.style.zIndex = '10000'
+      errorMessage.innerText =
+        'Erreur lors de la création du PDF. Veuillez réessayer.'
+      document.body.appendChild(errorMessage)
+
+      // Supprimer le message d'erreur après quelques secondes
+      setTimeout(() => {
+        if (document.body.contains(errorMessage)) {
+          document.body.removeChild(errorMessage)
+        }
+
+        // Revenir à la page d'origine
+        setCurrentPage(currentPageBackup)
+      }, 3000)
+    }
+  }
 
   const addNewPage = () => {
     setTotalPages(prev => prev + 1)
@@ -858,8 +1129,8 @@ const generatePDF = async () => {
   }
 
   const getPropertyMainImage = () => {
-    if (property?.mainImage) {
-      return property.mainImage
+    if (property?.image) {
+      return property.image
     }
 
     for (const roomId in roomImages) {
@@ -1231,8 +1502,6 @@ const generatePDF = async () => {
             </div>
           )}
         </div>
-
-        
       </div>
 
       {/* Right side - Canvas and toolbar */}
@@ -1316,37 +1585,37 @@ const generatePDF = async () => {
           </div>
 
           <button
-  onClick={addRoomSectionsToCanvas}
-  className="bg-[#D4A017] text-[#1E1E1E] px-4 py-1.5 rounded hover:bg-[#E6B52C] font-medium flex items-center mr-4"
->
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-5 w-5 mr-1"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-    />
-  </svg>
-  Auto-Generate Rooms
-</button>
+            onClick={addRoomSectionsToCanvas}
+            className='bg-[#D4A017] text-[#1E1E1E] px-4 py-1.5 rounded hover:bg-[#E6B52C] font-medium flex items-center mr-4'
+          >
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-5 w-5 mr-1'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z'
+              />
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z'
+              />
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z'
+              />
+            </svg>
+            Auto-Generate Rooms
+          </button>
 
           <div>
             <button
@@ -1412,72 +1681,111 @@ const generatePDF = async () => {
                 {/* Different rendering based on item type */}
                 {item.type === 'text' && (
                   <div className='relative h-full group'>
-                    {editingText === item.id ? (
-                      <div className='absolute inset-0'>
-                        <textarea
-                          value={editText}
-                          onChange={e => setEditText(e.target.value)}
-                          onBlur={saveEditedText}
-                          className='w-full h-full p-2 border border-[#D4A017] resize-none bg-white text-black'
-                          autoFocus
-                        />
+                    {item.isHeader ? (
+                      // Style pour l'en-tête "Inventário em estado de usado"
+                      <div
+                        className='w-full text-center p-2 bg-[#B8A150] text-white font-medium'
+                        style={{ backgroundColor: '#B8A150', color: 'white' }} // Ajout de styles inline pour l'impression
+                        data-is-header='true'
+                      >
+                        {editingText === item.id ? (
+                          <input
+                            value={editText}
+                            onChange={e => setEditText(e.target.value)}
+                            onBlur={() => {
+                              setCanvasItems(prev =>
+                                prev.map(prevItem =>
+                                  prevItem.id === item.id
+                                    ? { ...prevItem, content: editText }
+                                    : prevItem
+                                )
+                              )
+                              setEditingText(null)
+                            }}
+                            className='w-full text-center bg-[#B8A150] text-white p-1 border border-white'
+                            autoFocus
+                          />
+                        ) : (
+                          <div
+                            onClick={e => {
+                              e.stopPropagation()
+                              startEditingText(item.id)
+                              setEditText(item.content)
+                            }}
+                          >
+                            {item.content}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <>
-                        <div className='p-2 text-black'>{item.content}</div>
-                        {item.editable && (
-                          <div className='absolute top-0 right-0 opacity-0 group-hover:opacity-100 flex'>
-                            <button
-                              onClick={e => {
-                                e.stopPropagation()
-                                startEditingText(item.id)
-                              }}
-                              className='p-1 bg-[#D4A017] text-white rounded-tl-md'
-                            >
-                              <svg
-                                xmlns='http:www.w3.org/2000/svg'
-                                className='h-3 w-3'
-                                fill='none'
-                                viewBox='0 0 24 24'
-                                stroke='currentColor'
-                              >
-                                <path
-                                  strokeLinecap='round'
-                                  strokeLinejoin='round'
-                                  strokeWidth={2}
-                                  d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
-                                />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={e => {
-                                e.stopPropagation()
-                                deleteItem(item.id)
-                              }}
-                              className='p-1 bg-red-600 text-white rounded-tr-md'
-                            >
-                              <svg
-                                xmlns='http:www.w3.org/2000/svg'
-                                className='h-3 w-3'
-                                fill='none'
-                                viewBox='0 0 24 24'
-                                stroke='currentColor'
-                              >
-                                <path
-                                  strokeLinecap='round'
-                                  strokeLinejoin='round'
-                                  strokeWidth={2}
-                                  d='M6 18L18 6M6 6l12 12'
-                                />
-                              </svg>
-                            </button>
+                        {editingText === item.id ? (
+                          <div className='absolute inset-0'>
+                            <textarea
+                              value={editText}
+                              onChange={e => setEditText(e.target.value)}
+                              onBlur={saveEditedText}
+                              className='w-full h-full p-2 border border-[#D4A017] resize-none bg-white text-black'
+                              autoFocus
+                            />
                           </div>
+                        ) : (
+                          <>
+                            <div className='p-2 text-black'>{item.content}</div>
+                            {item.editable && (
+                              <div className='absolute top-0 right-0 opacity-0 group-hover:opacity-100 flex'>
+                                <button
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    startEditingText(item.id)
+                                  }}
+                                  className='p-1 bg-[#D4A017] text-white rounded-tl-md'
+                                >
+                                  <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    className='h-3 w-3'
+                                    fill='none'
+                                    viewBox='0 0 24 24'
+                                    stroke='currentColor'
+                                  >
+                                    <path
+                                      strokeLinecap='round'
+                                      strokeLinejoin='round'
+                                      strokeWidth={2}
+                                      d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
+                                    />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    deleteItem(item.id)
+                                  }}
+                                  className='p-1 bg-red-600 text-white rounded-tr-md'
+                                >
+                                  <svg
+                                    xmlns='http://www.w3.org/2000/svg'
+                                    className='h-3 w-3'
+                                    fill='none'
+                                    viewBox='0 0 24 24'
+                                    stroke='currentColor'
+                                  >
+                                    <path
+                                      strokeLinecap='round'
+                                      strokeLinejoin='round'
+                                      strokeWidth={2}
+                                      d='M6 18L18 6M6 6l12 12'
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     )}
                   </div>
                 )}
-
                 {item.type === 'heading' && (
                   <div className='relative h-full group'>
                     {editingText === item.id ? (
@@ -1492,13 +1800,18 @@ const generatePDF = async () => {
                       </div>
                     ) : (
                       <>
-                        {/* Titre stylisé avec soulignement doré */}
+                        {/* Style amélioré pour le titre principal */}
                         {item.content === 'PROPERTY INVENTORY' ? (
                           <div className='flex flex-col items-center justify-center h-full'>
-                            <div className='text-black text-3xl font-bold text-center'>
+                            <div className='text-black text-4xl font-bold text-center'>
                               {item.content}
                             </div>
-                            <div className='h-1 w-32 bg-[#D4A017] mt-2'></div>
+                            <div className='h-2 w-48 bg-[#D4A017] mt-3'></div>
+                          </div>
+                        ) : item.content === 'Explore Every Room in Detail' ? (
+                          <div className='p-2 text-black text-2xl font-bold text-center'>
+                            {item.content}
+                            <div className='h-1 w-32 bg-[#D4A017] mt-2 mx-auto'></div>
                           </div>
                         ) : (
                           <div className='p-2 text-black text-xl font-bold'>
@@ -1516,7 +1829,7 @@ const generatePDF = async () => {
                               className='p-1 bg-[#D4A017] text-white rounded-tl-md'
                             >
                               <svg
-                                xmlns='http:www.w3.org/2000/svg'
+                                xmlns='http://www.w3.org/2000/svg'
                                 className='h-3 w-3'
                                 fill='none'
                                 viewBox='0 0 24 24'
@@ -1538,7 +1851,7 @@ const generatePDF = async () => {
                               className='p-1 bg-red-600 text-white rounded-tr-md'
                             >
                               <svg
-                                xmlns='http:www.w3.org/2000/svg'
+                                xmlns='http://www.w3.org/2000/svg'
                                 className='h-3 w-3'
                                 fill='none'
                                 viewBox='0 0 24 24'
@@ -1567,7 +1880,8 @@ const generatePDF = async () => {
                             src={item.imageUrl}
                             alt={item.content}
                             fill
-                            className='object-contain'
+                            className='object-cover w-full h-full' // Changé de 'object-contain' à 'object-cover'
+                            style={{ objectPosition: 'left' }} // Aligné à gauche
                           />
                         )}
 
@@ -1627,51 +1941,7 @@ const generatePDF = async () => {
                       )}
                     </div>
                     <div className='absolute top-0 right-0 opacity-0 group-hover:opacity-100 flex'>
-                      <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          startEditingText(item.id)
-                          setEditText(item.description || '')
-                        }}
-                        className='p-1 bg-[#D4A017] text-white rounded-tl-md'
-                      >
-                        <svg
-                          xmlns='http:www.w3.org/2000/svg'
-                          className='h-3 w-3'
-                          fill='none'
-                          viewBox='0 0 24 24'
-                          stroke='currentColor'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={e => {
-                          e.stopPropagation()
-                          deleteItem(item.id)
-                        }}
-                        className='p-1 bg-red-600 text-white rounded-tr-md'
-                      >
-                        <svg
-                          xmlns='http:www.w3.org/2000/svg'
-                          className='h-3 w-3'
-                          fill='none'
-                          viewBox='0 0 24 24'
-                          stroke='currentColor'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M6 18L18 6M6 6l12 12'
-                          />
-                        </svg>
-                      </button>
+                      {/* Boutons de contrôle... */}
                     </div>
 
                     {/* Resize handle */}
@@ -1682,29 +1952,61 @@ const generatePDF = async () => {
                         handleResizeStart(e, item.id)
                       }}
                     >
-                      <svg
-                        xmlns='http:www.w3.org/2000/svg'
-                        className='h-5 w-5 text-white'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M9 5l7 7-7 7'
-                        />
-                      </svg>
+                      {/* Icône resize... */}
                     </div>
                   </div>
                 )}
 
                 {item.type === 'room' && (
                   <div className='relative h-full group'>
-                    <div className='p-2 bg-[#D4A017]/20 border border-[#D4A017] text-black font-medium rounded'>
-                      {item.content}
-                    </div>
+                    {item.isRoomHeader ? (
+                      // Style amélioré pour les en-têtes de pièce
+                      <div
+                        className='p-3 text-black font-bold text-center border-t border-b border-[#F0CA44] w-full text-xl'
+                        style={{
+                          backgroundColor: 'white',
+                          color: 'black',
+                          borderTop: '2px solid #F0CA44',
+                          borderBottom: '2px solid #F0CA44',
+                          fontFamily: 'Arial, sans-serif'
+                        }}
+                        data-is-room-header='true'
+                      >
+                        {editingText === item.id ? (
+                          <input
+                            value={editText}
+                            onChange={e => setEditText(e.target.value)}
+                            onBlur={() => {
+                              setCanvasItems(prev =>
+                                prev.map(prevItem =>
+                                  prevItem.id === item.id
+                                    ? { ...prevItem, content: editText }
+                                    : prevItem
+                                )
+                              )
+                              setEditingText(null)
+                            }}
+                            className='w-full text-center bg-white text-black p-1 border border-[#B8A150] text-xl font-bold'
+                            autoFocus
+                          />
+                        ) : (
+                          <div
+                            onClick={e => {
+                              e.stopPropagation()
+                              startEditingText(item.id)
+                              setEditText(item.content)
+                            }}
+                          >
+                            {item.content}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      // Style standard pour les autres éléments de type 'room'
+                      <div className='p-2 bg-[#D4A017]/20 border border-[#D4A017] text-black font-medium rounded'>
+                        {item.content}
+                      </div>
+                    )}
                     <div className='absolute top-0 right-0 opacity-0 group-hover:opacity-100'>
                       <button
                         onClick={e => {
@@ -1714,7 +2016,7 @@ const generatePDF = async () => {
                         className='p-1 bg-red-600 text-white rounded-tr-md'
                       >
                         <svg
-                          xmlns='http:www.w3.org/2000/svg'
+                          xmlns='http://www.w3.org/2000/svg'
                           className='h-3 w-3'
                           fill='none'
                           viewBox='0 0 24 24'
@@ -1733,170 +2035,78 @@ const generatePDF = async () => {
                 )}
 
                 {item.type === 'property-field' &&
-                  item.content.label === 'Reference Number' && (
-                    <div className='relative h-full group'>
-                      <div className='flex flex-col'>
-                        <div className='text-black font-bold text-lg'>
-                          {editingText === item.id ? (
-                            <input
-                              value={editText}
-                              onChange={e => setEditText(e.target.value)}
-                              onBlur={() => {
-                                setCanvasItems(prev =>
-                                  prev.map(prevItem =>
-                                    prevItem.id === item.id
-                                      ? {
-                                          ...prevItem,
-                                          content: {
-                                            ...prevItem.content,
-                                            value: editText
-                                          }
-                                        }
-                                      : prevItem
-                                  )
-                                )
-                                setEditingText(null)
-                              }}
-                              className='w-full border border-[#D4A017] px-2 py-1 bg-white font-bold text-lg'
-                              autoFocus
-                            />
-                          ) : (
-                            <div>{item.content.value}</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className='absolute top-0 right-0 opacity-0 group-hover:opacity-100 flex'>
-                        <button
-                          onClick={e => {
-                            e.stopPropagation()
-                            setEditingText(item.id)
-                            setEditText(item.content.value)
-                          }}
-                          className='p-1 bg-[#D4A017] text-white rounded-tl-md'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-3 w-3'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={e => {
-                            e.stopPropagation()
-                            deleteItem(item.id)
-                          }}
-                          className='p-1 bg-red-600 text-white rounded-tr-md'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-3 w-3'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M6 18L18 6M6 6l12 12'
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-{item.type === 'property-field' && item.content.label === 'Property Address' && (
-  <div className='relative h-full group'>
-    <div className='flex items-center'>
-      <div className='text-black'>
-        {editingText === item.id ? (
-          <input
-            value={editText}
-            onChange={e => setEditText(e.target.value)}
-            onBlur={() => {
-              setCanvasItems(prev =>
-                prev.map(prevItem =>
-                  prevItem.id === item.id
-                    ? {
-                        ...prevItem,
-                        content: {
-                          ...prevItem.content,
-                          value: editText
+  item.content.label === 'Reference Number' && (
+    <div className='relative h-full group'>
+      <div className='flex flex-col items-center justify-center'> {/* Ajout de 'items-center' pour centrer */}
+        <div className='text-black font-bold text-lg text-center'> {/* Ajout de 'text-center' */}
+          {editingText === item.id ? (
+            <input
+              value={editText}
+              onChange={e => setEditText(e.target.value)}
+              onBlur={() => {
+                setCanvasItems(prev =>
+                  prev.map(prevItem =>
+                    prevItem.id === item.id
+                      ? {
+                          ...prevItem,
+                          content: {
+                            ...prevItem.content,
+                            value: editText
+                          }
                         }
-                      }
-                    : prevItem
+                      : prevItem
+                  )
                 )
-              )
-              setEditingText(null)
-            }}
-            className='border border-[#D4A017] px-2 py-1 bg-white w-full'
-            autoFocus
-          />
-        ) : (
-          <div>{item.content.value}</div>
-        )}
+                setEditingText(null)
+              }}
+              className='w-full border border-[#D4A017] px-2 py-1 bg-white font-bold text-lg text-center'
+              autoFocus
+            />
+          ) : (
+            <div>{item.content.value}</div>
+          )}
+        </div>
       </div>
+      {renderControlButtons(item)}
     </div>
-    <div className='absolute top-0 right-0 opacity-0 group-hover:opacity-100 flex'>
-      <button
-        onClick={e => {
-          e.stopPropagation()
-          setEditingText(item.id)
-          setEditText(item.content.value)
-        }}
-        className='p-1 bg-[#D4A017] text-white rounded-tl-md'
-      >
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          className='h-3 w-3'
-          fill='none'
-          viewBox='0 0 24 24'
-          stroke='currentColor'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeWidth={2}
-            d='M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z'
-          />
-        </svg>
-      </button>
-      <button
-        onClick={e => {
-          e.stopPropagation()
-          deleteItem(item.id)
-        }}
-        className='p-1 bg-red-600 text-white rounded-tr-md'
-      >
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          className='h-3 w-3'
-          fill='none'
-          viewBox='0 0 24 24'
-          stroke='currentColor'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeWidth={2}
-            d='M6 18L18 6M6 6l12 12'
-          />
-        </svg>
-      </button>
-    </div>
-  </div>
-)}
+  )}
 
+                {item.type === 'property-field' &&
+  item.content.label === 'Property Address' && (
+    <div className='relative h-full group'>
+      <div className='flex items-center justify-center'> {/* Ajout de 'justify-center' pour centrer */}
+        <div className='text-black text-center'> {/* Ajout de 'text-center' */}
+          {editingText === item.id ? (
+            <input
+              value={editText}
+              onChange={e => setEditText(e.target.value)}
+              onBlur={() => {
+                setCanvasItems(prev =>
+                  prev.map(prevItem =>
+                    prevItem.id === item.id
+                      ? {
+                          ...prevItem,
+                          content: {
+                            ...prevItem.content,
+                            value: editText
+                          }
+                        }
+                      : prevItem
+                  )
+                )
+                setEditingText(null)
+              }}
+              className='border border-[#D4A017] px-2 py-1 bg-white w-full text-center'
+              autoFocus
+            />
+          ) : (
+            <div>{item.content.value}</div>
+          )}
+        </div>
+      </div>
+      {renderControlButtons(item)}
+    </div>
+  )}
 
                 {item.type === 'property-field' &&
                   item.content.label !== 'Reference Number' &&
@@ -2052,10 +2262,11 @@ const generatePDF = async () => {
                             <span className='font-medium'>
                               Owner Inventory List:
                             </span>{' '}
-                            {item.content.owners &&
-                            item.content.owners.length > 0
-                              ? item.content.owners.join(', ')
-                              : 'Not specified'}
+                            {typeof item.content.owners === 'string' 
+              ? item.content.owners 
+              : (Array.isArray(item.content.owners) && item.content.owners.length > 0)
+                ? item.content.owners.join(', ')
+                : 'Not specified'}
                           </div>
                         </div>
                       </div>
@@ -2087,14 +2298,23 @@ const generatePDF = async () => {
                   </div>
                 )}
                 {item.type === 'logo' && (
-                  <div className='relative h-full group'>
-                    <div className='w-full h-full flex items-center justify-center'>
+                  <div className='relative h-full w-full group'>
+                    <div className='w-full h-full overflow-hidden'>
+                      {' '}
+                      {/* Ajout de overflow-hidden pour éviter tout débordement */}
                       <Image
-                        src='/images/logo.png'
+                        src='/images/logoinventory.jpg'
                         alt='Company Logo'
-                        width={100}
-                        height={50}
-                        className='object-contain'
+                        fill={true}
+                        sizes='100%'
+                        priority={true} // Priorité de chargement pour garantir l'affichage rapide
+                        className='object-contain object-right-top' // Alignement en haut à droite
+                        style={{
+                          objectFit: 'contain',
+                          objectPosition: 'right top',
+                          width: '100%',
+                          height: '100%'
+                        }}
                       />
                     </div>
                     <div className='absolute top-0 right-0 opacity-0 group-hover:opacity-100'>
@@ -2106,7 +2326,7 @@ const generatePDF = async () => {
                         className='p-1 bg-red-600 text-white rounded-tr-md'
                       >
                         <svg
-                          xmlns='http:www.w3.org/2000/svg'
+                          xmlns='http://www.w3.org/2000/svg'
                           className='h-3 w-3'
                           fill='none'
                           viewBox='0 0 24 24'

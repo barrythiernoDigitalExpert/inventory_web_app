@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { authService } from '@/lib/services/authService';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 // Profile data interface
 interface ProfileData {
@@ -15,12 +15,12 @@ interface ProfileData {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   
   // Form state
   const [name, setName] = useState('');
@@ -36,22 +36,17 @@ export default function ProfilePage() {
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  // Set isClient to true when component mounts (client-side only)
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   // Check authentication and fetch profile data when component mounts
   useEffect(() => {
-    if (isClient) {
-      if (!authService.isAuthenticated()) {
-        router.push('/login');
-        return;
-      }
-      
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
+    
+    if (status === 'authenticated') {
       fetchProfileData();
     }
-  }, [isClient, router]);
+  }, [status, router]);
 
   // Fetch complete profile data from API
   const fetchProfileData = async () => {
@@ -60,8 +55,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/profile', {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authService.getToken()}`
+          'Content-Type': 'application/json'
         }
       });
 
@@ -162,8 +156,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/profile', {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authService.getToken()}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name, email })
       });
@@ -200,8 +193,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/profile/change-password', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authService.getToken()}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           currentPassword,
@@ -253,8 +245,8 @@ export default function ProfilePage() {
     setIsChangingPassword(false);
   };
 
-  // Show loading state while checking client-side auth
-  if (!isClient) {
+  // Show loading state while checking authentication
+  if (status === 'loading') {
     return (
       <div className="container mx-auto p-4">
         <div className="max-w-3xl mx-auto">

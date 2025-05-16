@@ -18,7 +18,6 @@ export default function PropertiesPage () {
   const [propertyAddress, setPropertyAddress] = useState('')
   const [listingPerson, setListingPerson] = useState('')
   const [propertyOwners, setPropertyOwners] = useState('')
-  const [searchType, setSearchType] = useState('reference') // 'reference', 'listing', 'owner'
 
   // States for property addition modal
   const [showAddPropertyModal, setShowAddPropertyModal] = useState(false)
@@ -288,25 +287,19 @@ export default function PropertiesPage () {
           .filter(property => {
             if (searchTerm === '') return true
 
-            switch (searchType) {
-              case 'reference':
-                return (
-                  property.reference &&
-                  property.reference
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-                )
-              case 'listing':
-                return (
-                  property.listingPerson &&
-                  property.listingPerson
-                    .toLowerCase()
-                    .includes(searchTerm.toLowerCase())
-                )
-              
-              default:
-                return true
-            }
+            // Unified search across multiple fields
+            const referenceMatch = property.reference
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase())
+            const addressMatch = property.address
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase())
+            const listingPersonMatch = property.listingPerson
+              ?.toLowerCase()
+              .includes(searchTerm.toLowerCase())
+
+            // Return true if any field matches
+            return referenceMatch || addressMatch || listingPersonMatch
           })
           .sort((a, b) => {
             const getValue = (obj: Property, key: SortableField) => {
@@ -1041,20 +1034,20 @@ export default function PropertiesPage () {
         address: propertyAddress,
         listingPerson: listingPerson,
         rooms: selectedRooms.map(room => {
-          const roomIndex = selectedRooms.findIndex(r => r.code === room.code);
+          const roomIndex = selectedRooms.findIndex(r => r.code === room.code)
           const processedImages = room.images.map((image, imageIndex) => {
-            const key = `${roomIndex}-${imageIndex}`;
+            const key = `${roomIndex}-${imageIndex}`
             return {
               url: image,
               description: imageDescriptions[key] || ''
-            };
-          });
-          
+            }
+          })
+
           return {
             code: room.code,
             name: room.name,
             images: processedImages
-          };
+          }
         })
       }
       console.log(propertyData)
@@ -1264,42 +1257,32 @@ export default function PropertiesPage () {
       {/* Search and filter bar */}
       <div className='bg-gradient-to-r from-[#2D2D2D] to-[#1E1E1E] rounded-lg p-5 shadow-lg mb-6 border border-[#D4A017]/10'>
         <div className='flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4'>
-        <div className='relative flex-grow'>
-  <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
-    <svg
-      className='w-4 h-4 text-[#D4A017]'
-      aria-hidden='true'
-      xmlns='http://www.w3.org/2000/svg'
-      fill='none'
-      viewBox='0 0 20 20'
-    >
-      <path
-        stroke='currentColor'
-        strokeLinecap='round'
-        strokeLinejoin='round'
-        strokeWidth='2'
-        d='m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z'
-      />
-    </svg>
-  </div>
-  <input
-    type='search'
-    className='block w-full p-3 pl-10 text-sm rounded-lg bg-[#1E1E1E] border border-[#D4A017]/20 focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]'
-    placeholder={`Search for a ${searchType}...`}
-    value={searchTerm}
-    onChange={e => setSearchTerm(e.target.value)}
-  />
-  <div className='absolute inset-y-0 right-0 flex items-center pr-2'>
-    <select
-      className='h-7 text-xs bg-[#2D2D2D] border border-[#D4A017]/20 text-[#FFFFFF] rounded-md focus:outline-none focus:border-[#D4A017]'
-      value={searchType}
-      onChange={e => setSearchType(e.target.value)}
-    >
-      <option value='reference'>Reference</option>
-      <option value='listing'>Listing Person</option>
-    </select>
-  </div>
-</div>
+          <div className='relative flex-grow'>
+            <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
+              <svg
+                className='w-4 h-4 text-[#D4A017]'
+                aria-hidden='true'
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 20 20'
+              >
+                <path
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  d='m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z'
+                />
+              </svg>
+            </div>
+            <input
+              type='search'
+              className='block w-full p-3 pl-10 text-sm rounded-lg bg-[#1E1E1E] border border-[#D4A017]/20 focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]'
+              placeholder='Search for reference, address, or listing person...'
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
           <div className='flex space-x-2'>
             <button
               onClick={() => toggleSort('reference')}
@@ -1368,9 +1351,9 @@ export default function PropertiesPage () {
                         {property.address}
                       </p>
                       <p className='text-sm text-[#CCCCCC] mb-1'>
-        <span className='text-[#D4A017]'>Listing: </span>
-        {property.listingPerson}
-      </p>
+                        <span className='text-[#D4A017]'>Listing: </span>
+                        {property.listingPerson}
+                      </p>
                     </div>
                   </div>
                   <div className='flex justify-between items-center'>
@@ -1520,8 +1503,8 @@ export default function PropertiesPage () {
                         {property.reference}
                       </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-[#CCCCCC]'>
-  {property.listingPerson}
-</td>
+                        {property.listingPerson}
+                      </td>
                       <td className='px-6 py-4 whitespace-nowrap text-sm text-[#CCCCCC]'>
                         {new Date(property.createdAt).toLocaleDateString()}
                       </td>
@@ -1768,34 +1751,32 @@ export default function PropertiesPage () {
                     </p>
                   </div>
                   {/* Address */}
-<div className='mb-4'>
-  <label className='block text-[#FFFFFF] mb-2 font-medium'>
-    Property Address
-  </label>
-  <input
-    type='text'
-    value={propertyAddress}
-    onChange={e => setPropertyAddress(e.target.value)}
-    className='w-full p-2 rounded-md bg-[#2D2D2D] border border-[#2D2D2D] focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]'
-    placeholder='123 Main Street, City'
-  />
-</div>
+                  <div className='mb-4'>
+                    <label className='block text-[#FFFFFF] mb-2 font-medium'>
+                      Property Address
+                    </label>
+                    <input
+                      type='text'
+                      value={propertyAddress}
+                      onChange={e => setPropertyAddress(e.target.value)}
+                      className='w-full p-2 rounded-md bg-[#2D2D2D] border border-[#2D2D2D] focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]'
+                      placeholder='123 Main Street, City'
+                    />
+                  </div>
 
-{/* Listing Person */}
-<div className='mb-4'>
-  <label className='block text-[#FFFFFF] mb-2 font-medium'>
-    Listing Person
-  </label>
-  <input
-    type='text'
-    value={listingPerson}
-    onChange={e => setListingPerson(e.target.value)}
-    className='w-full p-2 rounded-md bg-[#2D2D2D] border border-[#2D2D2D] focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]'
-    placeholder='John Doe'
-  />
-</div>
-
-
+                  {/* Listing Person */}
+                  <div className='mb-4'>
+                    <label className='block text-[#FFFFFF] mb-2 font-medium'>
+                      Listing Person
+                    </label>
+                    <input
+                      type='text'
+                      value={listingPerson}
+                      onChange={e => setListingPerson(e.target.value)}
+                      className='w-full p-2 rounded-md bg-[#2D2D2D] border border-[#2D2D2D] focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]'
+                      placeholder='John Doe'
+                    />
+                  </div>
                 </div>
 
                 {/* Navigation buttons */}
@@ -1812,10 +1793,16 @@ export default function PropertiesPage () {
                         setNotification({
                           show: true,
                           type: 'error',
-                          message: 'This reference already exists. Please choose another one.'
+                          message:
+                            'This reference already exists. Please choose another one.'
                         })
                         setTimeout(
-                          () => setNotification({ show: false, type: '', message: '' }),
+                          () =>
+                            setNotification({
+                              show: false,
+                              type: '',
+                              message: ''
+                            }),
                           3000
                         )
                       } else if (!propertyAddress || !listingPerson) {
@@ -1825,16 +1812,29 @@ export default function PropertiesPage () {
                           message: 'Please fill in all required fields'
                         })
                         setTimeout(
-                          () => setNotification({ show: false, type: '', message: '' }),
+                          () =>
+                            setNotification({
+                              show: false,
+                              type: '',
+                              message: ''
+                            }),
                           3000
                         )
                       } else {
                         setCurrentStep(2)
                       }
                     }}
-                    disabled={!uploadedPropertyImage || !propertyRef|| !propertyAddress || !listingPerson}
+                    disabled={
+                      !uploadedPropertyImage ||
+                      !propertyRef ||
+                      !propertyAddress ||
+                      !listingPerson
+                    }
                     className={`px-4 py-2 rounded-md ${
-                      !uploadedPropertyImage || !propertyRef || !propertyAddress || !listingPerson
+                      !uploadedPropertyImage ||
+                      !propertyRef ||
+                      !propertyAddress ||
+                      !listingPerson
                         ? 'bg-[#2D2D2D] text-[#CCCCCC] cursor-not-allowed'
                         : 'bg-[#D4A017] text-[#1E1E1E] hover:bg-[#B38A13]'
                     }`}

@@ -97,14 +97,7 @@ export const Navigation = () => {
                   >
                     Profile
                   </Link>
-                  <Link 
-                    href="/settings" 
-                    className="block px-4 py-2 text-sm text-neutral-gray hover:bg-secondary-dark hover:text-white"
-                    role="menuitem"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    Settings
-                  </Link>
+                  
                   <button
                     className="block w-full text-left px-4 py-2 text-sm text-neutral-gray hover:bg-secondary-dark hover:text-white"
                     role="menuitem"

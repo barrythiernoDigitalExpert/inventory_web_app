@@ -11,6 +11,7 @@ import {
   createUser,
   updateUserRole,
   resetUserPassword,
+  toggleUserActiveStatus,
   User
 } from '@/lib/services/userService'
 
@@ -22,8 +23,7 @@ export default function UsersPage() {
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [sortOrder, setSortOrder] = useState('asc')
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'role' | 'createdAt'>('name')
-  const [searchType, setSearchType] = useState<'name' | 'email' | 'role'>('name')
-  
+const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')  
   // Add user modal state
   const [showAddUserModal, setShowAddUserModal] = useState(false)
   const [newUserName, setNewUserName] = useState('')
@@ -37,6 +37,30 @@ export default function UsersPage() {
     type: '',
     message: ''
   })
+
+  const handleToggleActiveStatus = async (userId: string, currentStatus: boolean) => {
+    try {
+      setIsLoading(true)
+      const newStatus = !currentStatus
+      const result = await toggleUserActiveStatus(userId, newStatus)
+      
+      if (result) {
+        // Update local state
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId ? { ...user, isActive: newStatus } : user
+          )
+        )
+        
+        toast.success(`User ${newStatus ? 'activated' : 'deactivated'} successfully`)
+      }
+    } catch (error) {
+      console.error('Error updating user status:', error)
+      toast.error('Failed to update user status')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const router = useRouter()
 
@@ -60,38 +84,36 @@ export default function UsersPage() {
 
   // Filter and sort users
   const filteredAndSortedUsers =
-    users.length > 0
-      ? [...users]
-          .filter(user => {
-            if (searchTerm === '') return true
+  users.length > 0
+    ? [...users]
+        .filter(user => {
+          // Filtre par statut (actif/inactif)
+          if (statusFilter === 'active' && !user.isActive) return false;
+          if (statusFilter === 'inactive' && user.isActive) return false;
 
-            switch (searchType) {
-              case 'name':
-                return user.name.toLowerCase().includes(searchTerm.toLowerCase())
-              case 'email':
-                return user.email.toLowerCase().includes(searchTerm.toLowerCase())
-              case 'role':
-                return user.role.toLowerCase().includes(searchTerm.toLowerCase())
-              default:
-                return true
+          // Filtre par terme de recherche (sur nom ou email)
+          if (searchTerm === '') return true;
+          
+          return user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                 user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        })
+        .sort((a, b) => {
+          // La logique de tri reste la même
+          const getValue = (obj: User, key: typeof sortBy) => {
+            if (key === 'createdAt') {
+              return new Date(obj[key]);
             }
-          })
-          .sort((a, b) => {
-            const getValue = (obj: User, key: typeof sortBy) => {
-              if (key === 'createdAt') {
-                return new Date(obj[key])
-              }
-              return obj[key]
-            }
+            return obj[key];
+          };
 
-            const valueA = getValue(a, sortBy)
-            const valueB = getValue(b, sortBy)
+          const valueA = getValue(a, sortBy);
+          const valueB = getValue(b, sortBy);
 
-            if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1
-            if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1
-            return 0
-          })
-      : []
+          if (valueA < valueB) return sortOrder === 'asc' ? -1 : 1;
+          if (valueA > valueB) return sortOrder === 'asc' ? 1 : -1;
+          return 0;
+        })
+    : [];
 
   // Toggle sort function
   const toggleSort = (field: typeof sortBy) => {
@@ -375,78 +397,104 @@ export default function UsersPage() {
 
       {/* Search and filter bar */}
       <div className="bg-gradient-to-r from-[#2D2D2D] to-[#1E1E1E] rounded-lg p-5 shadow-lg mb-6 border border-[#D4A017]/10">
-        <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <svg
-                className="w-4 h-4 text-[#D4A017]"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                />
-              </svg>
-            </div>
-            <input
-              type="search"
-              className="block w-full p-3 pl-10 text-sm rounded-lg bg-[#1E1E1E] border border-[#D4A017]/20 focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]"
-              placeholder={`Search by ${searchType}...`}
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-              <select
-                className="h-7 text-xs bg-[#2D2D2D] border border-[#D4A017]/20 text-[#FFFFFF] rounded-md focus:outline-none focus:border-[#D4A017]"
-                value={searchType}
-                onChange={e => setSearchType(e.target.value as 'name' | 'email' | 'role')}
-              >
-                <option value="name">Name</option>
-                <option value="email">Email</option>
-                <option value="role">Role</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => toggleSort('name')}
-              className={`px-3 py-2 rounded-md text-sm ${
-                sortBy === 'name'
-                  ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
-                  : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-[#D4A017]/20'
-              }`}
-            >
-              Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
-            </button>
-            <button
-              onClick={() => toggleSort('role')}
-              className={`px-3 py-2 rounded-md text-sm ${
-                sortBy === 'role'
-                  ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
-                  : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-[#D4A017]/20'
-              }`}
-            >
-              Role {sortBy === 'role' && (sortOrder === 'asc' ? '↑' : '↓')}
-            </button>
-            <button
-              onClick={() => toggleSort('createdAt')}
-              className={`px-3 py-2 rounded-md text-sm ${
-                sortBy === 'createdAt'
-                  ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
-                  : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-[#D4A017]/20'
-              }`}
-            >
-              Date {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
-            </button>
-          </div>
-        </div>
+  <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+    <div className="relative flex-grow">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <svg
+          className="w-4 h-4 text-[#D4A017]"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 20 20"
+        >
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+          />
+        </svg>
       </div>
+      <input
+        type="search"
+        className="block w-full p-3 pl-10 text-sm rounded-lg bg-[#1E1E1E] border border-[#D4A017]/20 focus:border-[#D4A017] focus:outline-none text-[#FFFFFF]"
+        placeholder="Search by name or email..."
+        value={searchTerm}
+        onChange={e => setSearchTerm(e.target.value)}
+      />
+    </div>
+    
+    {/* Status Filter Buttons */}
+    <div className="flex space-x-2">
+      <button
+        onClick={() => setStatusFilter('all')}
+        className={`px-3 py-2 rounded-md text-sm ${
+          statusFilter === 'all'
+            ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
+            : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-[#D4A017]/20'
+        }`}
+      >
+        All Users
+      </button>
+      <button
+        onClick={() => setStatusFilter('active')}
+        className={`px-3 py-2 rounded-md text-sm ${
+          statusFilter === 'active'
+            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+            : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-green-500/20'
+        }`}
+      >
+        Active Only
+      </button>
+      <button
+        onClick={() => setStatusFilter('inactive')}
+        className={`px-3 py-2 rounded-md text-sm ${
+          statusFilter === 'inactive'
+            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+            : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-red-500/20'
+        }`}
+      >
+        Inactive Only
+      </button>
+    </div>
+  </div>
+  
+  {/* Sort buttons */}
+  <div className="flex space-x-2 mt-4">
+    <span className="text-sm text-[#CCCCCC] mr-2 self-center">Sort by:</span>
+    <button
+      onClick={() => toggleSort('name')}
+      className={`px-3 py-2 rounded-md text-sm ${
+        sortBy === 'name'
+          ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
+          : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-[#D4A017]/20'
+      }`}
+    >
+      Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+    </button>
+    <button
+      onClick={() => toggleSort('role')}
+      className={`px-3 py-2 rounded-md text-sm ${
+        sortBy === 'role'
+          ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
+          : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-[#D4A017]/20'
+      }`}
+    >
+      Role {sortBy === 'role' && (sortOrder === 'asc' ? '↑' : '↓')}
+    </button>
+    <button
+      onClick={() => toggleSort('createdAt')}
+      className={`px-3 py-2 rounded-md text-sm ${
+        sortBy === 'createdAt'
+          ? 'bg-[#D4A017]/20 text-[#D4A017] border border-[#D4A017]/30'
+          : 'bg-[#1E1E1E] text-[#CCCCCC] border border-transparent hover:border-[#D4A017]/20'
+      }`}
+    >
+      Date {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+    </button>
+  </div>
+</div>
 
       {/* Grid View */}
       {viewMode === 'grid' && (
@@ -470,6 +518,11 @@ export default function UsersPage() {
                         <p className="text-sm text-[#CCCCCC]">
                           {user.email}
                         </p>
+                        <div className="mt-1">
+                <span className={`text-xs px-2 py-0.5 rounded-full ${user.isActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                  {user.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
                       </div>
                     </div>
                   </div>
@@ -501,6 +554,28 @@ export default function UsersPage() {
                     <div className="text-xs text-[#CCCCCC]">
                       Created: {new Date(user.createdAt).toLocaleDateString()}
                     </div>
+                     <button
+              onClick={() => handleToggleActiveStatus(user.id, user.isActive)}
+              className={`${user.isActive ? 'text-red-400 hover:text-red-300' : 'text-green-400 hover:text-green-300'} transition-colors`}
+              title={user.isActive ? 'Deactivate User' : 'Activate User'}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d={user.isActive 
+                    ? "M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" 
+                    : "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"}
+                />
+              </svg>
+            </button>
                     <button
                       onClick={() => handlePasswordReset(user.id)}
                       className="text-[#D4A017] hover:text-[#E6B52C] transition-colors"
@@ -570,6 +645,12 @@ export default function UsersPage() {
                     Role
                   </th>
                   <th
+      scope="col"
+      className="px-6 py-3 text-left text-xs font-medium text-[#CCCCCC] uppercase tracking-wider"
+    >
+      Status
+    </th>
+                  <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-[#CCCCCC] uppercase tracking-wider"
                   >
@@ -622,6 +703,15 @@ export default function UsersPage() {
                         </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+        user.isActive 
+          ? 'bg-green-500/20 text-green-400' 
+          : 'bg-red-500/20 text-red-400'
+      }`}>
+        {user.isActive ? 'Active' : 'Inactive'}
+      </span>
+    </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-2">
                           <span className="px-2 py-1 text-xs font-medium bg-[#D4A017]/20 text-[#D4A017] rounded-full">
                             {user.propertiesCount || 0} owned
@@ -636,6 +726,28 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <div className="flex justify-end space-x-2">
+                            <button
+          onClick={() => handleToggleActiveStatus(user.id, user.isActive)}
+          className={`${user.isActive ? 'text-red-400 hover:text-red-300' : 'text-green-400 hover:text-green-300'} transition-colors`}
+          title={user.isActive ? 'Deactivate User' : 'Activate User'}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d={user.isActive 
+                ? "M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" 
+                : "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"}
+            />
+          </svg>
+        </button>
                           <button
                             onClick={() => handlePasswordReset(user.id)}
                             className="text-[#CCCCCC] hover:text-[#D4A017] transition-colors"

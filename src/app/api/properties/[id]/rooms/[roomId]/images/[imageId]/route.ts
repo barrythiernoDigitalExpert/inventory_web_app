@@ -7,10 +7,10 @@ import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: "doklxv5l6",
-  api_key: "341989844846657",
-  api_secret: "kc5k5Zfx-OdWzmOovT8nxaL16o8",
-  secure: true
+   cloud_name: "doklxv5l6",
+    api_key: "341989844846657",
+    api_secret: "kc5k5Zfx-OdWzmOovT8nxaL16o8",
+    secure: true
 });
 
 // GET: Retrieve a specific image
