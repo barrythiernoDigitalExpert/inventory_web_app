@@ -1,91 +1,25 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-// generator client {
-//   provider = "prisma-client-js"
-// }
-
-// datasource db {
-//   provider = "mysql"
-//   url      = env("DATABASE_URL")
-// }
-
-// model Property {
-//   id         Int      @id @default(autoincrement())
-//   reference  String   @unique
-//   name       String?
-//   imagePath  String?  @map("image_path")
-//   createdAt  DateTime @default(now()) @map("created_at")
-//   updatedAt  DateTime @updatedAt @map("updated_at")
-//   rooms      Room[]
-
-//   @@map("properties")
-// }
-
-// model Room {
-//   id          Int           @id @default(autoincrement())
-//   propertyId  Int           @map("property_id")
-//   code        String
-//   name        String
-//   createdAt   DateTime      @default(now()) @map("created_at")
-//   property    Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-//   images      RoomImage[]
-//   items       InventoryItem[]
-
-//   @@map("rooms")
-// }
-
-// model RoomImage {
-//   id        Int      @id @default(autoincrement())
-//   roomId    Int      @map("room_id")
-//   imagePath String   @map("image_path")
-//   createdAt DateTime @default(now()) @map("created_at")
-//   room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-//   @@map("room_images")
-// }
-
-// model InventoryItem {
-//   id          Int      @id @default(autoincrement())
-//   roomId      Int      @map("room_id")
-//   name        String
-//   description String?  @db.Text
-//   imagePath   String?  @map("image_path")
-//   notes       String?  @db.Text
-//   createdAt   DateTime @default(now()) @map("created_at")
-//   room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
-//   @@map("inventory_items")
-// }
-
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
-
-// User model with role enum
+// User model with role enum and active status
 enum UserRole {
   ADMIN
   USER
 }
-
 enum AuthType {
   LOCAL
   GOOGLE
 }
-
+// Status for inventory progress tracking
+enum InventoryStatus {
+  DRAFT           // Started but not completed
+  COMPLETED       // All items inventoried
+  FINALIZED       // Process complete
+}
 model User {
   id                Int               @id @default(autoincrement())
   email             String            @unique
@@ -94,14 +28,14 @@ model User {
   role              UserRole          @default(USER)
   authType          AuthType          @default(LOCAL) @map("auth_type")
   googleId          String?           @unique @map("google_id")
+  isActive          Boolean           @default(true) @map("is_active")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
   properties        Property[]        // Properties created by this user
   sharedProperties  PropertyShare[]   // Properties shared with this user
-
+  inventorySessions InventorySession[] // Track time spent on inventories
   @@map("users")
 }
-
 model Property {
   id              Int               @id @default(autoincrement())
   reference       String            @unique
@@ -118,6 +52,10 @@ model Property {
   // Summary data for performance optimization
   roomCount       Int               @default(0) @map("room_count")
   imageCount      Int               @default(0) @map("image_count")
+  // Inventory status
+  inventoryStatus InventoryStatus   @default(DRAFT) @map("inventory_status")
+  startedAt       DateTime?         @map("started_at")
+  completedAt     DateTime?         @map("completed_at")
   // Timestamps
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
@@ -126,14 +64,13 @@ model Property {
   user            User              @relation(fields: [userId], references: [id])
   rooms           Room[]
   sharedWith      PropertyShare[]
+  inventorySessions InventorySession[]
   // Client information fields
-
   listingPerson   String?           @map("listing_person")
-
   @@map("properties")
   @@index([userId])
+  @@index([inventoryStatus])
 }
-
 // Model for sharing properties with other users
 model PropertyShare {
   id          Int       @id @default(autoincrement())
@@ -144,13 +81,11 @@ model PropertyShare {
   createdAt   DateTime  @default(now()) @map("created_at")
   property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([propertyId, userId])
   @@map("property_shares")
   @@index([propertyId])
   @@index([userId])
 }
-
 model Room {
   id          Int             @id @default(autoincrement())
   propertyId  Int             @map("property_id")
@@ -158,6 +93,7 @@ model Room {
   name        String
   // Summary data for performance optimization
   imageCount  Int             @default(0) @map("image_count")
+  isComplete  Boolean         @default(false) @map("is_complete")
   // Add common query filter fields
   sortOrder   Int             @default(0) @map("sort_order")
   // Timestamps
@@ -166,28 +102,101 @@ model Room {
   // Relations
   property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   images      RoomImage[]
-
   @@map("rooms")
   @@index([propertyId])
   @@index([propertyId, sortOrder])
+  @@index([propertyId, isComplete])
 }
-
 model RoomImage {
   id          Int       @id @default(autoincrement())
   roomId      Int       @map("room_id")
   imagePath   String    @map("image_path")
   description String?   @db.Text
+  name        String?   // Name of the item in the image
+  notes       String?   @db.Text
+  condition   String?
+  aiDetected  Boolean   @default(false) @map("ai_detected")
+  aiAccuracy  Float?    @map("ai_accuracy") // Score between 0 and 1
   // Add common query filter fields
   sortOrder   Int       @default(0) @map("sort_order")
   isMainImage Boolean   @default(false) @map("is_main_image")
+  // Synchronization and mobile app fields
+  localId     String?   @map("local_id") // For mobile sync
+  syncStatus  String?   @map("sync_status") // "pending", "synced", "conflict"
   // Timestamps
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   // Relations
   room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-
   @@map("room_images")
   @@index([roomId])
   @@index([roomId, sortOrder])
   @@index([roomId, isMainImage])
+  @@index([aiDetected, aiAccuracy])
+  @@index([syncStatus])
+}
+// Track time spent on inventory tasks
+model InventorySession {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  propertyId  Int       @map("property_id")
+  startTime   DateTime  @map("start_time")
+  endTime     DateTime? @map("end_time")
+  duration    Int?      // Duration in seconds
+  deviceType  String?   @map("device_type") // "mobile" or "desktop"
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@map("inventory_sessions")
+  @@index([userId])
+  @@index([propertyId])
+}
+// System metrics
+model SystemMetrics {
+  id                Int       @id @default(autoincrement())
+  date              DateTime  @default(now())
+  totalUsers        Int       @default(0) @map("total_users")
+  loggedInUsers     Int       @default(0) @map("logged_in_users")    // Utilisateurs connectés
+  contributingUsers Int       @default(0) @map("contributing_users") // Utilisateurs ayant créé/modifié du contenu
+  totalProperties   Int       @default(0) @map("total_properties")
+  newProperties     Int       @default(0) @map("new_properties")     // Nouvelles propriétés ce jour
+  completedInventories Int    @default(0) @map("completed_inventories")
+  avgCompletionTime Int?      @map("avg_completion_time") // En secondes
+  storageUsed       Float     @default(0) @map("storage_used") // En MB
+  aiRecognitionRate Float?    @map("ai_recognition_rate") // Taux de réussite
+  totalImageCount   Int       @default(0) @map("total_image_count")  // Nombre total d'images
+  newImageCount     Int       @default(0) @map("new_image_count")    // Nouvelles images ce jour
+  @@map("system_metrics")
+  @@index([date])
+}
+// Mobile app sync tracking
+model SyncLog {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @map("user_id")
+  deviceId       String   @map("device_id")
+  syncStarted    DateTime @map("sync_started")
+  syncCompleted  DateTime? @map("sync_completed")
+  itemsSynced    Int      @default(0) @map("items_synced")
+  syncStatus     String   @default("in_progress") // "in_progress", "completed", "failed"
+  errorMessage   String?  @map("error_message") @db.Text
+  @@map("sync_logs")
+  @@index([userId])
+  @@index([syncStatus])
+}
+// User activity tracking for detailed analytics
+model UserActivity {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  activityType  String   // "login", "logout", "create_property", "edit_property", "add_room", "add_image", "complete_inventory", etc.
+  entityId      Int?     @map("entity_id") // ID of the property, room or image concerned
+  entityType    String?  @map("entity_type") // "property", "room", "image"
+  details       String?  @db.Text // Additional contextual information
+  deviceType    String?  @map("device_type") // "mobile" or "desktop"
+  duration      Int?     // Duration in seconds (if applicable)
+  timestamp     DateTime @default(now())
+  @@map("user_activities")
+  @@index([userId])
+  @@index([timestamp])
+  @@index([activityType])
+  @@index([entityType, entityId])
 }

@@ -5,10 +5,12 @@ import { authOptions } from '@/lib/utils/auth';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const params = await props.params;
+
     
     // Check authentication
     if (!session?.user?.email) {

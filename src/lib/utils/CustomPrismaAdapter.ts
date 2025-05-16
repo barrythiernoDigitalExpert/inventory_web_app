@@ -21,6 +21,8 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         emailVerified: null,
         image: null,
         role: user.role,
+        isActive: user.isActive,
+
       }
     },
     getUserByEmail: async (email) => {
@@ -35,6 +37,8 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
         emailVerified: null,
         image: null,
         role: user.role,
+        isActive: user.isActive,
+
       }
     },
 
@@ -54,6 +58,8 @@ export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
       emailVerified: null, 
       image: null, 
       role: user.role,
+      isActive: user.isActive,
+
     };
   }
   
