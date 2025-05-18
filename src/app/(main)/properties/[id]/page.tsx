@@ -1495,26 +1495,7 @@ export default function PropertyDetailPage ({
                         </div>
                       ) : (
                         <div className='flex flex-col items-center justify-center h-32 bg-[#2D2D2D]/50 rounded-lg'>
-                          <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className='py-3 px-4 rounded-md bg-[#2D2D2D] text-[#D4A017] hover:bg-[#3D3D3D] transition-colors border border-dashed border-[#D4A017] flex items-center'
-                          >
-                            <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              className='h-5 w-5 mr-2'
-                              fill='none'
-                              viewBox='0 0 24 24'
-                              stroke='currentColor'
-                            >
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth={2}
-                                d='M12 4v16m8-8H4'
-                              />
-                            </svg>
-                            Add Images to This Room
-                          </button>
+                          
                         </div>
                       )}
                     </div>
