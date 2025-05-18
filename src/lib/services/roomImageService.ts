@@ -307,6 +307,34 @@ export async function updateRoomImage(
   }
 }
 
+export const uploadRoomImagesWithDescriptions = async (
+  propertyId: string,
+  roomId: string,
+  images: { dataUrl: string; description: string }[],
+  mainImageIndex: number = 0
+): Promise<RoomImage[]> => {
+  const requestData = {
+    images: images.map(img => img.dataUrl),
+    descriptions: images.map(img => img.description || ''),
+    mainImageIndex
+  };
+
+  const response = await fetch(`/api/properties/${propertyId}/rooms/${roomId}/images`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestData)
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to upload images with descriptions');
+  }
+
+  const result = await response.json();
+  return result.images;
+}
+
 /**
  * Reorders images in a room
  */

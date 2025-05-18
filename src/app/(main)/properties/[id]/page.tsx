@@ -22,7 +22,8 @@ import {
   uploadRoomImages,
   updateRoomImage,
   setMainRoomImage,
-  updateImageMetadata
+  updateImageMetadata,
+  uploadRoomImagesWithDescriptions
 } from '@/lib/services/roomImageService'
 
 // Components
@@ -113,50 +114,47 @@ export default function PropertyDetailPage ({
     email: session?.user?.email // Make sure this email is included
   }
 
-  const handleImagesUploadWithDescriptions = async (
-    images: { dataUrl: string; description: string; file: File }[]
-  ) => {
-    if (!selectedRoom || images.length === 0) return
+    const handleImagesUploadWithDescriptions = async (
+  images: { dataUrl: string; description: string; file: File }[]
+) => {
+  if (!selectedRoom || images.length === 0) return;
 
-    const toastId = toast.loading(`Uploading ${images.length} images...`)
-    try {
-      // Convertir les images en format attendu par l'API
-      const formData = new FormData()
+  const toastId = toast.loading(`Uploading ${images.length} images...`);
+  try {
+  
+    const imageData = images.map(img => ({
+      dataUrl: img.dataUrl,
+      description: img.description
+    }));
+    
+    // Utilisation du service mis à jour
+    const uploadedImages = await uploadRoomImagesWithDescriptions(
+      id,
+      selectedRoom,
+      imageData,
+      0 // Premier index comme image principale (optionnel)
+    );
 
-      // Ajouter chaque fichier image
-      images.forEach((image, index) => {
-        formData.append(`images[${index}]`, image.file)
-        formData.append(`descriptions[${index}]`, image.description)
-      })
-
-      // Préparer l'URL de l'API
-      const url = `/api/properties/${id}/rooms/${selectedRoom}/images`
-
-      const response = await fetch(url, {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to upload images')
-      }
-
-      const data = await response.json()
-
-      // Mettre à jour le compteur d'images
-      updateRoomImageCount(selectedRoom, images.length)
-
-      // Recharger les images
-      await loadRoomImages(selectedRoom)
-
-      toast.dismiss(toastId)
-      toast.success(`${images.length} image(s) uploaded successfully`)
-    } catch (error) {
-      console.error('Error uploading images:', error)
-      toast.dismiss(toastId)
-      toast.error('Failed to upload images')
+    if (uploadedImages) {
+      // Mise à jour du compteur d'images dans l'interface
+      updateRoomImageCount(selectedRoom, uploadedImages.length);
+      
+      // Mise à jour des images dans l'état local
+      setRoomImages(prevImages => [...prevImages, ...uploadedImages]);
+      
+      // Fermeture du modal d'upload si nécessaire
+      document.getElementById('image-upload-modal')?.classList.add('hidden');
+      
+      // Notification de succès
+      toast.dismiss(toastId);
+      toast.success(`${images.length} image(s) uploaded successfully`);
     }
+  } catch (error) {
+    console.error('Error uploading images:', error);
+    toast.dismiss(toastId);
+    toast.error('Failed to upload images');
   }
+};
 
   // Load property details on mount
   useEffect(() => {
