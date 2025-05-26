@@ -1323,7 +1323,7 @@ export default function PropertiesPage () {
                   className='block relative h-48 w-full'
                 >
                   <Image
-                    src={property.image || '/images/property-placeholder.jpg'}
+                    src={property.image || '/images/logo.png'}
                     alt={property.name}
                     fill
                     style={{ objectFit: 'cover' }}
@@ -1476,7 +1476,7 @@ export default function PropertiesPage () {
                             <Image
                               src={
                                 property.image ||
-                                '/images/property-placeholder.jpg'
+                                '/images/logo.png'
                               }
                               alt={property.name}
                               fill

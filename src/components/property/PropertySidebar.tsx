@@ -54,7 +54,7 @@ const PropertySidebar: React.FC<PropertySidebarProps> = ({ property, currentUser
     <div className="lg:col-span-1 card-gold hover-golden">
       <div className="relative h-48 w-full">
         <Image
-          src={property.image || '/images/property-placeholder.jpg'}
+          src={property.image || '/images/logo.png'}
           alt={property.name}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

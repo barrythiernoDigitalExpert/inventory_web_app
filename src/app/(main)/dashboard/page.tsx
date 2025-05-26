@@ -107,7 +107,7 @@ export default function Dashboard() {
         <div className="bg-[#1E1E1E] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow group border border-transparent hover:border-[#D4A017]/30">
           <div className="relative h-36 w-full">
             <Image
-              src={property.image || '/images/property-placeholder.jpg'}
+              src={property.image || '/images/logo.png'}
               alt={property.reference}
               fill
               style={{ objectFit: 'cover' }}

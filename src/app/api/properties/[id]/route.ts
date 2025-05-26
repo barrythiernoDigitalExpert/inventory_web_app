@@ -163,7 +163,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ id: s
     }
     
     // Check if user has edit permission if the property is shared
-    if (access.property.userId !== access.userId) {
+    if (!access.isAdmin && access.property.userId !== access.userId) {
       const sharePermission = await prisma.propertyShare.findUnique({
         where: {
           propertyId_userId: {
@@ -235,7 +235,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ id
     }
     
     // Check delete permission if the property is shared
-    if (access.property.userId !== access.userId) {
+    if (!access.isAdmin && access.property.userId !== access.userId) {
       const sharePermission = await prisma.propertyShare.findUnique({
         where: {
           propertyId_userId: {

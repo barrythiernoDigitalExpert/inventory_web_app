@@ -14,7 +14,8 @@ import {
   fetchPropertyById,
   fetchPropertyRooms,
   fetchImagesByRoom,
-  Property
+  Property,
+  updateProperty
 } from '@/lib/services/propertyService'
 import {
   RoomImage,
@@ -34,6 +35,7 @@ import FullGalleryModal from '@/components/property/FullGalleryModal'
 import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import RoomGrid from '@/components/property/RoomGrid'
 import EditDescriptionModal from '@/components/property/EditDescriptionModal'
+import MissingFieldsModal from '@/components/property/MissingFieldsModal'
 // Types
 interface Room {
   id: string
@@ -42,6 +44,12 @@ interface Room {
   image: string
   imageCount: number
   hasImages?: boolean
+}
+interface UpdateData {
+  address?: string
+  listingPerson?: string
+  image?: string
+  [key: string]: any
 }
 
 export default function PropertyDetailPage ({
@@ -103,6 +111,10 @@ export default function PropertyDetailPage ({
   const [imageToEditDescription, setImageToEditDescription] =
     useState<RoomImage | null>(null)
   const [descriptionValue, setDescriptionValue] = useState('')
+  const [showMissingFieldsModal, setShowMissingFieldsModal] = useState(false)
+const [missingFields, setMissingFields] = useState<string[]>([])
+
+
 
   // Router and ID
   const { id } = use(params)
@@ -114,7 +126,108 @@ export default function PropertyDetailPage ({
     email: session?.user?.email // Make sure this email is included
   }
 
-    const handleImagesUploadWithDescriptions = async (
+//   const updatePropertyDetails = async (updatedData: UpdateData) => {
+//   try {
+//     const toastId = toast.loading('Updating property...')
+    
+//     if (!property) {
+//       toast.dismiss(toastId)
+//       toast.error('Property data not available')
+//       return
+//     }
+    
+//     const response = await fetch(`/api/properties/${id}`, {
+//       method: 'PUT',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         ...updatedData,
+//         name: property.name
+//       }),
+//     })
+    
+//     if (response.ok) {
+//       setProperty((prev: Property | null) => {
+//         if (!prev) return property         
+//         return {
+//           ...prev,  
+//           ...(updatedData.address !== undefined ? { address: updatedData.address } : {}),
+//           ...(updatedData.listingPerson !== undefined ? { listingPerson: updatedData.listingPerson } : {}),
+//           ...(updatedData.image !== undefined ? { image: updatedData.image } : {})
+//         }
+//       })
+      
+//       toast.dismiss(toastId)
+//       toast.success('Property updated successfully')
+      
+//       router.push(`/properties/${id}/pdf-editor`)
+//     } else {
+//       const errorData = await response.json()
+//       toast.dismiss(toastId)
+//       toast.error(errorData.error || 'Failed to update property')
+//     }
+//   } catch (error) {
+//     console.error('Error updating property:', error)
+//     toast.error('Failed to update property')
+//   }
+// }
+
+const updatePropertyDetails = async (updatedData: UpdateData) => {
+  try {
+    const toastId = toast.loading('Updating property...')
+    
+    if (!property) {
+      toast.dismiss(toastId)
+      toast.error('Property data not available')
+      return
+    }
+    
+    const propertyData: Partial<Property> = {
+      name: property.name
+    }
+    
+    if (updatedData.address !== undefined) {
+      propertyData.address = updatedData.address
+    }
+    
+    if (updatedData.listingPerson !== undefined) {
+      propertyData.listingPerson = updatedData.listingPerson
+    }
+    
+    if (updatedData.image !== undefined) {
+      propertyData.image = updatedData.image
+    }
+    
+    const result = await updateProperty(id, propertyData)
+    
+    if (result.success) {
+      setProperty((prev: Property | null) => {
+        if (!prev) return property
+        
+        return {
+          ...prev,
+          ...(updatedData.address !== undefined ? { address: updatedData.address } : {}),
+          ...(updatedData.listingPerson !== undefined ? { listingPerson: updatedData.listingPerson } : {}),
+          ...(updatedData.image !== undefined ? { image: updatedData.image } : {})
+        }
+      })
+      
+      toast.dismiss(toastId)
+      toast.success('Property updated successfully')
+      
+      // Redirection vers l'éditeur PDF
+      router.push(`/properties/${id}/pdf-editor`)
+    } else {
+      toast.dismiss(toastId)
+      toast.error('Failed to update property')
+    }
+  } catch (error) {
+    console.error('Error updating property:', error)
+    toast.error('Failed to update property')
+  }
+}
+  const handleImagesUploadWithDescriptions = async (
   images: { dataUrl: string; description: string; file: File }[]
 ) => {
   if (!selectedRoom || images.length === 0) return;
@@ -919,7 +1032,31 @@ export default function PropertyDetailPage ({
   }
 
   const currentRoom = rooms.find(room => room.id === selectedRoom)
-
+  const handleGeneratePdf = () => {
+  // Vérifier les champs requis
+  const requiredFields = []
+  
+  if (!property.image) {
+    requiredFields.push('image')
+  }
+  
+  if (!property.address) {
+    requiredFields.push('address')
+  }
+  
+  if (!property.listingPerson) {
+    requiredFields.push('listingPerson')
+  }
+  
+  // Si des champs sont manquants, ouvrir le modal
+  if (requiredFields.length > 0) {
+    setMissingFields(requiredFields)
+    setShowMissingFieldsModal(true)
+  } else {
+    // Tous les champs sont remplis, rediriger vers la page d'édition PDF
+    router.push(`/properties/${id}/pdf-editor`)
+  }
+}
   return (
     <div className='space-y-6'>
       {/* Header */}
@@ -947,7 +1084,7 @@ export default function PropertyDetailPage ({
           <h1 className='text-xl font-bold text-[#FFFFFF]'>{property.name}</h1>
         </div>
         <button
-          onClick={() => router.push(`/properties/${id}/pdf-editor`)}
+          onClick={handleGeneratePdf}
           className='btn btn-primary flex items-center'
         >
           <svg
@@ -1644,6 +1781,17 @@ export default function PropertyDetailPage ({
           </div>
         </div>
       </div>
+
+      {/* Missing Fields Modal */}
+{showMissingFieldsModal && (
+  <MissingFieldsModal
+    property={property}
+    isOpen={showMissingFieldsModal}
+    onClose={() => setShowMissingFieldsModal(false)}
+    onUpdate={updatePropertyDetails}
+    missingFields={missingFields}
+  />
+)}
 
       {/* Hidden file inputs */}
       <input
