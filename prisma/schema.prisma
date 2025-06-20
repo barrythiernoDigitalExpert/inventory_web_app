@@ -1,25 +1,49 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
 // User model with role enum and active status
 enum UserRole {
   ADMIN
   USER
 }
+
 enum AuthType {
   LOCAL
   GOOGLE
 }
+
 // Status for inventory progress tracking
 enum InventoryStatus {
   DRAFT           // Started but not completed
   COMPLETED       // All items inventoried
   FINALIZED       // Process complete
 }
+
+// Canvassing visit contact methods
+enum ContactMethod {
+  DOOR            // Door to door
+  PHONE           // Phone call
+  EMAIL           // Email contact
+  LETTER          // Letter drop
+  SMS             // SMS message
+  BROCHURE        // Brochure drop
+  VALUATION_CARD  // Valuation card
+}
+
+// Response types for canvassing visits
+enum ResponseType {
+  positive        // Interested
+  negative        // Not interested
+  no_response     // No response received
+  pending         // Awaiting response
+}
+
 model User {
   id                Int               @id @default(autoincrement())
   email             String            @unique
@@ -31,11 +55,16 @@ model User {
   isActive          Boolean           @default(true) @map("is_active")
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
+  
+  // Relations
   properties        Property[]        // Properties created by this user
   sharedProperties  PropertyShare[]   // Properties shared with this user
   inventorySessions InventorySession[] // Track time spent on inventories
+  canvassingVisits  CanvassingVisit[] // Canvassing visits by this user
+  
   @@map("users")
 }
+
 model Property {
   id              Int               @id @default(autoincrement())
   reference       String            @unique
@@ -67,10 +96,12 @@ model Property {
   inventorySessions InventorySession[]
   // Client information fields
   listingPerson   String?           @map("listing_person")
+  
   @@map("properties")
   @@index([userId])
   @@index([inventoryStatus])
 }
+
 // Model for sharing properties with other users
 model PropertyShare {
   id          Int       @id @default(autoincrement())
@@ -81,11 +112,13 @@ model PropertyShare {
   createdAt   DateTime  @default(now()) @map("created_at")
   property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   @@unique([propertyId, userId])
   @@map("property_shares")
   @@index([propertyId])
   @@index([userId])
 }
+
 model Room {
   id          Int             @id @default(autoincrement())
   propertyId  Int             @map("property_id")
@@ -102,11 +135,13 @@ model Room {
   // Relations
   property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   images      RoomImage[]
+  
   @@map("rooms")
   @@index([propertyId])
   @@index([propertyId, sortOrder])
   @@index([propertyId, isComplete])
 }
+
 model RoomImage {
   id          Int       @id @default(autoincrement())
   roomId      Int       @map("room_id")
@@ -128,6 +163,7 @@ model RoomImage {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   // Relations
   room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
   @@map("room_images")
   @@index([roomId])
   @@index([roomId, sortOrder])
@@ -135,6 +171,58 @@ model RoomImage {
   @@index([aiDetected, aiAccuracy])
   @@index([syncStatus])
 }
+
+// NEW: Canvassing Visit Model
+model CanvassingVisit {
+  id              String          @id @default(cuid())
+  userId          Int          @map("user_id")     // String to match mobile UUID
+  userName        String          @map("user_name")
+  
+  // GPS coordinates
+  latitude        Float
+  longitude       Float
+  
+  // Contact information
+  contactMethod   ContactMethod   @map("contact_method")
+  houseName       String          @map("house_name")
+  vendorName      String?         @map("vendor_name")
+  comments        String?         @db.Text
+  
+  // Address components (optional, from geocoding)
+  streetAddress   String?         @map("street_address")
+  neighborhood    String?
+  city            String?
+  postalCode      String?         @map("postal_code")
+  
+  // Optional image
+  imagePath       String?         @map("image_path")
+  
+  // Response tracking
+  responseReceived ResponseType?  @map("response_received")
+  responseDate    DateTime?       @map("response_date")
+  
+  // Sync status
+  isSynced        Boolean         @default(false) @map("is_synced")
+  mobileId        String?         @map("mobile_id")  // Original mobile UUID
+  syncedAt        DateTime?       @map("synced_at")
+  
+  // Timestamps
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  
+  // Relations - using String userId to match mobile data
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("canvassing_visits")
+  @@index([userId])
+  @@index([latitude, longitude])
+  @@index([contactMethod])
+  @@index([responseReceived])
+  @@index([createdAt])
+  @@index([isSynced])
+  @@index([userName])
+}
+
 // Track time spent on inventory tasks
 model InventorySession {
   id          Int       @id @default(autoincrement())
@@ -147,10 +235,12 @@ model InventorySession {
   // Relations
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
   @@map("inventory_sessions")
   @@index([userId])
   @@index([propertyId])
 }
+
 // System metrics
 model SystemMetrics {
   id                Int       @id @default(autoincrement())
@@ -166,9 +256,18 @@ model SystemMetrics {
   aiRecognitionRate Float?    @map("ai_recognition_rate") // Taux de réussite
   totalImageCount   Int       @default(0) @map("total_image_count")  // Nombre total d'images
   newImageCount     Int       @default(0) @map("new_image_count")    // Nouvelles images ce jour
+  
+  // Canvassing metrics
+  totalCanvassingVisits Int   @default(0) @map("total_canvassing_visits")
+  newCanvassingVisits   Int   @default(0) @map("new_canvassing_visits")
+  positiveResponses     Int   @default(0) @map("positive_responses")
+  negativeResponses     Int   @default(0) @map("negative_responses")
+  pendingResponses      Int   @default(0) @map("pending_responses")
+  
   @@map("system_metrics")
   @@index([date])
 }
+
 // Mobile app sync tracking
 model SyncLog {
   id             Int      @id @default(autoincrement())
@@ -179,21 +278,24 @@ model SyncLog {
   itemsSynced    Int      @default(0) @map("items_synced")
   syncStatus     String   @default("in_progress") // "in_progress", "completed", "failed"
   errorMessage   String?  @map("error_message") @db.Text
+  
   @@map("sync_logs")
   @@index([userId])
   @@index([syncStatus])
 }
+
 // User activity tracking for detailed analytics
 model UserActivity {
   id            Int      @id @default(autoincrement())
   userId        Int      @map("user_id")
-  activityType  String   // "login", "logout", "create_property", "edit_property", "add_room", "add_image", "complete_inventory", etc.
-  entityId      Int?     @map("entity_id") // ID of the property, room or image concerned
-  entityType    String?  @map("entity_type") // "property", "room", "image"
+  activityType  String   // "login", "logout", "create_property", "edit_property", "add_room", "add_image", "complete_inventory", "canvassing_visit", etc.
+  entityId      Int?     @map("entity_id") // ID of the property, room, image, or visit concerned
+  entityType    String?  @map("entity_type") // "property", "room", "image", "canvassing_visit"
   details       String?  @db.Text // Additional contextual information
   deviceType    String?  @map("device_type") // "mobile" or "desktop"
   duration      Int?     // Duration in seconds (if applicable)
   timestamp     DateTime @default(now())
+  
   @@map("user_activities")
   @@index([userId])
   @@index([timestamp])

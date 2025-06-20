@@ -126,52 +126,6 @@ const [missingFields, setMissingFields] = useState<string[]>([])
     email: session?.user?.email // Make sure this email is included
   }
 
-//   const updatePropertyDetails = async (updatedData: UpdateData) => {
-//   try {
-//     const toastId = toast.loading('Updating property...')
-    
-//     if (!property) {
-//       toast.dismiss(toastId)
-//       toast.error('Property data not available')
-//       return
-//     }
-    
-//     const response = await fetch(`/api/properties/${id}`, {
-//       method: 'PUT',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         ...updatedData,
-//         name: property.name
-//       }),
-//     })
-    
-//     if (response.ok) {
-//       setProperty((prev: Property | null) => {
-//         if (!prev) return property         
-//         return {
-//           ...prev,  
-//           ...(updatedData.address !== undefined ? { address: updatedData.address } : {}),
-//           ...(updatedData.listingPerson !== undefined ? { listingPerson: updatedData.listingPerson } : {}),
-//           ...(updatedData.image !== undefined ? { image: updatedData.image } : {})
-//         }
-//       })
-      
-//       toast.dismiss(toastId)
-//       toast.success('Property updated successfully')
-      
-//       router.push(`/properties/${id}/pdf-editor`)
-//     } else {
-//       const errorData = await response.json()
-//       toast.dismiss(toastId)
-//       toast.error(errorData.error || 'Failed to update property')
-//     }
-//   } catch (error) {
-//     console.error('Error updating property:', error)
-//     toast.error('Failed to update property')
-//   }
-// }
 
 const updatePropertyDetails = async (updatedData: UpdateData) => {
   try {
