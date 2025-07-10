@@ -58,11 +58,7 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {}
 
     // For non-admin users, restrict to their own visits
-    if (user.role !== 'ADMIN') {
-      whereClause.userId = user.id
-    } else if (userId) {
-      whereClause.userId = parseInt(userId)
-    }
+   
 
     if (contactMethod) whereClause.contactMethod = contactMethod
     if (responseReceived) whereClause.responseReceived = responseReceived
