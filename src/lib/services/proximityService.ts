@@ -87,19 +87,23 @@ export class ProximityService {
       // We'll filter in-memory for precise distance calculation
       const existingVisits = await prisma.canvassingVisit.findMany({
         where: userId ? {
-          userId: {
-            not: userId // Exclude visits from the same user if specified
+          visitUsers: {
+            none: { userId } // Exclude visits from the same user if specified
           }
         } : undefined,
         select: {
           id: true,
           latitude: true,
           longitude: true,
-          userName: true,
           houseName: true,
           createdAt: true,
           contactMethod: true,
-          userId: true
+          visitUsers: {
+            select: {
+              userId: true,
+              userName: true
+            }
+          }
         },
         // Only get recent visits (last 6 months) for performance
         orderBy: {
@@ -124,7 +128,7 @@ export class ProximityService {
           minDistance = distance;
           closestVisit = {
             id: visit.id,
-            userName: visit.userName,
+            userName: visit.visitUsers.map(vu => vu.userName).join(', '),
             houseName: visit.houseName,
             createdAt: visit.createdAt,
             contactMethod: visit.contactMethod,
@@ -176,15 +180,21 @@ export class ProximityService {
 
       const existingVisits = await prisma.canvassingVisit.findMany({
         where: userId ? {
-          userId: {
-            not: userId
+          visitUsers: {
+            none: { userId }
           }
         } : undefined,
         include: {
-          user: {
+          visitUsers: {
             select: {
-              name: true,
-              email: true
+              userId: true,
+              userName: true,
+              user: {
+                select: {
+                  name: true,
+                  email: true
+                }
+              }
             }
           }
         },

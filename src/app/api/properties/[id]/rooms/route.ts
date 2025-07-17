@@ -4,6 +4,9 @@ import { prisma } from '@/lib/utils/prisma';
 import { saveRoomImages } from '@/lib/utils/fileStorage';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
+import { ActivityType, EntityType } from '@prisma/client';
+import { loggingService } from '@/lib/services/loggingService';
+import { extractRequestContext } from '@/lib/utils/requestHelpers';
 
 // Helper function to check property access with improved null handling
 async function checkPropertyAccess(propertyId: number, userEmail: string) {
@@ -43,13 +46,18 @@ async function checkPropertyAccess(propertyId: number, userEmail: string) {
 
 // GET: Retrieve rooms for a property
 export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const context = extractRequestContext(request);
+  const startTime = Date.now();
+  let access: any = null;
+  let params: any = null;
+  
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const params = await props.params;
+    params = await props.params;
 
     
     const propertyId = parseInt(params.id);
@@ -58,7 +66,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       return NextResponse.json({ error: 'Invalid property ID' }, { status: 400 });
     }
     
-    const access = await checkPropertyAccess(propertyId, session.user.email);
+    access = await checkPropertyAccess(propertyId, session.user.email);
     
     if (!access) {
       return NextResponse.json({ error: 'Property not found or access denied' }, { status: 404 });
@@ -78,7 +86,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
       }
     });
     
-    return NextResponse.json(rooms.map(room => ({
+    const roomsResponse = rooms.map(room => ({
       id: room.id.toString(),
       code: room.code,
       name: room.name,
@@ -91,8 +99,34 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
         isMain: image.isMainImage,
         description: image.description || ''
       }))
-    })));
+    }));
+    
+    // Log successful rooms view
+    const duration = Date.now() - startTime;
+    await loggingService.logActivity(
+      access.userId,
+      ActivityType.VIEW_PROPERTY,
+      EntityType.ROOM,
+      undefined,
+      {
+        propertyId: propertyId.toString(),
+        propertyReference: access.property.reference,
+        roomCount: rooms.length,
+        totalImages: rooms.reduce((sum, room) => sum + room.imageCount, 0),
+        isAdmin: access.isAdmin || false
+      },
+      context.deviceType,
+      duration
+    );
+    
+    return NextResponse.json(roomsResponse);
   } catch (error) {
+    await loggingService.logError(
+      error as Error,
+      'rooms/GET',
+      access?.userId,
+      { propertyId: params?.id, ...context }
+    );
     console.error('Error fetching rooms:', error);
     return NextResponse.json({ error: 'Failed to fetch rooms' }, { status: 500 });
   }
@@ -100,20 +134,25 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
 
 // POST: Add a room to a property
 export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const context = extractRequestContext(request);
+  const startTime = Date.now();
+  let access: any = null;
+  let params: any = null;
+  
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const params = await props.params;    
+    params = await props.params;    
     const propertyId = parseInt(params.id);
     
     if (isNaN(propertyId)) {
       return NextResponse.json({ error: 'Invalid property ID' }, { status: 400 });
     }
     
-    const access = await checkPropertyAccess(propertyId, session.user.email);
+    access = await checkPropertyAccess(propertyId, session.user.email);
     
     if (!access) {
       return NextResponse.json({ error: 'Property not found or access denied' }, { status: 404 });
@@ -202,6 +241,25 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
       };
     });
     
+    // Log successful room creation
+    const duration = Date.now() - startTime;
+    await loggingService.logActivity(
+      access.userId,
+      ActivityType.ADD_ROOM,
+      EntityType.ROOM,
+      result.room.id.toString(),
+      {
+        propertyId: propertyId.toString(),
+        propertyReference: access.property.reference,
+        roomCode: code,
+        roomName: name,
+        imageCount: result.imagePaths.length,
+        hasImages: result.imagePaths.length > 0
+      },
+      context.deviceType,
+      duration
+    );
+    
     return NextResponse.json({ 
       success: true, 
       room: {
@@ -216,6 +274,12 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
       }
     }, { status: 201 });
   } catch (error) {
+    await loggingService.logError(
+      error as Error,
+      'rooms/POST',
+      access?.userId,
+      { propertyId: params?.id, ...context }
+    );
     console.error('Error creating room:', error);
     return NextResponse.json({ error: 'Failed to create room' }, { status: 500 });
   }

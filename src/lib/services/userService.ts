@@ -1,3 +1,18 @@
+/**
+ * User Service
+ * ------------
+ * Handles all business logic related to user management, including fetching, creating, updating,
+ * activating/deactivating users, resetting passwords, and searching users. Provides utility functions
+ * for user statistics and role management.
+ *
+ * Responsibilities:
+ * - Fetch, create, update, and delete users
+ * - Manage user roles and active status
+ * - Reset user passwords
+ * - Search users by name or email
+ *
+ * All functions are designed to be used by API route handlers, components, and other services.
+ */
 // src/lib/services/userService.ts
 import { toast } from 'react-hot-toast';
 
@@ -32,7 +47,7 @@ export async function fetchUsers(): Promise<User[]> {
     }
 
     const data = await response.json();
-    console.log("afficher touts les users"+data.users)
+    // console.log("display all users"+data.users)
     return data.users;
   } catch (error) {
     console.error('Error fetching users:', error);

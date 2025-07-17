@@ -1,4 +1,17 @@
-// src/lib/utils/fileStorage.ts - correction de l'erreur de typage avec Cloudinary
+/**
+ * File Storage Utility (Cloudinary)
+ * --------------------------------
+ * Provides functions to upload, save, and delete images for properties, rooms, and items using Cloudinary.
+ * Handles base64 conversion, unique ID generation, and folder management for organized storage.
+ *
+ * Responsibilities:
+ * - Save property, room, and item images to Cloudinary
+ * - Delete images and folders from Cloudinary
+ * - Convert base64 images to Cloudinary format
+ * - Extract public IDs from Cloudinary URLs
+ *
+ * All functions are designed to be used by API route handlers, services, and components.
+ */
 import { v4 as uuidv4 } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -11,7 +24,10 @@ cloudinary.config({
 });
 
 /**
- * Convertit une image base64 au format accepté par Cloudinary
+ * Converts a base64 image to a format accepted by Cloudinary.
+ * @param base64Image The base64-encoded image string
+ * @returns The formatted base64 image string
+ * @throws Error if the image data is invalid
  */
 const base64ToCloudinaryFormat = (base64Image: string): string => {
   // Vérifie si l'image est bien formatée en base64
@@ -25,7 +41,11 @@ const base64ToCloudinaryFormat = (base64Image: string): string => {
 };
 
 /**
- * Sauvegarde l'image principale d'une propriété
+ * Saves the main image for a property to Cloudinary.
+ * @param base64Image The base64-encoded image string
+ * @param propertyRef The property reference string
+ * @returns The secure URL of the saved image
+ * @throws Error if the upload fails
  */
 export const savePropertyImage = async (base64Image: string, propertyRef: string): Promise<string> => {
   try {
@@ -46,7 +66,12 @@ export const savePropertyImage = async (base64Image: string, propertyRef: string
 };
 
 /**
- * Sauvegarde plusieurs images pour une pièce
+ * Saves multiple images for a room to Cloudinary.
+ * @param base64Images Array of base64-encoded image strings
+ * @param propertyRef The property reference string
+ * @param roomCode The room code string
+ * @returns Array of secure URLs of the saved images
+ * @throws Error if the upload fails
  */
 export const saveRoomImages = async (
   base64Images: string[], 
@@ -96,7 +121,13 @@ export const saveRoomImages = async (
 };
 
 /**
- * Sauvegarde une image pour un élément d'inventaire
+ * Saves an image for an inventory item to Cloudinary.
+ * @param base64Image The base64-encoded image string
+ * @param propertyRef The property reference string
+ * @param roomCode The room code string
+ * @param itemId The item ID string
+ * @returns The secure URL of the saved image
+ * @throws Error if the upload fails
  */
 export const saveItemImage = async (
   base64Image: string, 
@@ -122,7 +153,10 @@ export const saveItemImage = async (
 };
 
 /**
- * Supprime tous les fichiers associés à une propriété
+ * Deletes all files associated with a property from Cloudinary.
+ * @param propertyRef The property reference string
+ * @returns void
+ * @throws Error if the deletion fails
  */
 export const deletePropertyFiles = async (propertyRef: string): Promise<void> => {
   try {
@@ -136,7 +170,9 @@ export const deletePropertyFiles = async (propertyRef: string): Promise<void> =>
 };
 
 /**
- * Supprime une image de pièce en fonction de son URL Cloudinary
+ * Deletes a room image from Cloudinary by its URL.
+ * @param imageUrl The Cloudinary image URL
+ * @returns True if deletion was successful, false otherwise
  */
 export const deleteRoomImage = async (imageUrl: string): Promise<boolean> => {
   try {
@@ -159,7 +195,9 @@ export const deleteRoomImage = async (imageUrl: string): Promise<boolean> => {
 };
 
 /**
- * Fonction auxiliaire pour extraire l'ID public Cloudinary d'une URL
+ * Helper function to extract the Cloudinary public ID from a URL.
+ * @param url The Cloudinary image URL
+ * @returns The extracted public ID or null if not found
  */
 const extractPublicIdFromUrl = (url: string): string | null => {
   try {

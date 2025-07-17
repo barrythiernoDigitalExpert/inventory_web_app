@@ -6,6 +6,7 @@ import { CanvassingService } from '@/lib/services/canvassingService';
 import { ProximityService } from '@/lib/services/proximityService';
 import { prisma } from '@/lib/utils/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
+import { ResponseType } from '@prisma/client';
 
 // GET: Get comprehensive admin statistics for canvassing
 export async function GET(request: NextRequest) {
@@ -214,13 +215,15 @@ async function getPerformanceMetrics() {
     const weeklyTrend = ((dailyAverage7Days - dailyAverage30Days) / dailyAverage30Days) * 100;
 
     // Get top performers
-    const topPerformers = await prisma.canvassingVisit.groupBy({
+    const topPerformers = await prisma.canvassingVisitUser.groupBy({
       by: ['userId', 'userName'],
       _count: {
         id: true
       },
       where: {
-        createdAt: { gte: thirtyDaysAgo }
+        visit: {
+          createdAt: { gte: thirtyDaysAgo }
+        }
       },
       orderBy: {
         _count: {
@@ -324,7 +327,7 @@ async function getContactMethodEffectiveness() {
           prisma.canvassingVisit.count({
             where: { 
               contactMethod: method.contactMethod,
-              responseReceived: 'positive'
+              responseReceived: ResponseType.positive
             }
           }),
           prisma.canvassingVisit.count({

@@ -2,25 +2,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { savePropertyImage, saveRoomImages } from '@/lib/utils/fileStorage';
-import { Prisma, UserRole } from '@prisma/client';
+import { Prisma, UserRole, ActivityType, EntityType } from '@prisma/client';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
+import { loggingService } from '@/lib/services/loggingService';
+import { extractRequestContext } from '@/lib/utils/requestHelpers';
 
 interface RoomImage {
   url?: string;
   description?: string;
 }
+
 // GET: Retrieve properties based on user role
 export async function GET(request: NextRequest) {
+  const context = extractRequestContext(request);
+  const startTime = Date.now();
+  let user: any = null;
+  
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Parse query parameters
+    const { searchParams } = new URL(request.url);
+    const includeFeatures = searchParams.get('include_features') === 'true';
     
     // Get user with role from session email
-    const user = await prisma.user.findUnique({
+    user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
         id: true,
@@ -35,79 +46,225 @@ export async function GET(request: NextRequest) {
     // Optimize query based on user role
     const isAdmin = user.role === UserRole.ADMIN;
     
-    // For admins, fetch all properties with minimal data
-    // For regular users, fetch only their properties and shared ones
-    const properties = await prisma.property.findMany({
-      where: isAdmin 
-        ? undefined 
-        : {
-            OR: [
-              { userId: user.id },
-              {
-                sharedWith: {
-                  some: {
-                    userId: user.id
+    if (includeFeatures) {
+      // Separate query for properties with features
+      const propertiesWithFeatures = await prisma.property.findMany({
+        where: isAdmin 
+          ? undefined 
+          : {
+              OR: [
+                { userId: user.id },
+                {
+                  sharedWith: {
+                    some: {
+                      userId: user.id
+                    }
                   }
                 }
-              }
+              ]
+            },
+        include: {
+          user: isAdmin ? {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          } : false,
+          propertyFeatures: {
+            include: {
+              propertyFeature: {
+                include: {
+                  category: true
+                }
+              },
+              valueFeatureOption: true
+            },
+            orderBy: [
+              { propertyFeature: { category: { sort: 'asc' } } },
+              { propertyFeature: { sort: 'asc' } }
             ]
-          },
-      // Only select needed fields for performance
-      select: {
-        id: true,
-        reference: true,
-        name: true,
-        imagePath: true,
-        address: true,
-        roomCount: true,
-        imageCount: true,
-        createdAt: true,
-        listingPerson:true,
-        userId: true,
-        // For admins, include minimal owner info
-        user: isAdmin ? {
-          select: {
-            id: true,
-            name: true,
-            email: true
           }
-        } : undefined
-      },
-      // Use pagination for large result sets
-      take: 100,
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
-    
-    // Transform data for response
-    return NextResponse.json(properties.map(property => ({
-      id: property.id.toString(),
-      reference: property.reference,
-      name: property.name || '',
-      image: property.imagePath || '',
-      address: property.address || '',
-      roomCount: property.roomCount,
-      listingPerson : property.listingPerson,
-      imageCount: property.imageCount,
-      createdAt: property.createdAt.toISOString(),
-      // Include owner info for admin users
-      ...(isAdmin && { 
-        owner: {
-          id: property.user.id,
-          name: property.user.name,
-          email: property.user.email
+        },
+        take: 100,
+        orderBy: {
+          createdAt: 'desc'
         }
-      })
-    })));
+      });
+
+      // Transform data for response with features
+      return NextResponse.json(propertiesWithFeatures.map(property => {
+        const baseProperty: any = {
+          id: property.id.toString(),
+          reference: property.reference,
+          name: property.name || '',
+          image: property.imagePath || '',
+          address: property.address || '',
+          roomCount: property.roomCount,
+          listingPerson: property.listingPerson,
+          imageCount: property.imageCount,
+          createdAt: property.createdAt.toISOString(),
+          // Include owner info for admin users
+          ...(isAdmin && property.user && { 
+            owner: {
+              id: property.user.id,
+              name: property.user.name,
+              email: property.user.email
+            }
+          })
+        };
+
+        // Add features
+        if (property.propertyFeatures && property.propertyFeatures.length > 0) {
+          const groupedFeatures = property.propertyFeatures.reduce((acc: Record<number, any>, pf: any) => {
+            const categoryId = pf.propertyFeature.category.id;
+            const categoryName = pf.propertyFeature.category.name;
+            
+            if (!acc[categoryId]) {
+              acc[categoryId] = {
+                id: categoryId,
+                name: categoryName,
+                features: []
+              };
+            }
+            
+            // Determine the current value based on feature type
+            let currentValue = null;
+            switch (pf.propertyFeature.type) {
+              case 'bool':
+                currentValue = pf.valueBool;
+                break;
+              case 'text':
+                currentValue = pf.valueText;
+                break;
+              case 'integer':
+                currentValue = pf.valueInt;
+                break;
+              case 'float':
+                currentValue = pf.valueFloat;
+                break;
+              case 'select':
+                currentValue = pf.valueFeatureOption ? {
+                  id: pf.valueFeatureOption.id,
+                  value: pf.valueFeatureOption.value
+                } : null;
+                break;
+            }
+            
+            acc[categoryId].features.push({
+              id: pf.propertyFeature.id,
+              name: pf.propertyFeature.name,
+              type: pf.propertyFeature.type,
+              currentValue
+            });
+            
+            return acc;
+          }, {});
+
+          baseProperty.features = Object.values(groupedFeatures);
+        } else {
+          baseProperty.features = [];
+        }
+
+        return baseProperty;
+      }));
+    } else {
+      // Original query without features
+      const properties = await prisma.property.findMany({
+        where: isAdmin 
+          ? undefined 
+          : {
+              OR: [
+                { userId: user.id },
+                {
+                  sharedWith: {
+                    some: {
+                      userId: user.id
+                    }
+                  }
+                }
+              ]
+            },
+        select: {
+          id: true,
+          reference: true,
+          name: true,
+          imagePath: true,
+          address: true,
+          roomCount: true,
+          imageCount: true,
+          createdAt: true,
+          listingPerson: true,
+          userId: true,
+          user: isAdmin ? {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          } : false
+        },
+        take: 100,
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+      
+      // Transform data for response
+      return NextResponse.json(properties.map(property => ({
+        id: property.id.toString(),
+        reference: property.reference,
+        name: property.name || '',
+        image: property.imagePath || '',
+        address: property.address || '',
+        roomCount: property.roomCount,
+        listingPerson: property.listingPerson,
+        imageCount: property.imageCount,
+        createdAt: property.createdAt.toISOString(),
+        // Include owner info for admin users
+        ...(isAdmin && property.user && { 
+          owner: {
+            id: property.user.id,
+            name: property.user.name,
+            email: property.user.email
+          }
+        })
+      })));
+    }
+    
+    // Log successful properties view
+    const duration = Date.now() - startTime;
+    await loggingService.logActivity(
+      user.id,
+      ActivityType.VIEW_PROPERTY,
+      EntityType.PROPERTY,
+      undefined,
+      { 
+        includeFeatures,
+        resultCount: 'multiple',
+        userRole: user.role
+      },
+      context.deviceType,
+      duration
+    );
+    
   } catch (error) {
+    await loggingService.logError(
+      error as Error,
+      'properties/GET',
+      user?.id,
+      context
+    );
     console.error('Error fetching properties:', error);
     return NextResponse.json({ error: 'Failed to fetch properties' }, { status: 500 });
   }
 }
-
 // POST: Create a new property with optimized image processing
 export async function POST(request: NextRequest) {
+  const context = extractRequestContext(request);
+  const startTime = Date.now();
+  let user: any = null;
+  
   try {
     const session = await getServerSession(authOptions);
     
@@ -115,7 +272,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const user = await prisma.user.findUnique({
+    user = await prisma.user.findUnique({
       where: { email: session.user.email }
     });
     
@@ -225,11 +382,34 @@ export async function POST(request: NextRequest) {
       data: { imageCount: totalImageCount }
     });
     
+    // Log successful property creation
+    const duration = Date.now() - startTime;
+    await loggingService.logActivity(
+      user.id,
+      ActivityType.CREATE_PROPERTY,
+      EntityType.PROPERTY,
+      createdProperty.id.toString(),
+      {
+        reference,
+        roomCount: rooms.length,
+        totalImageCount,
+        hasMainImage: !!imagePath
+      },
+      context.deviceType,
+      duration
+    );
+    
     return NextResponse.json({ 
       success: true, 
       propertyId: createdProperty.id.toString() 
     }, { status: 201 });
   } catch (error) {
+    await loggingService.logError(
+      error as Error,
+      'properties/POST',
+      user?.id,
+      context
+    );
     console.error('Error creating property:', error);
     
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

@@ -30,11 +30,15 @@ export async function GET(request: NextRequest) {
     const visits = await prisma.canvassingVisit.findMany({
       where: Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {},
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+        visitUsers: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
           }
         }
       },
@@ -46,12 +50,18 @@ export async function GET(request: NextRequest) {
     const userStats: Record<string, any> = {};
 
     visits.forEach(visit => {
-      const userId = visit.userId.toString();
-      
-      if (!visitsByUser[userId]) {
-        visitsByUser[userId] = [];
-      }
-      visitsByUser[userId].push(visit);
+      // A visit can have multiple users, so we need to handle each user
+      visit.visitUsers.forEach(visitUser => {
+        const userId = visitUser.userId.toString();
+        
+        if (!visitsByUser[userId]) {
+          visitsByUser[userId] = [];
+        }
+        visitsByUser[userId].push({
+          ...visit,
+          user: visitUser.user // Add user info for compatibility
+        });
+      });
     });
 
     // Calculate stats for each user
@@ -72,8 +82,8 @@ export async function GET(request: NextRequest) {
         totalVisits: userVisits.length,
         todayVisits,
         responseRate: Math.round(responseRate * 10) / 10,
-        positiveResponses: userVisits.filter(v => v.responseReceived === 'POSITIVE').length,
-        negativeResponses: userVisits.filter(v => v.responseReceived === 'NEGATIVE').length,
+        positiveResponses: userVisits.filter(v => v.responseReceived === 'positive').length,
+        negativeResponses: userVisits.filter(v => v.responseReceived === 'negative').length,
         pendingResponses: userVisits.filter(v => v.responseReceived === null).length,
         lastActivity: userVisits.length > 0 ? 
           userVisits.reduce((latest, visit) => 

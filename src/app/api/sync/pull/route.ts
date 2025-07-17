@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     await prisma.userActivity.create({
       data: {
         userId: user.id,
-        activityType: 'sync_pull',
+        activityType: 'SYNC_DATA',
         details: `Retrieved ${response.length} updated properties since ${lastSync.toISOString()}`,
         deviceType: 'mobile',
         timestamp: new Date()

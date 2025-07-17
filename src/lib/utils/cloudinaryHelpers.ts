@@ -1,9 +1,22 @@
+/**
+ * Cloudinary Helpers Utility
+ * -------------------------
+ * Provides helper functions for working with Cloudinary image URLs, including extracting public IDs,
+ * generating optimized URLs with transformations, and adding cache-busting parameters.
+ *
+ * Responsibilities:
+ * - Extract Cloudinary public IDs from URLs
+ * - Generate optimized image URLs with transformations
+ * - Add cache-busting parameters to URLs
+ *
+ * All functions are designed to be used by services, components, and image utilities.
+ */
 // src/lib/utils/cloudinaryHelpers.ts
 
 /**
- * Extrait l'ID public Cloudinary à partir d'une URL
- * @param url L'URL Cloudinary complète
- * @returns L'ID public extrait ou null si non trouvé
+ * Extracts the Cloudinary public ID from a URL.
+ * @param url The full Cloudinary URL
+ * @returns The extracted public ID or null if not found
  */
 export function extractPublicIdFromUrl(url: string): string | null {
     try {
@@ -36,10 +49,10 @@ export function extractPublicIdFromUrl(url: string): string | null {
   }
   
   /**
-   * Génère une URL Cloudinary optimisée avec transformations
-   * @param url L'URL Cloudinary d'origine
-   * @param options Options de transformation (largeur, hauteur, qualité, etc.)
-   * @returns L'URL transformée
+   * Generates an optimized Cloudinary URL with transformations.
+   * @param url The original Cloudinary URL
+   * @param options Transformation options (width, height, quality, format, crop)
+   * @returns The transformed URL
    */
   export function getOptimizedImageUrl(
     url: string, 
@@ -102,9 +115,9 @@ export function extractPublicIdFromUrl(url: string): string | null {
   }
   
   /**
-   * Ajoute un paramètre de timestamp à une URL Cloudinary pour éviter la mise en cache
-   * @param url L'URL Cloudinary
-   * @returns L'URL avec un timestamp
+   * Adds a timestamp parameter to a Cloudinary URL to prevent caching.
+   * @param url The Cloudinary URL
+   * @returns The URL with a timestamp parameter
    */
   export function addCacheBustingToUrl(url: string): string {
     if (!url || typeof url !== 'string') {

@@ -7,11 +7,12 @@ import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: "doklxv5l6",
-  api_key: "341989844846657",
-  api_secret: "kc5k5Zfx-OdWzmOovT8nxaL16o8",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
 });
+
 // GET: Retrieve a specific image
 export async function GET(
   request: NextRequest,

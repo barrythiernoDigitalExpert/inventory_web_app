@@ -2,7 +2,21 @@ import { PrismaClient } from '@prisma/client'
 import { Adapter, AdapterUser } from 'next-auth/adapters'
 
 /**
- * Custom Prisma Adapter that ensures the role field is included
+ * Custom Prisma Adapter for NextAuth
+ * ---------------------------------
+ * Extends the default Prisma Adapter to ensure the user role and active status fields are included
+ * in the user object returned by NextAuth. Supports Google authentication and custom user mapping.
+ *
+ * Responsibilities:
+ * - Fetch user by ID, email, or account with role and isActive fields
+ * - Map Prisma user model to NextAuth AdapterUser
+ *
+ * The exported function is used to provide a custom adapter to NextAuth configuration.
+ */
+/**
+ * Custom Prisma Adapter that ensures the role and isActive fields are included in the user object.
+ * @param prisma PrismaClient instance
+ * @returns Adapter object for NextAuth
  */
 export function CustomPrismaAdapter(prisma: PrismaClient): Adapter {
   return {

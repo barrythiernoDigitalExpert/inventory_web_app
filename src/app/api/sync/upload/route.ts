@@ -123,9 +123,9 @@ export async function POST(request: NextRequest) {
       await prisma.userActivity.create({
         data: {
           userId: user.id,
-          activityType: 'create_property',
-          entityId: property.id,
-          entityType: 'property',
+          activityType: 'CREATE_PROPERTY',
+          entityId: property.id.toString(),
+          entityType: 'PROPERTY',
           details: `Property created during sync: ${propertyReference}`,
           deviceType: 'mobile',
           timestamp: new Date()
@@ -184,9 +184,9 @@ export async function POST(request: NextRequest) {
       await prisma.userActivity.create({
         data: {
           userId: user.id,
-          activityType: 'add_room',
-          entityId: room.id,
-          entityType: 'room',
+          activityType: 'ADD_ROOM',
+          entityId: room.id.toString(),
+          entityType: 'ROOM',
           details: `Room created during sync: ${roomCode} - ${roomName}`,
           deviceType: 'mobile',
           timestamp: new Date()
@@ -357,9 +357,9 @@ export async function POST(request: NextRequest) {
     await prisma.userActivity.create({
       data: {
         userId: user.id,
-        activityType: imageCount > 0 ? 'sync_images' : roomCreated ? 'sync_room' : 'sync_check',
-        entityId: room!.id,
-        entityType: 'room',
+        activityType: 'SYNC_DATA',
+        entityId: room!.id.toString(),
+        entityType: 'ROOM',
         details: activityDetails,
         deviceType: 'mobile',
         timestamp: new Date()

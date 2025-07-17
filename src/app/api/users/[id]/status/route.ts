@@ -5,11 +5,10 @@ import { authOptions } from '@/lib/utils/auth';
 
 export async function PATCH(
   req: NextRequest,
-   props: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    const params = await props.params;
     
     // Check authentication
     if (!session?.user?.email) {
@@ -32,15 +31,16 @@ export async function PATCH(
       );
     }
 
-    // Validate user ID
-    if (!params.id) {
+    // Await params and validate user ID
+    const { id } = await params;
+    if (!id) {
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
       );
     }
 
-    const userId = parseInt(params.id);
+    const userId = parseInt(id);
 
     // Get request body
     const { isActive } = await req.json();

@@ -32,15 +32,23 @@ export async function PUT(
     // Find the visit
     const visit = await prisma.canvassingVisit.findUnique({
       where: { id: visitId },
-      select: { userId: true, id: true }
+      include: {
+        visitUsers: {
+          select: {
+            userId: true,
+            isCreator: true
+          }
+        }
+      }
     });
 
     if (!visit) {
       return NextResponse.json({ error: 'Visit not found' }, { status: 404 });
     }
 
-    // Check permissions - only owner or admin can update
-    if (user.role !== 'ADMIN' && visit.userId !== user.id) {
+    // Check permissions - only creator or admin can update
+    const isCreator = visit.visitUsers.some(vu => vu.userId === user.id && vu.isCreator);
+    if (user.role !== 'ADMIN' && !isCreator) {
       return NextResponse.json({ error: 'Unauthorized to update this visit' }, { status: 403 });
     }
 
@@ -62,11 +70,15 @@ export async function PUT(
         updatedAt: new Date()
       },
       include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            role: true
+        visitUsers: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+                role: true
+              }
+            }
           }
         }
       }
@@ -76,9 +88,9 @@ export async function PUT(
     await prisma.userActivity.create({
       data: {
         userId: user.id,
-        activityType: 'update_visit_response',
-        entityId: parseInt(visitId),
-        entityType: 'canvassing_visit',
+        activityType: 'CANVASSING_VISIT',
+        entityId: visitId,
+        entityType: 'CANVASSING_VISIT',
         details: `Updated visit response: ${responseReceived || 'cleared'} with comments: ${comments ? 'yes' : 'no'}`,
         timestamp: new Date()
       }
@@ -125,11 +137,15 @@ export async function GET(
     const visit = await prisma.canvassingVisit.findUnique({
       where: { id: visitId },
       include: {
-        user: {
-          select: {
-            name: true,
-            email: true,
-            role: true
+        visitUsers: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+                role: true
+              }
+            }
           }
         }
       }
@@ -140,7 +156,8 @@ export async function GET(
     }
 
     // Check permissions - users can only see their own visits unless they're admin
-    if (user.role !== 'ADMIN' && visit.userId !== user.id) {
+    const isVisitUser = visit.visitUsers.some(vu => vu.userId === user.id);
+    if (user.role !== 'ADMIN' && !isVisitUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

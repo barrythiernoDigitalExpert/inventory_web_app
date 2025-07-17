@@ -2,6 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { saveRoomImages } from '@/lib/utils/fileStorage';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/utils/auth';
+import { ActivityType, EntityType } from '@prisma/client';
+import { loggingService } from '@/lib/services/loggingService';
+import { extractRequestContext } from '@/lib/utils/requestHelpers';
 
 // GET: Retrieve all images for a room
 export async function GET(
@@ -73,8 +78,26 @@ export async function POST(
   props: { params: Promise<{ id: string; roomId: string }> }
 ) {
   const params = await props.params;
+  const context = extractRequestContext(request);
+  const startTime = Date.now();
+  let user: any = null;
   
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true }
+    });
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
     const propertyId = parseInt(params.id);
     const roomId = parseInt(params.roomId);
     
@@ -175,11 +198,38 @@ export async function POST(
       updatedAt: image.updatedAt.toISOString()
     }));
     
+    // Log successful image upload
+    const duration = Date.now() - startTime;
+    await loggingService.logActivity(
+      user.id,
+      ActivityType.EDIT_IMAGE,
+      EntityType.ROOM,
+      roomId.toString(),
+      {
+        propertyId: propertyId.toString(),
+        imageCount: imagePaths.length,
+        roomCode: room.code,
+        hasDescriptions: !!(descriptions && descriptions.length > 0)
+      },
+      context.deviceType,
+      duration
+    );
+    
     return NextResponse.json({ 
       success: true,
       images: formattedImages
     }, { status: 201 });
   } catch (error) {
+    await loggingService.logError(
+      error as Error,
+      'room-images/POST',
+      user?.id,
+      {
+        propertyId: params.id,
+        roomId: params.roomId,
+        ...context
+      }
+    );
     console.error('Error adding room images:', error);
     return NextResponse.json(
       { error: 'Failed to add room images' },

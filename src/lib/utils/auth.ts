@@ -1,3 +1,18 @@
+/**
+ * NextAuth Configuration Utility
+ * -----------------------------
+ * Provides the configuration for NextAuth authentication, including providers, session strategy,
+ * callbacks, and custom logic for user validation and token management. Integrates with Prisma and
+ * supports both Google and credentials-based authentication.
+ *
+ * Responsibilities:
+ * - Configure authentication providers (Google, credentials)
+ * - Handle JWT and session callbacks for user data
+ * - Enforce user role and active status
+ * - Integrate with Prisma for user persistence
+ *
+ * The exported authOptions object is used by NextAuth in API routes and middleware.
+ */
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { AuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'

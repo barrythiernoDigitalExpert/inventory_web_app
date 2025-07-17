@@ -1,13 +1,17 @@
 // app/api/auth/login/route.ts
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient, ActivityType, EntityType } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { loggingService } from '@/lib/services/loggingService';
+import { extractRequestContext } from '@/lib/utils/requestHelpers';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const context = extractRequestContext(request);
+  
   try {
     const { email, password } = await request.json();
 
@@ -25,6 +29,15 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
+      await loggingService.logSecurity(
+        `Failed login attempt for email: ${email}`,
+        'medium',
+        undefined,
+        context.ipAddress,
+        context.userAgent,
+        { email, reason: 'user_not_found' }
+      );
+      
       return NextResponse.json(
         { message: 'Invalid credentials' },
         { status: 401 }
@@ -33,6 +46,15 @@ export async function POST(request: Request) {
 
     // Check if user is active
     if (!user.isActive) {
+      await loggingService.logSecurity(
+        `Login attempt on inactive account: ${email}`,
+        'high',
+        user.id,
+        context.ipAddress,
+        context.userAgent,
+        { email, reason: 'account_inactive' }
+      );
+      
       return NextResponse.json(
         { message: 'Account is inactive. Please contact administration.' },
         { status: 403 }
@@ -42,6 +64,15 @@ export async function POST(request: Request) {
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password || '');
     if (!passwordMatch) {
+      await loggingService.logAuth(
+        user.id,
+        ActivityType.LOGIN,
+        false,
+        context.ipAddress,
+        context.userAgent,
+        { email, reason: 'invalid_password' }
+      );
+      
       return NextResponse.json(
         { message: 'Invalid credentials' },
         { status: 401 }
@@ -60,6 +91,20 @@ export async function POST(request: Request) {
       { expiresIn: '7d' }
     );
 
+    // Log successful login
+    await loggingService.logAuth(
+      user.id,
+      ActivityType.LOGIN,
+      true,
+      context.ipAddress,
+      context.userAgent,
+      { 
+        email, 
+        deviceType: context.deviceType,
+        tokenExpiry: '7d'
+      }
+    );
+
     // Return user data (excluding password) and token
     return NextResponse.json({
       user: {
@@ -72,7 +117,13 @@ export async function POST(request: Request) {
       token,
     });
   } catch (error) {
-    console.error('Login error:', error);
+    await loggingService.logError(
+      error as Error,
+      'auth/login',
+      undefined,
+      { ipAddress: context.ipAddress, userAgent: context.userAgent }
+    );
+    
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

@@ -138,47 +138,86 @@ async function getUserActivitySummary(userId: number) {
       totalNeighborhoods
     ] = await Promise.all([
       // Total visits
-      prisma.canvassingVisit.count({ where: { userId } }),
+      prisma.canvassingVisit.count({ 
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          } 
+        } 
+      }),
       
       // Last 30 days
       prisma.canvassingVisit.count({
-        where: { userId, createdAt: { gte: thirtyDaysAgo } }
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          },
+          createdAt: { gte: thirtyDaysAgo } 
+        }
       }),
       
       // Last 7 days
       prisma.canvassingVisit.count({
-        where: { userId, createdAt: { gte: sevenDaysAgo } }
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          },
+          createdAt: { gte: sevenDaysAgo } 
+        }
       }),
       
       // Today
       prisma.canvassingVisit.count({
-        where: { userId, createdAt: { gte: today } }
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          },
+          createdAt: { gte: today } 
+        }
       }),
       
       // First visit
       prisma.canvassingVisit.findFirst({
-        where: { userId },
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          } 
+        },
         orderBy: { createdAt: 'asc' },
         select: { createdAt: true, houseName: true }
       }),
       
       // Last visit
       prisma.canvassingVisit.findFirst({
-        where: { userId },
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          } 
+        },
         orderBy: { createdAt: 'desc' },
         select: { createdAt: true, houseName: true }
       }),
       
       // Unique cities
       prisma.canvassingVisit.findMany({
-        where: { userId, city: { not: null } },
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          },
+          city: { not: null } 
+        },
         select: { city: true },
         distinct: ['city']
       }),
       
       // Unique neighborhoods
       prisma.canvassingVisit.findMany({
-        where: { userId, neighborhood: { not: null } },
+        where: { 
+          visitUsers: { 
+            some: { userId } 
+          },
+          neighborhood: { not: null } 
+        },
         select: { neighborhood: true },
         distinct: ['neighborhood']
       })

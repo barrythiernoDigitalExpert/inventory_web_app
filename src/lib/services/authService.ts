@@ -1,4 +1,16 @@
-// services/authService.ts
+/**
+ * Auth Service
+ * ------------
+ * Provides authentication logic for login, logout, token management, and authentication status.
+ * Handles storage of authentication tokens in localStorage or sessionStorage based on user preference.
+ *
+ * Responsibilities:
+ * - User login and logout
+ * - Store and retrieve authentication tokens
+ * - Check authentication status
+ *
+ * All functions are designed to be used by API route handlers, components, and other services.
+ */
 import { LoginCredentials, LoginResponse } from '@/types/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';

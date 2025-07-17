@@ -1,10 +1,12 @@
 // src/lib/services/canvassingService.ts
 import { prisma } from '@/lib/utils/prisma';
-import { ContactMethod, ResponseType } from '@prisma/client';
+import { ContactMethod, ResponseType, ActivityType, EntityType } from '@prisma/client';
+import { loggingService } from '@/lib/services/loggingService';
 
 interface CreateVisitParams {
   userId: number;
   userName: string;
+  additionalUsers?: { userId: number; userName: string }[];
   latitude: number;
   longitude: number;
   contactMethod: ContactMethod;
@@ -69,46 +71,86 @@ export class CanvassingService {
         throw new Error('Invalid GPS coordinates');
       }
 
-      // Create the visit
-      const visit = await prisma.canvassingVisit.create({
-        data: {
-          userId: params.userId,
-          userName: params.userName,
-          latitude: params.latitude,
-          longitude: params.longitude,
-          contactMethod: params.contactMethod,
-          houseName: params.houseName,
-          vendorName: params.vendorName,
-          comments: params.comments,
-          streetAddress: params.streetAddress,
-          neighborhood: params.neighborhood,
-          city: params.city,
-          postalCode: params.postalCode,
-          imagePath: params.imagePath,
-          mobileId: params.mobileId,
-          isSynced: true,
-          syncedAt: new Date(),
-        },
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-              role: true
-            }
+      // Create the visit with multiple users support
+      const visit = await prisma.$transaction(async (tx) => {
+        const newVisit = await tx.canvassingVisit.create({
+          data: {
+            latitude: params.latitude,
+            longitude: params.longitude,
+            contactMethod: params.contactMethod,
+            houseName: params.houseName,
+            vendorName: params.vendorName,
+            comments: params.comments,
+            streetAddress: params.streetAddress,
+            neighborhood: params.neighborhood,
+            city: params.city,
+            postalCode: params.postalCode,
+            imagePath: params.imagePath,
+            mobileId: params.mobileId,
+            isSynced: true,
+            syncedAt: new Date(),
+          }
+        });
+
+        // Add creator as first user
+        await tx.canvassingVisitUser.create({
+          data: {
+            visitId: newVisit.id,
+            userId: params.userId,
+            userName: params.userName,
+            isCreator: true
+          }
+        });
+
+        // Add additional users if provided
+        if (params.additionalUsers && params.additionalUsers.length > 0) {
+          for (const additionalUser of params.additionalUsers) {
+            await tx.canvassingVisitUser.create({
+              data: {
+                visitId: newVisit.id,
+                userId: additionalUser.userId,
+                userName: additionalUser.userName,
+                isCreator: false
+              }
+            });
           }
         }
+
+        // Return visit with users
+        return await tx.canvassingVisit.findUnique({
+          where: { id: newVisit.id },
+          include: {
+            visitUsers: {
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                    email: true,
+                    role: true
+                  }
+                }
+              }
+            }
+          }
+        });
       });
 
       // Log user activity
-      await this.logUserActivity({
-        userId: params.userId,
-        activityType: 'canvassing_visit',
-        entityId: visit.id,
-        entityType: 'canvassing_visit',
-        details: `Created visit at ${params.houseName}`,
-        deviceType: 'mobile'
-      });
+      await loggingService.logActivity(
+        params.userId,
+        ActivityType.CANVASSING_VISIT,
+        EntityType.CANVASSING_VISIT,
+        visit!.id,
+        {
+          houseName: params.houseName,
+          contactMethod: params.contactMethod,
+          hasLocation: true,
+          hasImage: !!params.imagePath,
+          hasVendor: !!params.vendorName
+        },
+        'mobile',
+        0
+      );
 
       return visit;
 
@@ -138,9 +180,19 @@ export class CanvassingService {
       const where: any = {};
 
       if (userId) {
-        where.userId = userId;
+        where.id = {
+          in: await prisma.canvassingVisitUser.findMany({
+            where: { userId: userId },
+            select: { visitId: true }
+          }).then(results => results.map(r => r.visitId))
+        };
       } else if (userIds && userIds.length > 0) {
-        where.userId = { in: userIds };
+        where.id = {
+          in: await prisma.canvassingVisitUser.findMany({
+            where: { userId: { in: userIds } },
+            select: { visitId: true }
+          }).then(results => results.map(r => r.visitId))
+        };
       }
 
       if (contactMethod) {
@@ -157,15 +209,30 @@ export class CanvassingService {
         if (endDate) where.createdAt.lte = endDate;
       }
 
+      // Get visit configuration for revisit logic
+      const visitConfig = await prisma.visitConfiguration.findFirst({
+        where: { isActive: true },
+        select: { revisitDelayHours: true }
+      });
+      const revisitDelayHours = visitConfig?.revisitDelayHours || 168; // Default 1 week
+
       const [visits, totalCount] = await Promise.all([
         prisma.canvassingVisit.findMany({
           where,
           include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-                role: true
+            visitUsers: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true
+                  }
+                }
+              },
+              orderBy: {
+                joinedAt: 'asc'
               }
             }
           },
@@ -178,10 +245,34 @@ export class CanvassingService {
         prisma.canvassingVisit.count({ where })
       ]);
 
+      // Add revisit information and format user data
+      const visitsWithRevisitInfo = visits.map(visit => {
+        const hoursSinceVisit = (Date.now() - visit.createdAt.getTime()) / (1000 * 60 * 60);
+        const canRevisit = (visit.responseReceived === ResponseType.pending || visit.responseReceived === null) && hoursSinceVisit >= revisitDelayHours;
+        
+        return {
+          ...visit,
+          userNames: visit.visitUsers.map(vu => vu.userName).join(', '),
+          users: visit.visitUsers.map(vu => ({
+            id: vu.user.id,
+            name: vu.user.name,
+            email: vu.user.email,
+            isCreator: vu.isCreator,
+            joinedAt: vu.joinedAt
+          })),
+          canRevisit,
+          hoursSinceVisit: Math.round(hoursSinceVisit),
+          hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit)
+        };
+      });
+
       return {
-        visits,
+        visits: visitsWithRevisitInfo,
         totalCount,
-        hasMore: offset + limit < totalCount
+        hasMore: offset + limit < totalCount,
+        visitConfig: {
+          revisitDelayHours
+        }
       };
 
     } catch (error) {
@@ -195,14 +286,29 @@ export class CanvassingService {
    */
   static async getVisitsByUser(userId: number, limit: number = 100) {
     try {
+      const visitIds = await prisma.canvassingVisitUser.findMany({
+        where: { userId: userId },
+        select: { visitId: true }
+      });
+      
       return await prisma.canvassingVisit.findMany({
-        where: { userId },
+        where: {
+          id: { in: visitIds.map(v => v.visitId) }
+        },
         include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-              role: true
+          visitUsers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  role: true
+                }
+              }
+            },
+            orderBy: {
+              joinedAt: 'asc'
             }
           }
         },
@@ -228,8 +334,12 @@ export class CanvassingService {
       const existingVisit = await prisma.canvassingVisit.findUnique({
         where: { id: visitId },
         include: {
-          user: {
-            select: { role: true }
+          visitUsers: {
+            include: {
+              user: {
+                select: { role: true }
+              }
+            }
           }
         }
       });
@@ -238,14 +348,15 @@ export class CanvassingService {
         throw new Error('Visit not found');
       }
 
-      // Authorization check - only the visit creator or admin can update
-      if (userId && existingVisit.userId !== userId) {
+      // Authorization check - only visit members or admin can update
+      if (userId) {
+        const isVisitMember = existingVisit.visitUsers.some(vu => vu.userId === userId);
         const requestingUser = await prisma.user.findUnique({
           where: { id: userId },
           select: { role: true }
         });
 
-        if (!requestingUser || requestingUser.role !== 'ADMIN') {
+        if (!isVisitMember && (!requestingUser || requestingUser.role !== 'ADMIN')) {
           throw new Error('Unauthorized to update this visit');
         }
       }
@@ -260,11 +371,15 @@ export class CanvassingService {
           updatedAt: new Date()
         },
         include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-              role: true
+          visitUsers: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                  role: true
+                }
+              }
             }
           }
         }
@@ -272,14 +387,18 @@ export class CanvassingService {
 
       // Log the update activity
       if (userId) {
-        await this.logUserActivity({
-          userId: userId,
-          activityType: 'update_visit_response',
-          entityId: visitId,
-          entityType: 'canvassing_visit',
-          details: `Updated response to ${responseReceived || 'no response'}`,
-          deviceType: 'web'
-        });
+        await loggingService.logActivity(
+          userId,
+          ActivityType.EDIT_PROPERTY,
+          EntityType.CANVASSING_VISIT,
+          visitId,
+          {
+            responseReceived,
+            houseName: existingVisit.houseName
+          },
+          'web',
+          0
+        );
       }
 
       return updatedVisit;
@@ -295,7 +414,16 @@ export class CanvassingService {
    */
   static async getVisitStats(userId?: number): Promise<VisitStats> {
     try {
-      const where = userId ? { userId } : {};
+      let where = {};
+      if (userId) {
+        const visitIds = await prisma.canvassingVisitUser.findMany({
+          where: { userId: userId },
+          select: { visitId: true }
+        });
+        where = {
+          id: { in: visitIds.map(v => v.visitId) }
+        };
+      }
       
       // Get today's date range
       const today = new Date();
@@ -404,7 +532,7 @@ export class CanvassingService {
   static async getAdminDashboardData() {
     try {
       // Get all users who have made visits
-      const usersWithVisits = await prisma.canvassingVisit.groupBy({
+      const usersWithVisits = await prisma.canvassingVisitUser.groupBy({
         by: ['userId', 'userName'],
         _count: {
           id: true
@@ -436,10 +564,14 @@ export class CanvassingService {
         take: 20,
         orderBy: { createdAt: 'desc' },
         include: {
-          user: {
-            select: {
-              name: true,
-              email: true
+          visitUsers: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  email: true
+                }
+              }
             }
           }
         }
@@ -513,14 +645,17 @@ export class CanvassingService {
       });
 
       // Log the deletion
-      await this.logUserActivity({
-        userId: userId,
-        activityType: 'delete_visit',
-        entityId: visitId,
-        entityType: 'canvassing_visit',
-        details: `Deleted visit at ${visit.houseName}`,
-        deviceType: 'web'
-      });
+      await loggingService.logActivity(
+        userId,
+        ActivityType.DELETE_PROPERTY,
+        EntityType.CANVASSING_VISIT,
+        visitId,
+        {
+          houseName: visit.houseName
+        },
+        'web',
+        0
+      );
 
       return { success: true };
 
@@ -576,30 +711,6 @@ export class CanvassingService {
     );
   }
 
-  private static async logUserActivity(params: {
-    userId: number;
-    activityType: string;
-    entityId?: string;
-    entityType?: string;
-    details?: string;
-    deviceType?: string;
-  }) {
-    try {
-      await prisma.userActivity.create({
-        data: {
-          userId: params.userId,
-          activityType: params.activityType,
-          entityId: params.entityId ? parseInt(params.entityId) : null,
-          entityType: params.entityType,
-          details: params.details,
-          deviceType: params.deviceType
-        }
-      });
-    } catch (error) {
-      console.error('Error logging user activity:', error);
-      // Don't throw - activity logging shouldn't break main functionality
-    }
-  }
 
   private static clusterVisitsByProximity(visits: any[], clusterRadiusMeters: number = 100) {
     const clusters: any[] = [];

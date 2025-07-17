@@ -54,12 +54,20 @@ export const Navigation = () => {
                 Properties
               </Link>
               {isAdmin && (
-                <Link 
-                  href="/users" 
-                  className="border-transparent text-neutral-gray hover:text-white hover:border-primary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  Users
-                </Link>
+                <>
+                  <Link 
+                    href="/users" 
+                    className="border-transparent text-neutral-gray hover:text-white hover:border-primary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    Users
+                  </Link>
+                  <Link 
+                    href="/admin/stats" 
+                    className="border-transparent text-neutral-gray hover:text-white hover:border-primary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    Admin Stats
+                  </Link>
+                </>
               )}
             </div>
           </div>
@@ -176,13 +184,22 @@ export const Navigation = () => {
               Properties
             </Link>
             {isAdmin && (
-              <Link
-                href="/users"
-                className="text-neutral-gray hover:bg-secondary-light hover:text-white block pl-3 pr-4 py-2 text-base font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Users
-              </Link>
+              <>
+                <Link
+                  href="/users"
+                  className="text-neutral-gray hover:bg-secondary-light hover:text-white block pl-3 pr-4 py-2 text-base font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Users
+                </Link>
+                <Link
+                  href="/admin/stats"
+                  className="text-neutral-gray hover:bg-secondary-light hover:text-white block pl-3 pr-4 py-2 text-base font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Admin Stats
+                </Link>
+              </>
             )}
           </div>
           <div className="pt-4 pb-3 border-t border-secondary-light">

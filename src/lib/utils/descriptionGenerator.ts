@@ -1,8 +1,26 @@
+/**
+ * Description Generator Utility
+ * ----------------------------
+ * Provides a function to generate descriptive text for images based on the room type. Uses random
+ * selection from predefined lists for each room type to create relevant and varied descriptions.
+ *
+ * Responsibilities:
+ * - Generate image descriptions for different room types
+ * - Support extensibility for new room types or AI-based generation
+ *
+ * The exported function is used by image upload and editing features.
+ */
 // Utility function to generate descriptions for images based on room type
 export async function generateImageDescription(
   imageUrl: string,
   roomName: string
 ): Promise<string> {
+  /**
+   * Generates a description for an image based on the room type.
+   * @param imageUrl The URL of the image (not used in this implementation)
+   * @param roomName The name of the room
+   * @returns A generated description string
+   */
   // Convert roomName to lowercase for case-insensitive matching
   const roomNameLower = roomName.toLowerCase();
   

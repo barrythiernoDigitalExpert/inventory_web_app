@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
 import { CanvassingService } from '@/lib/services/canvassingService';
 import { prisma } from '@/lib/utils/prisma';
+import { ResponseType } from '@prisma/client';
 
 // GET: Get user-specific canvassing statistics
 export async function GET(request: NextRequest) {
@@ -117,12 +118,15 @@ async function getPeriodStats(userId: number, period: string,  startDate?: strin
         break;
     }
 
-    const where = { userId, ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {}) };
+    const where = { 
+      visitUsers: { some: { userId } },
+      ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {})
+    };
 
     const [totalVisits, positiveResponses, negativeResponses, pendingResponses] = await Promise.all([
       prisma.canvassingVisit.count({ where }),
-      prisma.canvassingVisit.count({ where: { ...where, responseReceived: 'positive' } }),
-      prisma.canvassingVisit.count({ where: { ...where, responseReceived: 'negative' } }),
+      prisma.canvassingVisit.count({ where: { ...where, responseReceived: ResponseType.positive} }),
+      prisma.canvassingVisit.count({ where: { ...where, responseReceived: ResponseType.negative } }),
       prisma.canvassingVisit.count({ where: { ...where, responseReceived: null } })
     ]);
 
@@ -151,7 +155,7 @@ async function getUserTopAreas(userId: number) {
     const areaStats = await prisma.canvassingVisit.groupBy({
       by: ['city', 'neighborhood'],
       where: { 
-        userId,
+        visitUsers: { some: { userId } },
         city: { not: null }
       },
       _count: {
@@ -176,17 +180,17 @@ async function getUserTopAreas(userId: number) {
         const [totalVisits, positiveResponses] = await Promise.all([
           prisma.canvassingVisit.count({
             where: {
-              userId,
+              visitUsers: { some: { userId } },
               city: area.city,
               neighborhood: area.neighborhood
             }
           }),
           prisma.canvassingVisit.count({
             where: {
-              userId,
+              visitUsers: { some: { userId } },
               city: area.city,
               neighborhood: area.neighborhood,
-              responseReceived: 'positive'
+              responseReceived: ResponseType.positive
             }
           })
         ]);
@@ -216,7 +220,7 @@ async function getUserContactMethodStats(userId: number) {
   try {
     const methodStats = await prisma.canvassingVisit.groupBy({
       by: ['contactMethod'],
-      where: { userId },
+      where: { visitUsers: { some: { userId } } },
       _count: {
         id: true
       },
@@ -232,18 +236,18 @@ async function getUserContactMethodStats(userId: number) {
       methodStats.map(async (method) => {
         const [totalVisits, positiveResponses, totalResponses] = await Promise.all([
           prisma.canvassingVisit.count({
-            where: { userId, contactMethod: method.contactMethod }
+            where: { visitUsers: { some: { userId } }, contactMethod: method.contactMethod }
           }),
           prisma.canvassingVisit.count({
             where: { 
-              userId, 
+              visitUsers: { some: { userId } }, 
               contactMethod: method.contactMethod,
-              responseReceived: 'positive'
+              responseReceived: ResponseType.positive
             }
           }),
           prisma.canvassingVisit.count({
             where: { 
-              userId, 
+              visitUsers: { some: { userId } }, 
               contactMethod: method.contactMethod,
               responseReceived: { not: null }
             }
@@ -286,13 +290,13 @@ async function getUserActivityTimeline(userId: number, days: number = 30) {
       const [visits, responses] = await Promise.all([
         prisma.canvassingVisit.count({
           where: {
-            userId,
+            visitUsers: { some: { userId } },
             createdAt: { gte: date, lt: nextDate }
           }
         }),
         prisma.canvassingVisit.count({
           where: {
-            userId,
+            visitUsers: { some: { userId } },
             createdAt: { gte: date, lt: nextDate },
             responseReceived: { not: null }
           }

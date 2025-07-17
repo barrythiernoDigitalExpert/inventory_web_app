@@ -1,4 +1,18 @@
-// src/lib/services/roomImageService.ts
+/**
+ * Room Image Service
+ * ------------------
+ * Handles all business logic related to room images, including fetching, uploading, updating,
+ * deleting, and reordering images for rooms within properties. Provides utility functions for
+ * file conversion and progress tracking.
+ *
+ * Responsibilities:
+ * - Fetch, add, update, and delete room images
+ * - Set main image for a room
+ * - Convert files to base64 for upload
+ * - Reorder images and update metadata
+ *
+ * All functions are designed to be used by API route handlers, components, and other services.
+ */
 import { toast } from 'react-hot-toast';
 
 export interface RoomImage {

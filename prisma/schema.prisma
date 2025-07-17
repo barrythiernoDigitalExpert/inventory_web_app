@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -44,6 +44,14 @@ enum ResponseType {
   pending         // Awaiting response
 }
 
+enum PropertyFeatureType {
+  bool
+  text
+  integer
+  select
+  float
+}
+
 model User {
   id                Int               @id @default(autoincrement())
   email             String            @unique
@@ -60,7 +68,8 @@ model User {
   properties        Property[]        // Properties created by this user
   sharedProperties  PropertyShare[]   // Properties shared with this user
   inventorySessions InventorySession[] // Track time spent on inventories
-  canvassingVisits  CanvassingVisit[] // Canvassing visits by this user
+  canvassingVisits  CanvassingVisitUser[] // Canvassing visits by this user
+  activities        UserActivity[]    // User activity tracking
   
   @@map("users")
 }
@@ -96,6 +105,7 @@ model Property {
   inventorySessions InventorySession[]
   // Client information fields
   listingPerson   String?           @map("listing_person")
+  propertyFeatures PropertyPropertyFeature[]
   
   @@map("properties")
   @@index([userId])
@@ -172,11 +182,89 @@ model RoomImage {
   @@index([syncStatus])
 }
 
+model PropertyFeatureCategory {
+  id          Int              @id @default(autoincrement())
+  name        Json             // Multilingual names stored as JSON
+  sort        Int              @default(1)
+  isActive    Boolean          @default(false) @map("is_active")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  
+  // Relations
+  features    PropertyFeature[]
+  
+  @@map("property_feature_categories")
+  @@index([sort])
+  @@index([isActive])
+}
+
+model PropertyFeature {
+  id          Int                     @id @default(autoincrement())
+  categoryId  Int                     @map("category_id")
+  type        PropertyFeatureType
+  name        Json                    // Multilingual names stored as JSON
+  sort        Int                     @default(1)
+  isActive    Boolean                 @default(false) @map("is_active")
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @updatedAt @map("updated_at")
+  
+  // Relations
+  category    PropertyFeatureCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  options     PropertyFeatureOption[]
+  properties  PropertyPropertyFeature[]
+  
+  @@map("property_features")
+  @@index([categoryId])
+  @@index([type])
+  @@index([sort])
+  @@index([isActive])
+}
+
+// NEW: Property Feature Options (for select type features)
+model PropertyFeatureOption {
+  id                Int                     @id @default(autoincrement())
+  propertyFeatureId Int                     @map("property_feature_id")
+  value             Json                    // Multilingual values stored as JSON
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+  
+  // Relations
+  propertyFeature   PropertyFeature         @relation(fields: [propertyFeatureId], references: [id], onDelete: Cascade)
+  propertyFeatures  PropertyPropertyFeature[]
+  
+  @@map("property_feature_options")
+  @@index([propertyFeatureId])
+}
+
+// NEW: Junction table for Property and PropertyFeature with values
+model PropertyPropertyFeature {
+  id                      Int                    @id @default(autoincrement())
+  propertyFeatureId       Int                    @map("property_feature_id")
+  propertyId              Int                    @map("property_id")
+  valueText               Json?                  @map("value_text")      // For text type, multilingual
+  valueBool               Boolean?               @map("value_bool")      // For boolean type
+  valueInt                Int?                   @map("value_int")       // For integer type
+  valueFloat              Float?                 @map("value_float")     // For float type
+  valueFeatureOptionId    Int?                   @map("value_feature_option_id") // For select type
+  createdAt               DateTime               @default(now()) @map("created_at")
+  updatedAt               DateTime               @updatedAt @map("updated_at")
+  
+  // Relations
+  property                Property               @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyFeature         PropertyFeature        @relation(fields: [propertyFeatureId], references: [id], onDelete: Cascade)
+  valueFeatureOption      PropertyFeatureOption? @relation(fields: [valueFeatureOptionId], references: [id], onDelete: Cascade)
+  
+  @@unique([propertyId, propertyFeatureId])
+  @@map("property_property_feature")
+  @@index([propertyFeatureId])
+  @@index([propertyId])
+  @@index([valueFeatureOptionId])
+}
+
+
 // NEW: Canvassing Visit Model
 model CanvassingVisit {
   id              String          @id @default(cuid())
-  userId          Int          @map("user_id")     // String to match mobile UUID
-  userName        String          @map("user_name")
   
   // GPS coordinates
   latitude        Float
@@ -210,17 +298,19 @@ model CanvassingVisit {
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
   
-  // Relations - using String userId to match mobile data
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Relations - Many-to-many with users
+  visitUsers      CanvassingVisitUser[]
+  
+  // Revisit tracking
+  originalRevisits VisitRevisit[] @relation("OriginalVisit")
+  revisitOf       VisitRevisit[] @relation("RevisitVisit")
   
   @@map("canvassing_visits")
-  @@index([userId])
   @@index([latitude, longitude])
   @@index([contactMethod])
   @@index([responseReceived])
   @@index([createdAt])
   @@index([isSynced])
-  @@index([userName])
 }
 
 // Track time spent on inventory tasks
@@ -285,20 +375,107 @@ model SyncLog {
 }
 
 // User activity tracking for detailed analytics
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  CREATE_PROPERTY
+  EDIT_PROPERTY
+  DELETE_PROPERTY
+  VIEW_PROPERTY
+  ADD_ROOM
+  EDIT_ROOM
+  DELETE_ROOM
+  ADD_IMAGE
+  DELETE_IMAGE
+  EDIT_IMAGE
+  COMPLETE_INVENTORY
+  CANVASSING_VISIT
+  CREATE_USER
+  EDIT_USER
+  DELETE_USER
+  CHANGE_PASSWORD
+  RESET_PASSWORD
+  PROPERTY_SHARE
+  SYNC_DATA
+  EXPORT_DATA
+  IMPORT_DATA
+}
+
+enum EntityType {
+  USER
+  PROPERTY
+  ROOM
+  IMAGE
+  CANVASSING_VISIT
+  SYSTEM
+}
+
 model UserActivity {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @map("user_id")
-  activityType  String   // "login", "logout", "create_property", "edit_property", "add_room", "add_image", "complete_inventory", "canvassing_visit", etc.
-  entityId      Int?     @map("entity_id") // ID of the property, room, image, or visit concerned
-  entityType    String?  @map("entity_type") // "property", "room", "image", "canvassing_visit"
-  details       String?  @db.Text // Additional contextual information
-  deviceType    String?  @map("device_type") // "mobile" or "desktop"
-  duration      Int?     // Duration in seconds (if applicable)
-  timestamp     DateTime @default(now())
+  id            Int          @id @default(autoincrement())
+  userId        Int          @map("user_id")
+  activityType  ActivityType @map("activity_type")@default(LOGIN)
+  entityId      String?      @map("entity_id")
+  entityType    EntityType?  @map("entity_type")
+  details       String?      @db.Text
+  deviceType    String?      @map("device_type")
+  duration      Int?
+  timestamp     DateTime     @default(now())
+  metadata      String?      @db.Text
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("user_activities")
   @@index([userId])
   @@index([timestamp])
   @@index([activityType])
   @@index([entityType, entityId])
+}
+
+// Visit configuration settings
+model VisitConfiguration {
+  id                    Int       @id @default(autoincrement())
+  revisitDelayHours     Int       @default(168) @map("revisit_delay_hours") // Default 1 week (168 hours)
+  isActive              Boolean   @default(true) @map("is_active")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  
+  @@map("visit_configurations")
+}
+
+// Junction table for visit-user relationships
+model CanvassingVisitUser {
+  id              Int             @id @default(autoincrement())
+  visitId         String          @map("visit_id")
+  userId          Int             @map("user_id")
+  userName        String          @map("user_name")
+  isCreator       Boolean         @default(false) @map("is_creator") // Who created the visit
+  joinedAt        DateTime        @default(now()) @map("joined_at")
+  
+  // Relations
+  visit           CanvassingVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([visitId, userId])
+  @@map("canvassing_visit_users")
+  @@index([visitId])
+  @@index([userId])
+  @@index([isCreator])
+  @@index([joinedAt])
+}
+
+// Visit Revisit tracking
+model VisitRevisit {
+  id                String          @id @default(cuid())
+  originalVisitId   String          @map("original_visit_id")
+  newVisitId        String          @map("new_visit_id")
+  revisitReason     String?         @map("revisit_reason")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  
+  // Relations
+  originalVisit     CanvassingVisit @relation("OriginalVisit", fields: [originalVisitId], references: [id], onDelete: Cascade)
+  newVisit          CanvassingVisit @relation("RevisitVisit", fields: [newVisitId], references: [id], onDelete: Cascade)
+  
+  @@map("visit_revisits")
+  @@index([originalVisitId])
+  @@index([newVisitId])
 }

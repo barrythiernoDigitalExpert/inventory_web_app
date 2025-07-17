@@ -1,3 +1,16 @@
+/**
+ * JWT Authentication Utility
+ * -------------------------
+ * Provides functions to verify JWT authentication for API requests, extract user information from tokens,
+ * and handle error responses. Integrates with Prisma to fetch user data and validate account status.
+ *
+ * Responsibilities:
+ * - Verify JWT tokens from incoming requests
+ * - Fetch and validate user from the database
+ * - Return user info or appropriate error responses
+ *
+ * All functions are designed to be used by API route handlers and middleware.
+ */
 // src/lib/utils/auth-jwt.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
@@ -15,9 +28,9 @@ export interface DecodedToken {
 }
 
 /**
- * Vérifie l'authentification JWT et retourne les informations utilisateur
- * @param request La requête entrante NextRequest
- * @returns Un objet contenant l'utilisateur ou une réponse d'erreur
+ * Verifies JWT authentication and returns user information.
+ * @param request The incoming NextRequest object
+ * @returns An object containing the user or an error response
  */
 export async function verifyJwtAuth(request: NextRequest) {
   // Obtenir l'en-tête d'autorisation

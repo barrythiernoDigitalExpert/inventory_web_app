@@ -3,20 +3,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
-import { InventoryStatus } from '@prisma/client';
+import { InventoryStatus, ActivityType, EntityType } from '@prisma/client';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
+import { loggingService } from '@/lib/services/loggingService';
+import { extractRequestContext } from '@/lib/utils/requestHelpers';
 
 /**
  * POST: Finalise une session de synchronisation et met à jour les statuts
  */
 export async function POST(request: NextRequest) {
+  const context = extractRequestContext(request);
+  const startTime = Date.now();
+  let user: any = null;
+  
   try {
         const authResult = await verifyJwtAuth(request);
         if (authResult.error) {
           return authResult.error;
         }
         
-        const user = authResult.user;
+        user = authResult.user;
 
     // Récupérer les données nécessaires
     const { syncId, propertyReferences = [], roomUpdates = [] } = await request.json();
@@ -163,16 +169,25 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Enregistrer l'activité utilisateur
-    await prisma.userActivity.create({
-      data: {
-        userId: user.id,
-        activityType: 'sync_completed',
-        details: `Sync completed: ${propertyResults.length} properties, ${roomResults.length} rooms updated`,
-        deviceType: 'mobile',
-        timestamp: new Date()
-      }
-    });
+    // Enregistrer l'activité utilisateur avec le nouveau service de logging
+    const duration = Date.now() - startTime;
+    await loggingService.logActivity(
+      user.id,
+      ActivityType.SYNC_DATA,
+      EntityType.SYSTEM,
+      syncId.toString(),
+      {
+        syncStatus: 'completed',
+        action: 'sync_completed',
+        propertiesUpdated: propertyResults.length,
+        roomsUpdated: roomResults.length,
+        propertyResults,
+        roomResults: roomResults.map(r => ({ id: r.id, status: r.status })),
+        syncDuration: duration
+      },
+      'mobile',
+      duration
+    );
 
     return NextResponse.json({
       success: true,
@@ -185,6 +200,12 @@ export async function POST(request: NextRequest) {
       message: 'Synchronization completed successfully'
     });
   } catch (error) {
+    await loggingService.logError(
+      error as Error,
+      'sync/complete',
+      user?.id,
+      context
+    );
     console.error('Sync complete error:', error);
     return NextResponse.json({ 
       success: false, 

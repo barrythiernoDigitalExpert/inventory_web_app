@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/utils/prisma'
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt'
 import { v4 as uuidv4 } from 'uuid'
-import { $Enums } from '@prisma/client';
+import { $Enums, ActivityType, EntityType } from '@prisma/client'
+import { loggingService } from '@/lib/services/loggingService'
+import { extractRequestContext } from '@/lib/utils/requestHelpers'
 
 // Define interfaces for better type safety
 interface CanvassingVisitData {
@@ -31,6 +33,8 @@ interface CanvassingVisitData {
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now()
+  const context = extractRequestContext(request)
+  let user: any = null
   
   try {
     // Verify authentication first (same pattern as upload route)
@@ -39,7 +43,7 @@ export async function GET(request: NextRequest) {
       return authResult.error
     }
 
-    const user = authResult.user
+    user = authResult.user
 
     // Parse query parameters
     const { searchParams } = new URL(request.url)
@@ -93,6 +97,22 @@ export async function GET(request: NextRequest) {
     const processingTime = Date.now() - startTime
     console.log(`Retrieved ${visits.length} visits in ${processingTime}ms`)
 
+    // Log the view activity
+    await loggingService.logActivity(
+      user.id,
+      ActivityType.VIEW_PROPERTY,
+      EntityType.CANVASSING_VISIT,
+      undefined,
+      {
+        resultCount: visits.length,
+        totalAvailable: total,
+        filters: { userId, contactMethod, responseReceived, startDate, endDate },
+        userRole: user.role
+      },
+      context.deviceType,
+      processingTime
+    )
+
     return NextResponse.json({
       success: true,
       data: {
@@ -109,6 +129,12 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     const processingTime = Date.now() - startTime
+    await loggingService.logError(
+      error as Error,
+      'canvassingvisits/GET',
+      user?.id,
+      context
+    )
     console.error(`Error fetching canvassing visits (${processingTime}ms):`, error)
     
     return NextResponse.json(
@@ -127,6 +153,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
+  const context = extractRequestContext(request)
+  let user: any = null
   
   try {
     // Verify authentication first (same pattern as upload route)
@@ -135,7 +163,7 @@ export async function POST(request: NextRequest) {
       return authResult.error
     }
 
-    const user = authResult.user
+    user = authResult.user
 
     // Get request data
     const body = await request.json()
@@ -148,7 +176,7 @@ export async function POST(request: NextRequest) {
       // Bulk sync from mobile app
       console.log(`Processing bulk sync with ${body.length} visits`)
       
-      const createdVisits: { id: string; createdAt: Date; updatedAt: Date; city: string | null; postalCode: string | null; imagePath: string | null; userId: number; userName: string; latitude: number; longitude: number; contactMethod: $Enums.ContactMethod; houseName: string; vendorName: string | null; comments: string | null; streetAddress: string | null; neighborhood: string | null; responseReceived: $Enums.ResponseType | null; responseDate: Date | null; isSynced: boolean; mobileId: string | null; syncedAt: Date | null; }[] = [];
+      const createdVisits: any[] = [];
       let successCount = 0
       let errorCount = 0
       const errors: string[] = []
@@ -179,8 +207,6 @@ export async function POST(request: NextRequest) {
 
             const visit = await tx.canvassingVisit.create({
               data: {
-                userId: user.id,
-                userName: user.name || user.email || 'Unknown User',
                 latitude: parseFloat(visitData.latitude),
                 longitude: parseFloat(visitData.longitude),
                 contactMethod: visitData.contactMethod,
@@ -199,6 +225,16 @@ export async function POST(request: NextRequest) {
               }
             })
 
+            // Create the visit user relationship
+            await tx.canvassingVisitUser.create({
+              data: {
+                visitId: visit.id,
+                userId: user.id,
+                userName: user.name || user.email || 'Unknown User',
+                isCreator: true
+              }
+            })
+
             createdVisits.push(visit)
             successCount++
             
@@ -210,18 +246,23 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Log activity (like upload route)
+      // Log activity using logging service
       if (successCount > 0) {
-        await prisma.userActivity.create({
-          data: {
-            userId: user.id,
-            activityType: 'sync_canvassing',
-            entityType: 'canvassing_visit',
-            details: `Bulk sync: ${successCount} visits created, ${errorCount} errors`,
-            deviceType: 'mobile',
-            timestamp: new Date()
-          }
-        })
+        const processingTime = Date.now() - startTime
+        await loggingService.logActivity(
+          user.id,
+          ActivityType.SYNC_DATA,
+          EntityType.CANVASSING_VISIT,
+          undefined,
+          {
+            totalRequested: body.length,
+            successfulCreated: successCount,
+            errorCount,
+            errorMessages: errors.length > 0 ? errors.slice(0, 5) : undefined
+          },
+          context.deviceType,
+          processingTime
+        )
       }
 
       const processingTime = Date.now() - startTime
@@ -295,8 +336,6 @@ export async function POST(request: NextRequest) {
       }
 
       const visitData: any = {
-        userId: user.id,
-        userName: user.name || user.email || 'Unknown User',
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
         contactMethod,
@@ -318,20 +357,34 @@ export async function POST(request: NextRequest) {
         data: visitData
       })
 
-      // Log activity (like upload route)
-      await prisma.userActivity.create({
+      // Create the visit user relationship
+      await prisma.canvassingVisitUser.create({
         data: {
+          visitId: visit.id,
           userId: user.id,
-          activityType: 'create_canvassing_visit',
-          entityId: parseInt(visit.id) ,
-          entityType: 'canvassing_visit',
-          details: `Visit created: ${houseName} (${contactMethod})`,
-          deviceType: 'mobile',
-          timestamp: new Date()
+          userName: user.name || user.email || 'Unknown User',
+          isCreator: true
         }
       })
 
+      // Log activity using logging service
       const processingTime = Date.now() - startTime
+      await loggingService.logActivity(
+        user.id,
+        ActivityType.CANVASSING_VISIT,
+        EntityType.CANVASSING_VISIT,
+        visit.id,
+        {
+          houseName,
+          contactMethod,
+          hasLocation: !!(latitude && longitude),
+          hasImage: !!imagePath,
+          hasVendor: !!vendorName
+        },
+        context.deviceType,
+        processingTime
+      )
+
       console.log(`Single visit created in ${processingTime}ms: ${visit.id}`)
 
       return NextResponse.json({
@@ -346,6 +399,12 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     const processingTime = Date.now() - startTime
+    await loggingService.logError(
+      error as Error,
+      'canvassingvisits/POST',
+      user?.id,
+      context
+    )
     console.error(`Error creating canvassing visit (${processingTime}ms):`, error)
     
     return NextResponse.json(

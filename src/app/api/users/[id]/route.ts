@@ -1,54 +1,91 @@
-// src/app/api/users/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/utils/prisma';
 import { getServerSession } from 'next-auth/next';
+import { prisma } from '@/lib/utils/prisma';
 import { authOptions } from '@/lib/utils/auth';
-import { UserRole } from '@prisma/client';
 
-// PATCH: Update user role
 export async function PATCH(
-  request: NextRequest,
-  props: { params: Promise<{ id: string }> }
+  req: NextRequest,
+   props: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email || session?.user?.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
     const params = await props.params;
+    
+    // Check authentication
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check if the authenticated user is an admin
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true },
+    });
+
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Forbidden: Admin privileges required' },
+        { status: 403 }
+      );
+    }
+
+    // Validate user ID
+    if (!params.id) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
+      );
+    }
+
     const userId = parseInt(params.id);
-    if (isNaN(userId)) {
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+
+    // Get request body
+    const { isActive } = await req.json();
+    
+    // Validate isActive parameter
+    if (typeof isActive !== 'boolean') {
+      return NextResponse.json(
+        { error: 'Invalid active status value' },
+        { status: 400 }
+      );
     }
-    
-    const body = await request.json();
-    const { role } = body;
-    
-    if (!role || (role !== 'ADMIN' && role !== 'USER')) {
-      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
-    }
-    
-    // Update user
-    const user = await prisma.user.update({
+
+    // Update user status
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        role: role === 'ADMIN' ? UserRole.ADMIN : UserRole.USER
-      }
+      data: { isActive },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
-    
+
     return NextResponse.json({
-      user: {
-        id: user.id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        createdAt: user.createdAt.toISOString(),
-        updatedAt: user.updatedAt.toISOString()
-      }
+      user: updatedUser,
+      message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
     });
-  } catch (error) {
-    console.error('Error updating user:', error);
-    return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error updating user status:', error);
+    
+    // Handle Prisma errors
+    if (error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json(
+      { error: 'Failed to update user status' },
+      { status: 500 }
+    );
   }
 }
