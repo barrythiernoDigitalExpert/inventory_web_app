@@ -90,12 +90,12 @@ export async function POST(
     const revisitDelayHours = visitConfig?.revisitDelayHours || 168 // Default 1 week
     const hoursSinceVisit = (Date.now() - originalVisit.createdAt.getTime()) / (1000 * 60 * 60)
     
-    // Only allow revisits for pending visits that have passed the delay time
-    if (originalVisit.responseReceived !== 'pending') {
+    // Only allow revisits for visits that are not positive or negative
+    if (originalVisit.responseReceived === 'positive' || originalVisit.responseReceived === 'negative') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Can only revisit visits with pending response status'
+          error: 'Cannot revisit visits with positive or negative response status'
         },
         { status: 400 }
       )
@@ -216,18 +216,56 @@ export async function POST(
 
     console.log(`Created revisit ${result!.id} for original visit ${visitId} by user ${user.id}`)
 
+    // Get visit configuration for consistent response format
+    const visitConfig = await prisma.visitConfiguration.findFirst({
+      where: { isActive: true },
+      select: { revisitDelayHours: true }
+    })
+    const revisitDelayHours = visitConfig?.revisitDelayHours || 168
+
+    // Add revisit information to match POST format
+    const hoursSinceCreation = (Date.now() - result!.createdAt.getTime()) / (1000 * 60 * 60)
+    const canRevisit = (result!.responseReceived === 'pending' || result!.responseReceived === 'no_response' || result!.responseReceived === null) && hoursSinceCreation >= revisitDelayHours
+
+    // Format the result to match POST visit format
+    const enrichedResult = {
+      ...result,
+      userNames: result!.visitUsers.map((vu: any) => vu.userName).join(', '),
+      users: result!.visitUsers.map((vu: any) => ({
+        id: vu.user.id,
+        name: vu.user.name,
+        email: vu.user.email,
+        isCreator: vu.isCreator,
+        joinedAt: vu.joinedAt
+      })),
+      canRevisit,
+      hoursSinceVisit: Math.round(hoursSinceCreation),
+      hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceCreation),
+      originalVisit: {
+        id: originalVisit.id,
+        houseName: originalVisit.houseName,
+        responseReceived: originalVisit.responseReceived,
+        createdAt: originalVisit.createdAt
+      },
+      revisitInfo: {
+        hoursSinceOriginal: Math.round(hoursSinceVisit),
+        revisitReason: revisitReason || 'Follow-up visit'
+      },
+      isRevisit: true
+    }
+
     return NextResponse.json({
       success: true,
       data: {
-        revisit: result,
-        originalVisit: {
-          id: originalVisit.id,
-          houseName: originalVisit.houseName,
-          createdAt: originalVisit.createdAt
+        visits: [enrichedResult],
+        pagination: {
+          total: 1,
+          limit: 1,
+          offset: 0,
+          hasMore: false
         },
-        revisitInfo: {
-          hoursSinceOriginal: Math.round(hoursSinceVisit),
-          revisitReason: revisitReason || 'Follow-up visit'
+        visitConfig: {
+          revisitDelayHours
         }
       },
       message: 'Revisit created successfully',
