@@ -72,27 +72,139 @@ export async function GET(request: NextRequest) {
       if (endDate) whereClause.createdAt.lte = new Date(endDate)
     }
 
-    // Get visits from database
-    const visits = await prisma.canvassingVisit.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-      select: forMap ? {
-        id: true,
-        latitude: true,
-        longitude: true,
-        houseName: true,
-        contactMethod: true,
-        responseReceived: true,
-        createdAt: true
-      } : undefined
+    // Get visit configuration for revisit logic
+    const visitConfig = await prisma.visitConfiguration.findFirst({
+      where: { isActive: true },
+      select: { revisitDelayHours: true }
     })
+    const revisitDelayHours = visitConfig?.revisitDelayHours || 168 // Default 1 week
+
+    // Get visits from database with enriched data
+    const visits = forMap 
+      ? await prisma.canvassingVisit.findMany({
+          where: whereClause,
+          select: {
+            id: true,
+            latitude: true,
+            longitude: true,
+            houseName: true,
+            contactMethod: true,
+            responseReceived: true,
+            createdAt: true
+          },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset
+        })
+      : await prisma.canvassingVisit.findMany({
+          where: whereClause,
+          include: {
+            visitUsers: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true
+                  }
+                }
+              },
+              orderBy: {
+                joinedAt: 'asc'
+              }
+            },
+            originalRevisits: {
+              include: {
+                newVisit: {
+                  select: {
+                    id: true,
+                    houseName: true,
+                    responseReceived: true,
+                    createdAt: true
+                  }
+                }
+              },
+              orderBy: {
+                createdAt: 'desc'
+              }
+            },
+            revisitOf: {
+              include: {
+                originalVisit: {
+                  select: {
+                    id: true,
+                    houseName: true,
+                    responseReceived: true,
+                    createdAt: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset
+        })
 
     // Get total count for pagination
     const total = await prisma.canvassingVisit.count({
       where: whereClause
     })
+
+    // Add revisit information and format user data for non-map requests
+    const enrichedVisits = forMap ? visits : await Promise.all(visits.map(async (visit: any) => {
+      const hoursSinceVisit = (Date.now() - visit.createdAt.getTime()) / (1000 * 60 * 60)
+      const canRevisit = (visit.responseReceived === 'pending' || visit.responseReceived === 'no_response' || visit.responseReceived === null) && hoursSinceVisit >= revisitDelayHours
+      
+      // Count visits for this property (same houseName and nearby coordinates)
+      
+      // Format revisit information
+      const originalVisit = visit.revisitOf.length > 0 ? {
+        id: visit.revisitOf[0].originalVisit.id,
+        houseName: visit.revisitOf[0].originalVisit.houseName,
+        responseReceived: visit.revisitOf[0].originalVisit.responseReceived,
+        createdAt: visit.revisitOf[0].originalVisit.createdAt
+      } : null
+
+      const revisitInfo = visit.revisitOf.length > 0 ? {
+        hoursSinceOriginal: Math.round((visit.createdAt.getTime() - visit.revisitOf[0].originalVisit.createdAt.getTime()) / (1000 * 60 * 60)),
+        revisitReason: visit.revisitOf[0].revisitReason || 'Follow-up visit'
+      } : null
+
+      const revisits = visit.originalRevisits.map((revisit: any) => ({
+        id: revisit.id,
+        newVisitId: revisit.newVisit.id,
+        revisitReason: revisit.revisitReason,
+        createdAt: revisit.createdAt,
+        newVisit: {
+          id: revisit.newVisit.id,
+          houseName: revisit.newVisit.houseName,
+          responseReceived: revisit.newVisit.responseReceived,
+          createdAt: revisit.newVisit.createdAt
+        }
+      }))
+
+      return {
+        ...visit,
+        userNames: visit.visitUsers.map((vu: any) => vu.userName).join(', '),
+        users: visit.visitUsers.map((vu: any) => ({
+          id: vu.user.id,
+          name: vu.user.name,
+          email: vu.user.email,
+          isCreator: vu.isCreator,
+          joinedAt: vu.joinedAt
+        })),
+        canRevisit,
+        hoursSinceVisit: Math.round(hoursSinceVisit),
+        hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
+        // Revisit information
+        originalVisit,
+        revisitInfo,
+        revisits: revisits.length > 0 ? revisits : undefined,
+        isRevisit: originalVisit !== null
+      }
+    }))
 
     const processingTime = Date.now() - startTime
     console.log(`Retrieved ${visits.length} visits in ${processingTime}ms`)
@@ -116,12 +228,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        visits,
+        visits: enrichedVisits,
         pagination: {
           total,
           limit,
           offset,
           hasMore: offset + limit < total
+        },
+        visitConfig: forMap ? undefined : {
+          revisitDelayHours
         }
       },
       processingTime
@@ -235,7 +350,58 @@ export async function POST(request: NextRequest) {
               }
             })
 
-            createdVisits.push(visit)
+            // Get the enriched visit data with user information
+            const enrichedVisit = await tx.canvassingVisit.findUnique({
+              where: { id: visit.id },
+              include: {
+                visitUsers: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true
+                      }
+                    }
+                  },
+                  orderBy: {
+                    joinedAt: 'asc'
+                  }
+                },
+                originalRevisits: {
+                  include: {
+                    newVisit: {
+                      select: {
+                        id: true,
+                        houseName: true,
+                        responseReceived: true,
+                        createdAt: true
+                      }
+                    }
+                  },
+                  orderBy: {
+                    createdAt: 'desc'
+                  }
+                },
+                revisitOf: {
+                  include: {
+                    originalVisit: {
+                      select: {
+                        id: true,
+                        houseName: true,
+                        responseReceived: true,
+                        createdAt: true
+                      }
+                    }
+                  }
+                }
+              }
+            })
+
+            if (enrichedVisit) {
+              createdVisits.push(enrichedVisit)
+            }
             successCount++
             
           } catch (error) {
@@ -265,18 +431,81 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      // Get visit configuration for revisit logic
+      const visitConfig = await prisma.visitConfiguration.findFirst({
+        where: { isActive: true },
+        select: { revisitDelayHours: true }
+      })
+      const revisitDelayHours = visitConfig?.revisitDelayHours || 168
+
+      // Add revisit information to created visits
+      const enrichedCreatedVisits = await Promise.all(createdVisits.map(async (visit: any) => {
+        const hoursSinceVisit = (Date.now() - visit.createdAt.getTime()) / (1000 * 60 * 60)
+        const canRevisit = (visit.responseReceived === 'pending' || visit.responseReceived === 'no_response' || visit.responseReceived === null) && hoursSinceVisit >= revisitDelayHours
+        
+        
+        // Format revisit information
+        const originalVisit = visit.revisitOf.length > 0 ? {
+          id: visit.revisitOf[0].originalVisit.id,
+          houseName: visit.revisitOf[0].originalVisit.houseName,
+          responseReceived: visit.revisitOf[0].originalVisit.responseReceived,
+          createdAt: visit.revisitOf[0].originalVisit.createdAt
+        } : null
+
+        const revisitInfo = visit.revisitOf.length > 0 ? {
+          hoursSinceOriginal: Math.round((visit.createdAt.getTime() - visit.revisitOf[0].originalVisit.createdAt.getTime()) / (1000 * 60 * 60)),
+          revisitReason: visit.revisitOf[0].revisitReason || 'Follow-up visit'
+        } : null
+
+        const revisits = visit.originalRevisits.map((revisit: any) => ({
+          id: revisit.id,
+          newVisitId: revisit.newVisit.id,
+          revisitReason: revisit.revisitReason,
+          createdAt: revisit.createdAt,
+          newVisit: {
+            id: revisit.newVisit.id,
+            houseName: revisit.newVisit.houseName,
+            responseReceived: revisit.newVisit.responseReceived,
+            createdAt: revisit.newVisit.createdAt
+          }
+        }))
+
+        return {
+          ...visit,
+          userNames: visit.visitUsers.map((vu: any) => vu.userName).join(', '),
+          users: visit.visitUsers.map((vu: any) => ({
+            id: vu.user.id,
+            name: vu.user.name,
+            email: vu.user.email,
+            isCreator: vu.isCreator,
+            joinedAt: vu.joinedAt
+          })),
+          canRevisit,
+          hoursSinceVisit: Math.round(hoursSinceVisit),
+          hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
+          // Revisit information
+          originalVisit,
+          revisitInfo,
+          revisits: revisits.length > 0 ? revisits : undefined,
+          isRevisit: originalVisit !== null
+        }
+      }))
+
       const processingTime = Date.now() - startTime
       console.log(`Bulk sync completed in ${processingTime}ms: ${successCount} success, ${errorCount} errors`)
 
       return NextResponse.json({
         success: successCount > 0,
         data: {
-          visits: createdVisits,
+          visits: enrichedCreatedVisits,
           stats: {
             total: body.length,
             successful: successCount,
             errors: errorCount,
             errorMessages: errors
+          },
+          visitConfig: {
+            revisitDelayHours
           }
         },
         message: `Bulk sync completed: ${successCount} visits created`,
@@ -367,6 +596,115 @@ export async function POST(request: NextRequest) {
         }
       })
 
+      // Get the enriched visit data with user information
+      const enrichedVisit = await prisma.canvassingVisit.findUnique({
+        where: { id: visit.id },
+        include: {
+          visitUsers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  role: true
+                }
+              }
+            },
+            orderBy: {
+              joinedAt: 'asc'
+            }
+          },
+          originalRevisits: {
+            include: {
+              newVisit: {
+                select: {
+                  id: true,
+                  houseName: true,
+                  responseReceived: true,
+                  createdAt: true
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            }
+          },
+          revisitOf: {
+            include: {
+              originalVisit: {
+                select: {
+                  id: true,
+                  houseName: true,
+                  responseReceived: true,
+                  createdAt: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      // Get visit configuration for revisit logic
+      const visitConfig = await prisma.visitConfiguration.findFirst({
+        where: { isActive: true },
+        select: { revisitDelayHours: true }
+      })
+      const revisitDelayHours = visitConfig?.revisitDelayHours || 168
+
+      // Add revisit information
+      const hoursSinceVisit = (Date.now() - visit.createdAt.getTime()) / (1000 * 60 * 60)
+      const canRevisit = (visit.responseReceived === 'pending' || visit.responseReceived === 'no_response' || visit.responseReceived === null) && hoursSinceVisit >= revisitDelayHours
+
+      // Count visits for this property
+      
+      
+      // Format revisit information
+      const originalVisit = (enrichedVisit?.revisitOf && enrichedVisit.revisitOf.length > 0) ? {
+        id: enrichedVisit.revisitOf[0].originalVisit.id,
+        houseName: enrichedVisit.revisitOf[0].originalVisit.houseName,
+        responseReceived: enrichedVisit.revisitOf[0].originalVisit.responseReceived,
+        createdAt: enrichedVisit.revisitOf[0].originalVisit.createdAt
+      } : null
+
+      const revisitInfo = (enrichedVisit?.revisitOf && enrichedVisit.revisitOf.length > 0) ? {
+        hoursSinceOriginal: Math.round((enrichedVisit.createdAt.getTime() - enrichedVisit.revisitOf[0].originalVisit.createdAt.getTime()) / (1000 * 60 * 60)),
+        revisitReason: enrichedVisit.revisitOf[0].revisitReason || 'Follow-up visit'
+      } : null
+
+      const revisits = enrichedVisit?.originalRevisits?.map((revisit: any) => ({
+        id: revisit.id,
+        newVisitId: revisit.newVisit.id,
+        revisitReason: revisit.revisitReason,
+        createdAt: revisit.createdAt,
+        newVisit: {
+          id: revisit.newVisit.id,
+          houseName: revisit.newVisit.houseName,
+          responseReceived: revisit.newVisit.responseReceived,
+          createdAt: revisit.newVisit.createdAt
+        }
+      })) || []
+
+      const enrichedVisitWithRevisit = {
+        ...enrichedVisit,
+        userNames: enrichedVisit?.visitUsers.map((vu: any) => vu.userName).join(', '),
+        users: enrichedVisit?.visitUsers.map((vu: any) => ({
+          id: vu.user.id,
+          name: vu.user.name,
+          email: vu.user.email,
+          isCreator: vu.isCreator,
+          joinedAt: vu.joinedAt
+        })),
+        canRevisit,
+        hoursSinceVisit: Math.round(hoursSinceVisit),
+        hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
+        // Revisit information
+        originalVisit,
+        revisitInfo,
+        revisits: revisits.length > 0 ? revisits : undefined,
+        isRevisit: originalVisit !== null
+      }
+
       // Log activity using logging service
       const processingTime = Date.now() - startTime
       await loggingService.logActivity(
@@ -390,7 +728,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: {
-          visit,
+          visit: enrichedVisitWithRevisit,
+          visitConfig: {
+            revisitDelayHours
+          },
           message: 'Visit created successfully'
         },
         processingTime
