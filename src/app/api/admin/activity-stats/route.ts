@@ -5,6 +5,31 @@ import { prisma } from '@/lib/utils/prisma';
 import { UserRole, ActivityType } from '@prisma/client';
 import { loggingService } from '@/lib/services/loggingService';
 
+// Helper function to convert BigInt to Number
+function convertBigIntToNumber(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  
+  if (typeof obj === 'bigint') {
+    return Number(obj);
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(convertBigIntToNumber);
+  }
+  
+  if (typeof obj === 'object') {
+    const converted: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      converted[key] = convertBigIntToNumber(value);
+    }
+    return converted;
+  }
+  
+  return obj;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -36,12 +61,13 @@ export async function GET(request: NextRequest) {
     const end = endDate ? new Date(endDate) : defaultEndDate;
 
     // Get activity statistics
-    const stats = await loggingService.getActivityStats(
+    const rawStats = await loggingService.getActivityStats(
       start,
       end,
       userId ? parseInt(userId) : undefined,
       activityType
     );
+    const stats = convertBigIntToNumber(rawStats);
 
     // Get additional metrics
     const [
@@ -148,9 +174,9 @@ export async function GET(request: NextRequest) {
         }
       },
       activityBreakdown: stats.activityBreakdown,
-      topUsers: topUsersWithDetails,
-      activityTrends,
-      recentActivities,
+      topUsers: convertBigIntToNumber(topUsersWithDetails),
+      activityTrends: convertBigIntToNumber(activityTrends),
+      recentActivities: convertBigIntToNumber(recentActivities),
       filters: {
         userId,
         activityType,
@@ -248,7 +274,7 @@ export async function POST(request: NextRequest) {
     const detailedReport = Array.from(userActivityMap.values());
 
     return NextResponse.json({
-      report: detailedReport,
+      report: convertBigIntToNumber(detailedReport),
       totalActivities: activities.length,
       period: {
         start: start.toISOString(),

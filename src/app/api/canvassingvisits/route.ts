@@ -728,12 +728,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         data: {
-          visit: enrichedVisitWithRevisit,
+          visits: [enrichedVisitWithRevisit],
+          pagination: {
+            total: 1,
+            limit: 1,
+            offset: 0,
+            hasMore: false
+          },
           visitConfig: {
             revisitDelayHours
-          },
-          message: 'Visit created successfully'
+          }
         },
+        message: 'Visit created successfully',
         processingTime
       }, { status: 201 })
     }
