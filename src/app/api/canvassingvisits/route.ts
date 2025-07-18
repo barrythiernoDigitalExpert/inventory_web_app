@@ -187,14 +187,14 @@ export async function GET(request: NextRequest) {
 
       return {
         ...visit,
-        userNames: visit.visitUsers.map((vu: any) => vu.userName).join(', '),
-        users: visit.visitUsers.map((vu: any) => ({
+        userNames: visit.visitUsers?.length > 0 ? visit.visitUsers.map((vu: any) => vu.userName).join(', ') : '',
+        users: visit.visitUsers?.length > 0 ? visit.visitUsers.map((vu: any) => ({
           id: vu.user.id,
           name: vu.user.name,
           email: vu.user.email,
           isCreator: vu.isCreator,
           joinedAt: vu.joinedAt
-        })),
+        })) : [],
         canRevisit,
         hoursSinceVisit: Math.round(hoursSinceVisit),
         hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
@@ -472,14 +472,14 @@ export async function POST(request: NextRequest) {
 
         return {
           ...visit,
-          userNames: visit.visitUsers.map((vu: any) => vu.userName).join(', '),
-          users: visit.visitUsers.map((vu: any) => ({
+          userNames: visit.visitUsers?.length > 0 ? visit.visitUsers.map((vu: any) => vu.userName).join(', ') : '',
+          users: visit.visitUsers?.length > 0 ? visit.visitUsers.map((vu: any) => ({
             id: vu.user.id,
             name: vu.user.name,
             email: vu.user.email,
             isCreator: vu.isCreator,
             joinedAt: vu.joinedAt
-          })),
+          })) : [],
           canRevisit,
           hoursSinceVisit: Math.round(hoursSinceVisit),
           hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
@@ -687,14 +687,14 @@ export async function POST(request: NextRequest) {
 
       const enrichedVisitWithRevisit = {
         ...enrichedVisit,
-        userNames: enrichedVisit?.visitUsers.map((vu: any) => vu.userName).join(', '),
-        users: enrichedVisit?.visitUsers.map((vu: any) => ({
+        userNames: enrichedVisit?.visitUsers && enrichedVisit.visitUsers.length > 0 ? enrichedVisit.visitUsers.map((vu: any) => vu.userName).join(', ') : '',
+        users: enrichedVisit?.visitUsers && enrichedVisit.visitUsers.length > 0 ? enrichedVisit.visitUsers.map((vu: any) => ({
           id: vu.user.id,
           name: vu.user.name,
           email: vu.user.email,
           isCreator: vu.isCreator,
           joinedAt: vu.joinedAt
-        })),
+        })) : [],
         canRevisit,
         hoursSinceVisit: Math.round(hoursSinceVisit),
         hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),

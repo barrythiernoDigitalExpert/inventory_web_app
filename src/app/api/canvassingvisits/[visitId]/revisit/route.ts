@@ -225,14 +225,14 @@ export async function POST(
     // Format the result to match POST visit format
     const enrichedResult = {
       ...result,
-      userNames: result!.visitUsers.map((vu: any) => vu.userName).join(', '),
-      users: result!.visitUsers.map((vu: any) => ({
+      userNames: result!.visitUsers && result!.visitUsers.length > 0 ? result!.visitUsers.map((vu: any) => vu.userName).join(', ') : '',
+      users: result!.visitUsers && result!.visitUsers.length > 0 ? result!.visitUsers.map((vu: any) => ({
         id: vu.user.id,
         name: vu.user.name,
         email: vu.user.email,
         isCreator: vu.isCreator,
         joinedAt: vu.joinedAt
-      })),
+      })) : [],
       canRevisit,
       hoursSinceVisit: Math.round(hoursSinceCreation),
       hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceCreation),
