@@ -216,12 +216,7 @@ export async function POST(
 
     console.log(`Created revisit ${result!.id} for original visit ${visitId} by user ${user.id}`)
 
-    // Get visit configuration for consistent response format
-    const visitConfig = await prisma.visitConfiguration.findFirst({
-      where: { isActive: true },
-      select: { revisitDelayHours: true }
-    })
-    const revisitDelayHours = visitConfig?.revisitDelayHours || 168
+    // Use the already fetched visitConfig and revisitDelayHours
 
     // Add revisit information to match POST format
     const hoursSinceCreation = (Date.now() - result!.createdAt.getTime()) / (1000 * 60 * 60)
