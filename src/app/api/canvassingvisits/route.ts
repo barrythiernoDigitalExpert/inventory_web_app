@@ -14,6 +14,9 @@ interface CanvassingVisitData {
   latitude: number;
   longitude: number;
   contactMethod: string;
+  contactMethod2?: string;
+  contactMethod3?: string;
+  contactMethod4?: string;
   houseName: string;
   vendorName?: string;
   comments?: string;
@@ -195,6 +198,12 @@ export async function GET(request: NextRequest) {
           isCreator: vu.isCreator,
           joinedAt: vu.joinedAt
         })) : [],
+        contactMethods: [
+          visit.contactMethod,
+          visit.contactMethod2,
+          visit.contactMethod3,
+          visit.contactMethod4
+        ].filter(Boolean),
         canRevisit,
         hoursSinceVisit: Math.round(hoursSinceVisit),
         hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
@@ -325,6 +334,9 @@ export async function POST(request: NextRequest) {
                 latitude: parseFloat(visitData.latitude),
                 longitude: parseFloat(visitData.longitude),
                 contactMethod: visitData.contactMethod,
+                contactMethod2: visitData.contactMethod2 || null,
+                contactMethod3: visitData.contactMethod3 || null,
+                contactMethod4: visitData.contactMethod4 || null,
                 houseName: visitData.houseName,
                 vendorName: visitData.vendorName || null,
                 comments: visitData.comments || null,
@@ -480,6 +492,12 @@ export async function POST(request: NextRequest) {
             isCreator: vu.isCreator,
             joinedAt: vu.joinedAt
           })) : [],
+          contactMethods: [
+            visit.contactMethod,
+            visit.contactMethod2,
+            visit.contactMethod3,
+            visit.contactMethod4
+          ].filter(Boolean),
           canRevisit,
           hoursSinceVisit: Math.round(hoursSinceVisit),
           hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
@@ -518,6 +536,9 @@ export async function POST(request: NextRequest) {
         latitude,
         longitude,
         contactMethod,
+        contactMethod2,
+        contactMethod3,
+        contactMethod4,
         houseName,
         vendorName,
         comments,
@@ -568,6 +589,9 @@ export async function POST(request: NextRequest) {
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
         contactMethod,
+        contactMethod2: contactMethod2 || null,
+        contactMethod3: contactMethod3 || null,
+        contactMethod4: contactMethod4 || null,
         houseName,
         vendorName: vendorName || null,
         comments: comments || null,
@@ -695,6 +719,12 @@ export async function POST(request: NextRequest) {
           isCreator: vu.isCreator,
           joinedAt: vu.joinedAt
         })) : [],
+        contactMethods: [
+          enrichedVisit?.contactMethod,
+          enrichedVisit?.contactMethod2,
+          enrichedVisit?.contactMethod3,
+          enrichedVisit?.contactMethod4
+        ].filter(Boolean),
         canRevisit,
         hoursSinceVisit: Math.round(hoursSinceVisit),
         hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),

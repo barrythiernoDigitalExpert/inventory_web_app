@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/utils/prisma'
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt'
 import { v4 as uuidv4 } from 'uuid'
-import { ActivityType, EntityType } from '@prisma/client'
+import { ContactMethod, ResponseType, ActivityType, EntityType } from '@prisma/client'
 import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
 
@@ -32,28 +32,32 @@ export async function POST(
     // Get request data
     const body = await request.json()
     const { 
-      revisitReason, 
-      comments, 
-      additionalUsers, 
-      contactMethod, 
-      vendorName 
+      latitude,
+      longitude,
+      contactMethod1,
+      contactMethod2,
+      contactMethod3,
+      contactMethod4,
+      houseName,
+      vendorName,
+      comments,
+      streetAddress,
+      neighborhood,
+      city,
+      postalCode,
+      imagePath,
+      responseReceived,
+      responseDate
     } = body
+
+    console.log(`Creating revisit for visit: ${visitId} by user: ${user.id}`)
 
     // Get the original visit
     const originalVisit = await prisma.canvassingVisit.findUnique({
       where: { id: visitId },
       include: {
-        visitUsers: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            }
-          }
-        }
+        visitUsers: true,
+        revisits: true
       }
     })
 
@@ -61,211 +65,148 @@ export async function POST(
       return NextResponse.json(
         {
           success: false,
-          error: 'Original visit not found'
+          error: 'Original visit not found',
+          processingTime: Date.now() - startTime
         },
         { status: 404 }
       )
     }
 
-    // Check if user can create revisits (must be part of original visit or admin)
-    const isVisitMember = originalVisit.visitUsers.some(vu => vu.userId === user.id)
-    const isAdmin = user.role === 'ADMIN'
-
-    if (!isVisitMember && !isAdmin) {
+    // Validate required fields
+    if (!latitude || !longitude || !contactMethod1 || !houseName) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Unauthorized: Only visit members or admins can create revisits'
+          error: 'Missing required fields: latitude, longitude, contactMethod1, houseName',
+          processingTime: Date.now() - startTime
         },
-        { status: 403 }
+        { status: 400 }
       )
     }
 
-    // Check visit configuration for revisit eligibility
+    // Check visit configuration for revisit delay
     const visitConfig = await prisma.visitConfiguration.findFirst({
       where: { isActive: true },
       select: { revisitDelayHours: true }
     })
-    
     const revisitDelayHours = visitConfig?.revisitDelayHours || 168 // Default 1 week
-    const hoursSinceVisit = (Date.now() - originalVisit.createdAt.getTime()) / (1000 * 60 * 60)
+
+    const hoursSinceOriginal = (Date.now() - originalVisit.createdAt.getTime()) / (1000 * 60 * 60)
     
-    // Only allow revisits for visits that are not positive or negative
-    if (originalVisit.responseReceived === 'positive' || originalVisit.responseReceived === 'negative') {
+    // Allow admins to bypass delay check
+    if (user.role !== 'ADMIN' && hoursSinceOriginal < revisitDelayHours) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Cannot revisit visits with positive or negative response status'
+          error: `Cannot create revisit yet. Please wait ${Math.ceil(revisitDelayHours - hoursSinceOriginal)} more hours.`,
+          processingTime: Date.now() - startTime
         },
         { status: 400 }
       )
     }
 
-    if (hoursSinceVisit < revisitDelayHours) {
-      const hoursRemaining = Math.round(revisitDelayHours - hoursSinceVisit)
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Cannot revisit yet. ${hoursRemaining} hours remaining before revisit is allowed.`,
-          data: {
-            hoursRemaining,
-            hoursSinceVisit: Math.round(hoursSinceVisit),
-            requiredDelayHours: revisitDelayHours
-          }
-        },
-        { status: 400 }
-      )
-    }
-
-    // Create the revisit in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create new visit (revisit)
-      const newVisit = await tx.canvassingVisit.create({
-        data: {
-          latitude: originalVisit.latitude,
-          longitude: originalVisit.longitude,
-          contactMethod: contactMethod || originalVisit.contactMethod,
-          houseName: originalVisit.houseName,
-          vendorName: vendorName || originalVisit.vendorName,
-          comments: comments || `Revisit: ${revisitReason || 'Follow-up visit'}`,
-          streetAddress: originalVisit.streetAddress,
-          neighborhood: originalVisit.neighborhood,
-          city: originalVisit.city,
-          postalCode: originalVisit.postalCode,
-          mobileId: uuidv4(),
-          responseReceived: 'pending', // Always start as pending
-          isSynced: true,
-          syncedAt: new Date()
-        }
-      })
-
-      // Add creator to revisit
-      await tx.canvassingVisitUser.create({
-        data: {
-          visitId: newVisit.id,
-          userId: user.id,
-          userName: user.name || user.email || 'Unknown User',
-          isCreator: true
-        }
-      })
-
-      // Add additional users if provided
-      if (additionalUsers && additionalUsers.length > 0) {
-        for (const additionalUser of additionalUsers) {
-          await tx.canvassingVisitUser.create({
-            data: {
-              visitId: newVisit.id,
-              userId: additionalUser.userId,
-              userName: additionalUser.userName,
-              isCreator: false
-            }
-          })
-        }
+    // Create the revisit using the new Revisit model
+    const revisit = await prisma.revisit.create({
+      data: {
+        originalVisitId: visitId,
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+        contactMethod1: contactMethod1 as ContactMethod,
+        contactMethod2: contactMethod2 as ContactMethod || null,
+        contactMethod3: contactMethod3 as ContactMethod || null,
+        contactMethod4: contactMethod4 as ContactMethod || null,
+        houseName,
+        vendorName: vendorName || null,
+        comments: comments || null,
+        streetAddress: streetAddress || null,
+        neighborhood: neighborhood || null,
+        city: city || null,
+        postalCode: postalCode || null,
+        imagePath: imagePath || null,
+        responseReceived: responseReceived as ResponseType || null,
+        responseDate: responseDate ? new Date(responseDate) : null,
+        userId: user.id,
+        userName: user.name || user.email || 'Unknown User'
       }
-
-      // Create revisit tracking record
-      await tx.visitRevisit.create({
-        data: {
-          originalVisitId: visitId,
-          newVisitId: newVisit.id,
-          revisitReason: revisitReason || 'Follow-up visit'
-        }
-      })
-
-      // Return the complete revisit data
-      return await tx.canvassingVisit.findUnique({
-        where: { id: newVisit.id },
-        include: {
-          visitUsers: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true
-                }
-              }
-            },
-            orderBy: {
-              joinedAt: 'asc'
-            }
-          }
-        }
-      })
     })
 
-    const processingTime = Date.now() - startTime
+    // Get the enriched revisit data
+    const enrichedRevisit = await prisma.revisit.findUnique({
+      where: { id: revisit.id },
+      include: {
+        originalVisit: {
+          select: {
+            id: true,
+            houseName: true,
+            contactMethod: true,
+            responseReceived: true,
+            createdAt: true,
+            visitUsers: {
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                    email: true
+                  }
+                }
+              }
+            }
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        }
+      }
+    })
 
     // Log activity
+    const processingTime = Date.now() - startTime
     await loggingService.logActivity(
       user.id,
       ActivityType.CANVASSING_VISIT,
       EntityType.CANVASSING_VISIT,
-      result!.id,
+      revisit.id,
       {
-        action: 'create_revisit',
+        type: 'revisit',
         originalVisitId: visitId,
-        newVisitId: result!.id,
-        revisitReason: revisitReason || 'Follow-up visit',
-        hoursSinceOriginal: Math.round(hoursSinceVisit),
-        additionalUsersCount: additionalUsers?.length || 0
+        houseName,
+        contactMethods: [contactMethod1, contactMethod2, contactMethod3, contactMethod4].filter(Boolean),
+        hasLocation: !!(latitude && longitude),
+        hasImage: !!imagePath,
+        hasVendor: !!vendorName,
+        hoursSinceOriginal: Math.round(hoursSinceOriginal)
       },
       context.deviceType,
       processingTime
     )
 
-    console.log(`Created revisit ${result!.id} for original visit ${visitId} by user ${user.id}`)
-
-    // Use the already fetched visitConfig and revisitDelayHours
-
-    // Add revisit information to match POST format
-    const hoursSinceCreation = (Date.now() - result!.createdAt.getTime()) / (1000 * 60 * 60)
-    const canRevisit = (result!.responseReceived === 'pending' || result!.responseReceived === 'no_response' || result!.responseReceived === null) && hoursSinceCreation >= revisitDelayHours
-
-    // Format the result to match POST visit format
-    const enrichedResult = {
-      ...result,
-      userNames: result!.visitUsers && result!.visitUsers.length > 0 ? result!.visitUsers.map((vu: any) => vu.userName).join(', ') : '',
-      users: result!.visitUsers && result!.visitUsers.length > 0 ? result!.visitUsers.map((vu: any) => ({
-        id: vu.user.id,
-        name: vu.user.name,
-        email: vu.user.email,
-        isCreator: vu.isCreator,
-        joinedAt: vu.joinedAt
-      })) : [],
-      canRevisit,
-      hoursSinceVisit: Math.round(hoursSinceCreation),
-      hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceCreation),
-      originalVisit: {
-        id: originalVisit.id,
-        houseName: originalVisit.houseName,
-        responseReceived: originalVisit.responseReceived,
-        createdAt: originalVisit.createdAt
-      },
-      revisitInfo: {
-        hoursSinceOriginal: Math.round(hoursSinceVisit),
-        revisitReason: revisitReason || 'Follow-up visit'
-      },
-      isRevisit: true
-    }
+    console.log(`Revisit created in ${processingTime}ms: ${revisit.id}`)
 
     return NextResponse.json({
       success: true,
       data: {
-        visits: [enrichedResult],
-        pagination: {
-          total: 1,
-          limit: 1,
-          offset: 0,
-          hasMore: false
-        },
-        visitConfig: {
-          revisitDelayHours
+        revisit: {
+          ...enrichedRevisit,
+          contactMethods: [
+            enrichedRevisit?.contactMethod1,
+            enrichedRevisit?.contactMethod2,
+            enrichedRevisit?.contactMethod3,
+            enrichedRevisit?.contactMethod4
+          ].filter(Boolean),
+          hoursSinceOriginal: Math.round(hoursSinceOriginal),
+          visitConfig: {
+            revisitDelayHours
+          }
         }
       },
       message: 'Revisit created successfully',
       processingTime
-    })
+    }, { status: 201 })
 
   } catch (error) {
     const processingTime = Date.now() - startTime
@@ -288,7 +229,7 @@ export async function POST(
 }
 
 /**
- * GET: Get revisit information for a visit
+ * GET: Get all revisits for a specific visit
  */
 export async function GET(
   request: NextRequest,
@@ -297,7 +238,7 @@ export async function GET(
   const startTime = Date.now()
   const context = extractRequestContext(request)
   let user: any = null
-  
+
   try {
     // Verify authentication
     const authResult = await verifyJwtAuth(request)
@@ -306,117 +247,97 @@ export async function GET(
     }
 
     user = authResult.user
-      const params = await props.params;
-        const visitId = (params.visitId);
+    const params = await props.params
+    const visitId = params.visitId
 
-    // Get visit and its revisit information
-    const visit = await prisma.canvassingVisit.findUnique({
-      where: { id: visitId },
-      include: {
-        visitUsers: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            }
-          }
-        },
-        originalRevisits: {
-          include: {
-            newVisit: {
-              include: {
-                visitUsers: {
-                  include: {
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        email: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          orderBy: {
-            createdAt: 'desc'
-          }
-        },
-        revisitOf: {
-          include: {
-            originalVisit: {
-              include: {
-                visitUsers: {
-                  include: {
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        email: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+    console.log(`Getting revisits for visit: ${visitId} by user: ${user.id}`)
+
+    // Check if original visit exists
+    const originalVisit = await prisma.canvassingVisit.findUnique({
+      where: { id: visitId }
     })
 
-    if (!visit) {
+    if (!originalVisit) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Visit not found'
+          error: 'Visit not found',
+          processingTime: Date.now() - startTime
         },
         { status: 404 }
       )
     }
 
-    // Check if user can view revisit info (must be part of visit or admin)
-    const isVisitMember = visit.visitUsers.some(vu => vu.userId === user.id)
-    const isAdmin = user.role === 'ADMIN'
+    // Get all revisits for this visit
+    const revisits = await prisma.revisit.findMany({
+      where: { originalVisitId: visitId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
 
-    if (!isVisitMember && !isAdmin) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized: Only visit members or admins can view revisit information'
-        },
-        { status: 403 }
-      )
-    }
-
-    // Get visit configuration for revisit eligibility
+    // Get visit configuration
     const visitConfig = await prisma.visitConfiguration.findFirst({
       where: { isActive: true },
       select: { revisitDelayHours: true }
     })
-    
     const revisitDelayHours = visitConfig?.revisitDelayHours || 168
-    const hoursSinceVisit = (Date.now() - visit.createdAt.getTime()) / (1000 * 60 * 60)
-    const canRevisit = visit.responseReceived === 'pending' && hoursSinceVisit >= revisitDelayHours
+
+    // Add computed fields
+    const enrichedRevisits = revisits.map(revisit => {
+      const hoursSinceOriginal = (revisit.createdAt.getTime() - originalVisit.createdAt.getTime()) / (1000 * 60 * 60)
+      
+      return {
+        ...revisit,
+        contactMethods: [
+          revisit.contactMethod1,
+          revisit.contactMethod2,
+          revisit.contactMethod3,
+          revisit.contactMethod4
+        ].filter(Boolean),
+        hoursSinceOriginal: Math.round(hoursSinceOriginal)
+      }
+    })
 
     const processingTime = Date.now() - startTime
+
+    // Log activity
+    await loggingService.logActivity(
+      user.id,
+      ActivityType.VIEW_PROPERTY,
+      EntityType.CANVASSING_VISIT,
+      visitId,
+      {
+        type: 'view_revisits',
+        revisitCount: revisits.length
+      },
+      context.deviceType,
+      processingTime
+    )
+
+    console.log(`Retrieved ${revisits.length} revisits in ${processingTime}ms`)
 
     return NextResponse.json({
       success: true,
       data: {
-        visit,
-        revisitInfo: {
-          canRevisit,
-          hoursSinceVisit: Math.round(hoursSinceVisit),
-          hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
-          revisitDelayHours,
-          isEligibleForRevisit: visit.responseReceived === 'pending'
+        revisits: enrichedRevisits,
+        originalVisit: {
+          id: originalVisit.id,
+          houseName: originalVisit.houseName,
+          createdAt: originalVisit.createdAt
         },
-        revisits: visit.originalRevisits, // Visits that were created as revisits of this one
-        isRevisitOf: visit.revisitOf.length > 0 ? visit.revisitOf[0] : null // Original visit if this is a revisit
+        visitConfig: {
+          revisitDelayHours
+        },
+        totalCount: revisits.length
       },
       processingTime
     })
@@ -425,15 +346,16 @@ export async function GET(
     const processingTime = Date.now() - startTime
     await loggingService.logError(
       error as Error,
-      'canvassingvisits/[visitId]/revisit/GET',
+      'canvassingvisits/revisit/GET',
       user?.id,
       context
     )
-    
+    console.error(`Error getting revisits (${processingTime}ms):`, error)
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get revisit information',
+        error: error instanceof Error ? error.message : 'Failed to get revisits',
         processingTime
       },
       { status: 500 }

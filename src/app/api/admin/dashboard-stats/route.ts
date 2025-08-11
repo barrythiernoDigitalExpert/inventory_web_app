@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/utils/auth'
 import { prisma } from '@/lib/utils/prisma'
-import { verifyJwtAuth } from '@/lib/utils/auth-jwt'
-import { ActivityType, EntityType } from '@prisma/client'
+import { UserRole, ActivityType, EntityType } from '@prisma/client'
 import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
 
@@ -14,19 +15,18 @@ export async function GET(request: NextRequest) {
   let user: any = null
   
   try {
-    const authResult = await verifyJwtAuth(request)
-    if (authResult.error) {
-      return authResult.error
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    user = authResult.user
+    user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
 
-    // Only admins can access dashboard stats
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Access denied. Admin role required.' },
-        { status: 403 }
-      )
+    if (!user || user.role !== UserRole.ADMIN) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
     // Get current date for weekly stats

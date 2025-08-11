@@ -177,6 +177,9 @@ export default function AdminStatsPage() {
             </div>
           </div>
 
+          {/* Geographic Data Map */}
+          
+
           {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>

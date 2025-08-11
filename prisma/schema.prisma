@@ -34,6 +34,9 @@ enum ContactMethod {
   SMS             // SMS message
   BROCHURE        // Brochure drop
   VALUATION_CARD  // Valuation card
+  FLYER           // Flyer distribution
+  SOCIAL_MEDIA    // Social media contact
+  REFERRAL        // Referral contact
 }
 
 // Response types for canvassing visits
@@ -70,6 +73,8 @@ model User {
   inventorySessions InventorySession[] // Track time spent on inventories
   canvassingVisits  CanvassingVisitUser[] // Canvassing visits by this user
   activities        UserActivity[]    // User activity tracking
+  visitComments     CanvassingVisitComment[] // Comments on canvassing visits
+  revisits          Revisit[]         // Revisits performed by this user
   
   @@map("users")
 }
@@ -272,9 +277,12 @@ model CanvassingVisit {
   
   // Contact information
   contactMethod   ContactMethod   @map("contact_method")
+  contactMethod2      ContactMethod?  @map("contact_method_2")
+  contactMethod3      ContactMethod?  @map("contact_method_3")
+  contactMethod4      ContactMethod?  @map("contact_method_4")
   houseName       String          @map("house_name")
   vendorName      String?         @map("vendor_name")
-  comments        String?         @db.Text
+  comments        String?         @db.Text // Initial comment
   
   // Address components (optional, from geocoding)
   streetAddress   String?         @map("street_address")
@@ -304,6 +312,12 @@ model CanvassingVisit {
   // Revisit tracking
   originalRevisits VisitRevisit[] @relation("OriginalVisit")
   revisitOf       VisitRevisit[] @relation("RevisitVisit")
+  
+  // Additional comments
+  additionalComments CanvassingVisitComment[]
+  
+  // Revisits - this visit can have multiple revisits
+  revisits        Revisit[]       @relation("OriginalVisit")
   
   @@map("canvassing_visits")
   @@index([latitude, longitude])
@@ -478,4 +492,76 @@ model VisitRevisit {
   @@map("visit_revisits")
   @@index([originalVisitId])
   @@index([newVisitId])
+}
+
+// Additional comments for CanvassingVisit
+model CanvassingVisitComment {
+  id        String          @id @default(cuid())
+  visitId   String          @map("visit_id")
+  userId    Int             @map("user_id")
+  comment   String          @db.Text
+  isInitial Boolean         @default(false) @map("is_initial") // True if this is the initial comment
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  
+  // Relations
+  visit     CanvassingVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("canvassing_visit_comments")
+  @@index([visitId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Revisit Model - similar to CanvassingVisit but linked to an original visit
+model Revisit {
+  id                  String          @id @default(cuid())
+  originalVisitId     String          @map("original_visit_id")
+  
+  // GPS coordinates
+  latitude            Float
+  longitude           Float
+  
+  // Contact information - can use up to 4 contact methods
+  contactMethod1      ContactMethod?  @map("contact_method_1")
+  contactMethod2      ContactMethod?  @map("contact_method_2")
+  contactMethod3      ContactMethod?  @map("contact_method_3")
+  contactMethod4      ContactMethod?  @map("contact_method_4")
+  
+  houseName           String          @map("house_name")
+  vendorName          String?         @map("vendor_name")
+  comments            String?         @db.Text
+  
+  // Address components (optional, from geocoding)
+  streetAddress       String?         @map("street_address")
+  neighborhood        String?
+  city                String?
+  postalCode          String?         @map("postal_code")
+  
+  // Optional image
+  imagePath           String?         @map("image_path")
+  
+  // Response tracking
+  responseReceived    ResponseType?   @map("response_received")
+  responseDate        DateTime?       @map("response_date")
+  
+  // User who performed the revisit
+  userId              Int             @map("user_id")
+  userName            String          @map("user_name")
+  
+  // Timestamps
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+  
+  // Relations
+  originalVisit       CanvassingVisit @relation("OriginalVisit", fields: [originalVisitId], references: [id], onDelete: Cascade)
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("revisits")
+  @@index([originalVisitId])
+  @@index([userId])
+  @@index([latitude, longitude])
+  @@index([responseReceived])
+  @@index([createdAt])
 }
