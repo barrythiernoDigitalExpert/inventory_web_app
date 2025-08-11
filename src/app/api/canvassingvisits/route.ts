@@ -117,31 +117,18 @@ export async function GET(request: NextRequest) {
                 joinedAt: 'asc'
               }
             },
-            originalRevisits: {
+            revisits: {
               include: {
-                newVisit: {
+                user: {
                   select: {
                     id: true,
-                    houseName: true,
-                    responseReceived: true,
-                    createdAt: true
+                    name: true,
+                    email: true
                   }
                 }
               },
               orderBy: {
                 createdAt: 'desc'
-              }
-            },
-            revisitOf: {
-              include: {
-                originalVisit: {
-                  select: {
-                    id: true,
-                    houseName: true,
-                    responseReceived: true,
-                    createdAt: true
-                  }
-                }
               }
             }
           },
@@ -160,33 +147,35 @@ export async function GET(request: NextRequest) {
       const hoursSinceVisit = (Date.now() - visit.createdAt.getTime()) / (1000 * 60 * 60)
       const canRevisit = (visit.responseReceived === 'pending' || visit.responseReceived === 'no_response' || visit.responseReceived === null) && hoursSinceVisit >= revisitDelayHours
       
-      // Count visits for this property (same houseName and nearby coordinates)
-      
-      // Format revisit information
-      const originalVisit = visit.revisitOf.length > 0 ? {
-        id: visit.revisitOf[0].originalVisit.id,
-        houseName: visit.revisitOf[0].originalVisit.houseName,
-        responseReceived: visit.revisitOf[0].originalVisit.responseReceived,
-        createdAt: visit.revisitOf[0].originalVisit.createdAt
-      } : null
-
-      const revisitInfo = visit.revisitOf.length > 0 ? {
-        hoursSinceOriginal: Math.round((visit.createdAt.getTime() - visit.revisitOf[0].originalVisit.createdAt.getTime()) / (1000 * 60 * 60)),
-        revisitReason: visit.revisitOf[0].revisitReason || 'Follow-up visit'
-      } : null
-
-      const revisits = visit.originalRevisits.map((revisit: any) => ({
+      // Format revisits information from the Revisit table
+      const revisits = visit.revisits?.map((revisit: any) => ({
         id: revisit.id,
-        newVisitId: revisit.newVisit.id,
-        revisitReason: revisit.revisitReason,
+        latitude: revisit.latitude,
+        longitude: revisit.longitude,
+        contactMethods: [
+          revisit.contactMethod1,
+          revisit.contactMethod2,
+          revisit.contactMethod3,
+          revisit.contactMethod4
+        ].filter(Boolean),
+        houseName: revisit.houseName,
+        vendorName: revisit.vendorName,
+        comments: revisit.comments,
+        streetAddress: revisit.streetAddress,
+        neighborhood: revisit.neighborhood,
+        city: revisit.city,
+        postalCode: revisit.postalCode,
+        imagePath: revisit.imagePath,
+        responseReceived: revisit.responseReceived,
+        responseDate: revisit.responseDate,
         createdAt: revisit.createdAt,
-        newVisit: {
-          id: revisit.newVisit.id,
-          houseName: revisit.newVisit.houseName,
-          responseReceived: revisit.newVisit.responseReceived,
-          createdAt: revisit.newVisit.createdAt
-        }
-      }))
+        user: {
+          id: revisit.user.id,
+          name: revisit.user.name,
+          email: revisit.user.email
+        },
+        hoursSinceOriginal: Math.round((revisit.createdAt.getTime() - visit.createdAt.getTime()) / (1000 * 60 * 60))
+      })) || []
 
       return {
         ...visit,
@@ -208,10 +197,9 @@ export async function GET(request: NextRequest) {
         hoursSinceVisit: Math.round(hoursSinceVisit),
         hoursUntilRevisit: canRevisit ? 0 : Math.round(revisitDelayHours - hoursSinceVisit),
         // Revisit information
-        originalVisit,
-        revisitInfo,
         revisits: revisits.length > 0 ? revisits : undefined,
-        isRevisit: originalVisit !== null
+        hasRevisits: revisits.length > 0,
+        revisitCount: revisits.length
       }
     }))
 
