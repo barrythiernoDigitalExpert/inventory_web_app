@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Inter } from 'next/font/google';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '@/lib/context/AuthContext';
 import './globals.css';
@@ -27,6 +28,7 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </Providers>
+         <SpeedInsights />
       </body>
     </html>
   );
