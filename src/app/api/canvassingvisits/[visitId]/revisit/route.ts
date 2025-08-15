@@ -120,15 +120,29 @@ export async function POST(
     // Merge contact methods without duplicates
     const mergedContactMethods = [...new Set([...existingContactMethods, ...newContactMethods])]
 
-    // Update original visit with merged contact methods (up to 4 methods)
+    // Prepare update data for original visit
+    const updateData: any = {
+      contactMethod: mergedContactMethods[0] || originalVisit.contactMethod,
+      contactMethod2: mergedContactMethods[1] || null,
+      contactMethod3: mergedContactMethods[2] || null,
+      contactMethod4: mergedContactMethods[3] || null
+    }
+
+    // Update response status if it's a definitive response (not no_response, pending, or null)
+    if (responseReceived && 
+        responseReceived !== 'no_response' && 
+        responseReceived !== 'pending' && 
+        responseReceived !== 'NO Response') {
+      updateData.responseReceived = responseReceived as ResponseType
+      if (responseDate) {
+        updateData.responseDate = new Date(responseDate)
+      }
+    }
+
+    // Update original visit with merged contact methods and response status
     await prisma.canvassingVisit.update({
       where: { id: visitId },
-      data: {
-        contactMethod: mergedContactMethods[0] || originalVisit.contactMethod,
-        contactMethod2: mergedContactMethods[1] || null,
-        contactMethod3: mergedContactMethods[2] || null,
-        contactMethod4: mergedContactMethods[3] || null
-      }
+      data: updateData
     })
 
     // Create the revisit using the new Revisit model
