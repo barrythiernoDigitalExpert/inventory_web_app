@@ -105,6 +105,32 @@ export async function POST(
       )
     }
 
+    // Collect new contact methods from revisit
+    const newContactMethods = [contactMethod1, contactMethod2, contactMethod3, contactMethod4]
+      .filter(Boolean) as ContactMethod[]
+
+    // Get existing contact methods from original visit
+    const existingContactMethods = [
+      originalVisit.contactMethod,
+      originalVisit.contactMethod2,
+      originalVisit.contactMethod3,
+      originalVisit.contactMethod4
+    ].filter(Boolean) as ContactMethod[]
+
+    // Merge contact methods without duplicates
+    const mergedContactMethods = [...new Set([...existingContactMethods, ...newContactMethods])]
+
+    // Update original visit with merged contact methods (up to 4 methods)
+    await prisma.canvassingVisit.update({
+      where: { id: visitId },
+      data: {
+        contactMethod: mergedContactMethods[0] || originalVisit.contactMethod,
+        contactMethod2: mergedContactMethods[1] || null,
+        contactMethod3: mergedContactMethods[2] || null,
+        contactMethod4: mergedContactMethods[3] || null
+      }
+    })
+
     // Create the revisit using the new Revisit model
     const revisit = await prisma.revisit.create({
       data: {

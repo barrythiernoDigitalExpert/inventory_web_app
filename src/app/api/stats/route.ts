@@ -703,8 +703,11 @@ async function getSystemMetricsData(startDate: Date) {
 // Fonctions utilitaires
 function calculatePerformanceScore(visits: number, positiveResponses: number, items: number): number {
   const responseRate = visits > 0 ? (positiveResponses / visits) : 0;
-  const activityScore = Math.min((visits + items) / 100, 1);
-  return (responseRate * 0.7 + activityScore * 0.3) * 100;
+  const maildropScore = Math.min(visits / 50, 1); // Score basé sur le nombre de visites maildrop
+  const inventoryScore = Math.min(items / 100, 1); // Score basé sur les items d'inventaire
+  
+  // Pondération: 50% taux de réponse, 35% visites maildrop, 15% inventaire
+  return (responseRate * 0.5 + maildropScore * 0.35 + inventoryScore * 0.15) * 100;
 }
 
 async function calculateAveragePerformance(startDate: Date): Promise<number> {
