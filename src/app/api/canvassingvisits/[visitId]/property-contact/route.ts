@@ -64,11 +64,11 @@ export async function PUT(
     };
 
     if (propertyName !== undefined) {
-      updateData.propertyName = propertyName;
+      updateData.houseName = propertyName;
     }
 
     if (contactName !== undefined) {
-      updateData.contactName = contactName;
+      updateData.vendorName = contactName;
     }
 
     // Update the visit
