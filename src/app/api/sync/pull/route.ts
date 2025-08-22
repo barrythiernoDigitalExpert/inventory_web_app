@@ -34,12 +34,16 @@ export async function GET(request: NextRequest) {
 
     // Construire la requête de base
     let whereClause: any = {
-      OR: [
-        { userId: user.id },
-        { sharedWith: { some: { userId: user.id } } }
-      ],
       updatedAt: { gt: lastSync }
     };
+
+    // Si l'utilisateur n'est pas admin, filtrer par ses propriétés
+    if (user.role !== 'ADMIN') {
+      whereClause.OR = [
+        { userId: user.id },
+        { sharedWith: { some: { userId: user.id } } }
+      ];
+    }
     
     // Si un propertyReference est spécifié, filtrer les résultats
     if (propertyReference) {
