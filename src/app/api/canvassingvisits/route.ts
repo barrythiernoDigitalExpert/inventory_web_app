@@ -555,6 +555,14 @@ export async function POST(request: NextRequest) {
 
       console.log(`Creating single visit: ${houseName} at ${latitude}, ${longitude}`)
 
+      // Helper function to normalize contact method
+      const normalizeContactMethod = (method: string) => {
+        if (method && method.toLowerCase() === 'maildrop') {
+          return 'BROCHURE';
+        }
+        return method;
+      };
+
       // Check for existing visit with same mobileId
       if (mobileId) {
         const existingVisit = await prisma.canvassingVisit.findFirst({
@@ -576,7 +584,7 @@ export async function POST(request: NextRequest) {
       const visitData: any = {
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
-        contactMethod,
+        contactMethod: normalizeContactMethod(contactMethod),
         contactMethod2: contactMethod2 || null,
         contactMethod3: contactMethod3 || null,
         contactMethod4: contactMethod4 || null,
