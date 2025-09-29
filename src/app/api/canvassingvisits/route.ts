@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const responseReceived = searchParams.get('responseReceived')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const limit = parseInt(searchParams.get('limit') || '50')
+    const limit = parseInt(searchParams.get('limit') || '10000')
     const offset = parseInt(searchParams.get('offset') || '0')
     const forMap = searchParams.get('forMap') === 'true'
 
