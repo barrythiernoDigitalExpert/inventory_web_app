@@ -278,8 +278,44 @@ export async function POST(request: NextRequest) {
 
     user = authResult.user
 
-    // Get request data
-    const body = await request.json()
+    // Detect content type and parse accordingly
+    const contentType = request.headers.get('content-type') || ''
+    let body: any
+    let isMultipart = false
+    let imageFile: File | null = null
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle multipart/form-data (file upload)
+      isMultipart = true
+      const formData = await request.formData()
+      
+      // Extract image file
+      imageFile = formData.get('image') as File | null
+      
+      // Build body object from form data
+      body = {
+        latitude: formData.get('latitude'),
+        longitude: formData.get('longitude'),
+        contactMethod: formData.get('contactMethod'),
+        contactMethod2: formData.get('contactMethod2'),
+        contactMethod3: formData.get('contactMethod3'),
+        contactMethod4: formData.get('contactMethod4'),
+        houseName: formData.get('houseName'),
+        vendorName: formData.get('vendorName'),
+        comments: formData.get('comments'),
+        streetAddress: formData.get('streetAddress'),
+        neighborhood: formData.get('neighborhood'),
+        city: formData.get('city'),
+        postalCode: formData.get('postalCode'),
+        mobileId: formData.get('mobileId'),
+        createdAt: formData.get('createdAt'),
+        responseReceived: formData.get('responseReceived'),
+        responseDate: formData.get('responseDate')
+      }
+    } else {
+      // Handle application/json (original behavior)
+      body = await request.json()
+    }
     
     console.log(`Creating canvassing visit(s) for user: ${user.id}`)
     console.log(`Request body type: ${Array.isArray(body) ? 'array' : 'single'}`)
@@ -602,14 +638,35 @@ export async function POST(request: NextRequest) {
 
       // Handle image upload before creating the visit
       let finalImagePath = null;
-      if (imagePath && imagePath.startsWith('data:')) {
+      
+      if (isMultipart && imageFile) {
+        // Handle file upload from multipart/form-data
         try {
-          console.log(`Uploading image for new visit`);
+          console.log(`Processing uploaded image file: ${imageFile.name}, size: ${imageFile.size} bytes`);
+          
+          // Convert file to base64 for Cloudinary upload
+          const buffer = await imageFile.arrayBuffer();
+          const base64String = Buffer.from(buffer).toString('base64');
+          const mimeType = imageFile.type || 'image/jpeg';
+          const base64Image = `data:${mimeType};base64,${base64String}`;
+          
+          // Upload to Cloudinary
+          const tempVisitId = mobileId || uuidv4();
+          finalImagePath = await saveCanvassingImage(base64Image, tempVisitId);
+          console.log(`Image file uploaded successfully: ${finalImagePath}`);
+        } catch (imageError) {
+          console.error('Error uploading canvassing image file:', imageError);
+          // Continue with visit creation even if image upload fails
+        }
+      } else if (imagePath && imagePath.startsWith('data:')) {
+        // Handle base64 image from JSON request (existing behavior)
+        try {
+          console.log(`Uploading base64 image for new visit`);
           const tempVisitId = uuidv4(); // Generate temp ID for Cloudinary
           finalImagePath = await saveCanvassingImage(imagePath, tempVisitId);
-          console.log(`Image uploaded successfully: ${finalImagePath}`);
+          console.log(`Base64 image uploaded successfully: ${finalImagePath}`);
         } catch (imageError) {
-          console.error('Error uploading canvassing image:', imageError);
+          console.error('Error uploading canvassing base64 image:', imageError);
           // Continue with visit creation even if image upload fails
         }
       } else if (imagePath) {
@@ -765,7 +822,8 @@ export async function POST(request: NextRequest) {
         originalVisit,
         revisitInfo,
         revisits: revisits.length > 0 ? revisits : undefined,
-        isRevisit: originalVisit !== null
+        isRevisit: originalVisit !== null,
+        serverId: enrichedVisit?.id // Add serverId for mobile app
       }
 
       // Log activity using logging service
