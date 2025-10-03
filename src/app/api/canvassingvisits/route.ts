@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { $Enums, ActivityType, EntityType } from '@prisma/client'
 import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
+import { saveCanvassingImage } from '@/lib/utils/fileStorage'
 
 // Define interfaces for better type safety
 interface CanvassingVisitData {
@@ -317,6 +318,24 @@ export async function POST(request: NextRequest) {
               continue
             }
 
+            // Handle image upload before creating the visit
+            let finalImagePath = null;
+            if (visitData.imagePath && visitData.imagePath.startsWith('data:')) {
+              try {
+                console.log(`Uploading image for bulk visit`);
+                const tempVisitId = visitData.mobileId || uuidv4();
+                finalImagePath = await saveCanvassingImage(visitData.imagePath, tempVisitId);
+                console.log(`Bulk image uploaded successfully: ${finalImagePath}`);
+              } catch (imageError) {
+                console.error('Error uploading bulk canvassing image:', imageError);
+                // Continue with visit creation even if image upload fails
+              }
+            } else if (visitData.imagePath) {
+              // If imagePath is provided but not base64, use it directly (URL)
+              finalImagePath = visitData.imagePath;
+            }
+
+            // Create visit with the image path
             const visit = await tx.canvassingVisit.create({
               data: {
                 latitude: parseFloat(visitData.latitude),
@@ -332,7 +351,7 @@ export async function POST(request: NextRequest) {
                 neighborhood: visitData.neighborhood || null,
                 city: visitData.city || null,
                 postalCode: visitData.postalCode || null,
-                imagePath: visitData.imagePath || null,
+                imagePath: finalImagePath,
                 mobileId: visitData.mobileId || uuidv4(),
                 createdAt: visitData.createdAt ? new Date(visitData.createdAt) : new Date(),
                 responseReceived: visitData.responseReceived || null,
@@ -581,6 +600,24 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Handle image upload before creating the visit
+      let finalImagePath = null;
+      if (imagePath && imagePath.startsWith('data:')) {
+        try {
+          console.log(`Uploading image for new visit`);
+          const tempVisitId = uuidv4(); // Generate temp ID for Cloudinary
+          finalImagePath = await saveCanvassingImage(imagePath, tempVisitId);
+          console.log(`Image uploaded successfully: ${finalImagePath}`);
+        } catch (imageError) {
+          console.error('Error uploading canvassing image:', imageError);
+          // Continue with visit creation even if image upload fails
+        }
+      } else if (imagePath) {
+        // If imagePath is provided but not base64, use it directly (URL)
+        finalImagePath = imagePath;
+      }
+
+      // Create the visit with the image path
       const visitData: any = {
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
@@ -595,7 +632,7 @@ export async function POST(request: NextRequest) {
         neighborhood: neighborhood || null,
         city: city || null,
         postalCode: postalCode || null,
-        imagePath: imagePath || null,
+        imagePath: finalImagePath,
         mobileId: mobileId || uuidv4(),
         createdAt: createdAt ? new Date(createdAt) : new Date(),
         responseReceived: responseReceived || null,
@@ -742,8 +779,9 @@ export async function POST(request: NextRequest) {
           houseName,
           contactMethod,
           hasLocation: !!(latitude && longitude),
-          hasImage: !!imagePath,
-          hasVendor: !!vendorName
+          hasImage: !!finalImagePath,
+          hasVendor: !!vendorName,
+          imageUploaded: !!(imagePath && imagePath.startsWith('data:'))
         },
         context.deviceType,
         processingTime

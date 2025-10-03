@@ -153,6 +153,38 @@ export const saveItemImage = async (
 };
 
 /**
+ * Saves an image for a canvassing visit to Cloudinary.
+ * @param base64Image The base64-encoded image string
+ * @param visitId The visit ID string
+ * @returns The secure URL of the saved image
+ * @throws Error if the upload fails
+ */
+export const saveCanvassingImage = async (
+  base64Image: string, 
+  visitId: string
+): Promise<string> => {
+  try {
+    const formattedImage = base64ToCloudinaryFormat(base64Image);
+    
+    const result = await cloudinary.uploader.upload(formattedImage, {
+      folder: `canvassing/visits`,
+      public_id: `visit-${visitId}`,
+      overwrite: true,
+      resource_type: 'image' as 'image',
+      transformation: [
+        { quality: 'auto' },
+        { fetch_format: 'auto' }
+      ]
+    });
+    
+    return result.secure_url;
+  } catch (error) {
+    console.error('Error saving canvassing image to Cloudinary:', error);
+    throw error;
+  }
+};
+
+/**
  * Deletes all files associated with a property from Cloudinary.
  * @param propertyRef The property reference string
  * @returns void

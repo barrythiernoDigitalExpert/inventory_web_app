@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     // Calculer les dates basées sur la période
     const now = new Date();
     const startDate = getStartDateByPeriod(period, now);
+    const endDate = getEndDateByPeriod(period, now);
 
     // Exécuter toutes les requêtes en parallèle
     const [
@@ -56,30 +57,30 @@ export async function GET(request: NextRequest) {
       systemMetrics
     ] = await Promise.all([
       // 1. Users & Team
-      getUsersWithPerformance(userId, startDate),
-      getTeamStats(startDate),
-      getUserActivitiesSummary(userId, startDate),
+      getUsersWithPerformance(userId, startDate, endDate),
+      getTeamStats(startDate, endDate),
+      getUserActivitiesSummary(userId, startDate, endDate),
       
       // 2. Maildrop
-      getCanvassingVisits(userId, startDate),
-      getCanvassingStatistics(userId, startDate),
-      getResponseTypeDistribution(userId, startDate),
-      getContactMethodPerformance(userId, startDate),
-      getVisitHourDistribution(userId, startDate),
+      getCanvassingVisits(userId, startDate, endDate),
+      getCanvassingStatistics(userId, startDate, endDate),
+      getResponseTypeDistribution(userId, startDate, endDate),
+      getContactMethodPerformance(userId, startDate, endDate),
+      getVisitHourDistribution(userId, startDate, endDate),
       
       // 3. Inventory
-      getInventoryStatistics(userId, startDate),
-      getInventoryActivity(userId, startDate),
+      getInventoryStatistics(userId, startDate, endDate),
+      getInventoryActivity(userId, startDate, endDate),
       getSyncStatusData(),
       
       // 4. Temporal
-      getDailyMetrics(startDate, now, userId),
+      getDailyMetrics(startDate, endDate, userId),
       
       // 5. Real-time
       getRecentActivities(20),
       
       // 6. System
-      getSystemMetricsData(startDate)
+      getSystemMetricsData(startDate, endDate)
     ]);
 
     return NextResponse.json({
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
           generatedAt: now.toISOString(),
           dateRange: {
             start: startDate.toISOString(),
-            end: now.toISOString()
+            end: endDate.toISOString()
           }
         },
         
@@ -160,6 +161,16 @@ function getStartDateByPeriod(period: string, now: Date): Date {
     case 'month':
       startDate.setMonth(now.getMonth() - 1);
       break;
+    case 'last3months':
+      // Last 3 months excluding current month
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      // Start: beginning of 3 months ago
+      startDate.setFullYear(currentYear);
+      startDate.setMonth(currentMonth - 3);
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+      break;
     case 'quarter':
       startDate.setMonth(now.getMonth() - 3);
       break;
@@ -173,8 +184,29 @@ function getStartDateByPeriod(period: string, now: Date): Date {
   return startDate;
 }
 
+function getEndDateByPeriod(period: string, now: Date): Date {
+  const endDate = new Date(now);
+  
+  switch (period) {
+    case 'last3months':
+      // End: last day of previous month
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      endDate.setFullYear(currentYear);
+      endDate.setMonth(currentMonth);
+      endDate.setDate(0); // Last day of previous month
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    default:
+      // For all other periods, use current time as end date
+      break;
+  }
+  
+  return endDate;
+}
+
 // 1. Fonctions pour les données utilisateurs & équipe
-async function getUsersWithPerformance(userId?: string | null, startDate?: Date) {
+async function getUsersWithPerformance(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = userId ? { id: parseInt(userId) } : { isActive: true };
   
   const users = await prisma.user.findMany({
@@ -187,7 +219,12 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date)
       isActive: true,
       createdAt: true,
       canvassingVisits: {
-        where: startDate ? { joinedAt: { gte: startDate } } : undefined,
+        where: startDate ? { 
+          joinedAt: { 
+            gte: startDate,
+            ...(endDate && { lte: endDate })
+          } 
+        } : undefined,
         select: {
           visit: {
             select: {
@@ -198,14 +235,24 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date)
         }
       },
       properties: {
-        where: startDate ? { createdAt: { gte: startDate } } : undefined,
+        where: startDate ? { 
+          createdAt: { 
+            gte: startDate,
+            ...(endDate && { lte: endDate })
+          } 
+        } : undefined,
         select: {
           imageCount: true,
           inventoryStatus: true
         }
       },
       activities: {
-        where: startDate ? { timestamp: { gte: startDate } } : undefined,
+        where: startDate ? { 
+          timestamp: { 
+            gte: startDate,
+            ...(endDate && { lte: endDate })
+          } 
+        } : undefined,
         select: {
           timestamp: true,
           activityType: true
@@ -244,12 +291,17 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date)
   });
 }
 
-async function getTeamStats(startDate: Date) {
+async function getTeamStats(startDate: Date, endDate?: Date) {
   const [totalUsers, activeUsers, newUsers, avgPerformance] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { isActive: true } }),
-    prisma.user.count({ where: { createdAt: { gte: startDate } } }),
-    calculateAveragePerformance(startDate)
+    prisma.user.count({ where: { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    } }),
+    calculateAveragePerformance(startDate, endDate)
   ]);
   
   const roleDistribution = await prisma.user.groupBy({
@@ -268,10 +320,15 @@ async function getTeamStats(startDate: Date) {
   };
 }
 
-async function getUserActivitiesSummary(userId?: string | null, startDate?: Date) {
+async function getUserActivitiesSummary(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
     ...(userId && { userId: parseInt(userId) }),
-    ...(startDate && { timestamp: { gte: startDate } })
+    ...(startDate && { 
+      timestamp: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    })
   };
 
   const activities = await prisma.userActivity.groupBy({
@@ -288,9 +345,14 @@ async function getUserActivitiesSummary(userId?: string | null, startDate?: Date
 }
 
 // 2. Fonctions pour les données maildrop
-async function getCanvassingVisits(userId?: string | null, startDate?: Date) {
+async function getCanvassingVisits(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
-    ...(startDate && { createdAt: { gte: startDate } }),
+    ...(startDate && { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    }),
     ...(userId && { visitUsers: { some: { userId: parseInt(userId) } } })
   };
 
@@ -326,9 +388,14 @@ async function getCanvassingVisits(userId?: string | null, startDate?: Date) {
   });
 }
 
-async function getCanvassingStatistics(userId?: string | null, startDate?: Date) {
+async function getCanvassingStatistics(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
-    ...(startDate && { createdAt: { gte: startDate } }),
+    ...(startDate && { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    }),
     ...(userId && { visitUsers: { some: { userId: parseInt(userId) } } })
   };
 
@@ -361,9 +428,14 @@ async function getCanvassingStatistics(userId?: string | null, startDate?: Date)
   };
 }
 
-async function getResponseTypeDistribution(userId?: string | null, startDate?: Date) {
+async function getResponseTypeDistribution(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
-    ...(startDate && { createdAt: { gte: startDate } }),
+    ...(startDate && { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    }),
     ...(userId && { visitUsers: { some: { userId: parseInt(userId) } } })
   };
 
@@ -380,9 +452,14 @@ async function getResponseTypeDistribution(userId?: string | null, startDate?: D
   }));
 }
 
-async function getContactMethodPerformance(userId?: string | null, startDate?: Date) {
+async function getContactMethodPerformance(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
-    ...(startDate && { createdAt: { gte: startDate } }),
+    ...(startDate && { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    }),
     ...(userId && { visitUsers: { some: { userId: parseInt(userId) } } })
   };
 
@@ -421,9 +498,14 @@ async function getContactMethodPerformance(userId?: string | null, startDate?: D
   }));
 }
 
-async function getVisitHourDistribution(userId?: string | null, startDate?: Date) {
+async function getVisitHourDistribution(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
-    ...(startDate && { createdAt: { gte: startDate } }),
+    ...(startDate && { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    }),
     ...(userId && { visitUsers: { some: { userId: parseInt(userId) } } })
   };
 
@@ -434,6 +516,7 @@ async function getVisitHourDistribution(userId?: string | null, startDate?: Date
       'visit' as visit_type
     FROM canvassing_visits 
     WHERE ${startDate ? Prisma.sql`created_at >= ${startDate}` : Prisma.sql`1=1`}
+    ${endDate ? Prisma.sql`AND created_at <= ${endDate}` : Prisma.empty}
     ${userId ? Prisma.sql`AND EXISTS (SELECT 1 FROM canvassing_visit_users cvu WHERE cvu.visit_id = canvassing_visits.id AND cvu.user_id = ${parseInt(userId)})` : Prisma.empty}
     GROUP BY EXTRACT(HOUR FROM created_at)
     
@@ -445,6 +528,7 @@ async function getVisitHourDistribution(userId?: string | null, startDate?: Date
       'revisit' as visit_type
     FROM revisits 
     WHERE ${startDate ? Prisma.sql`created_at >= ${startDate}` : Prisma.sql`1=1`}
+    ${endDate ? Prisma.sql`AND created_at <= ${endDate}` : Prisma.empty}
     ${userId ? Prisma.sql`AND user_id = ${parseInt(userId)}` : Prisma.empty}
     GROUP BY EXTRACT(HOUR FROM created_at)
     
@@ -478,16 +562,26 @@ async function getVisitHourDistribution(userId?: string | null, startDate?: Date
 }
 
 // 3. Fonctions pour les données inventory
-async function getInventoryStatistics(userId?: string | null, startDate?: Date) {
+async function getInventoryStatistics(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
     ...(userId && { userId: parseInt(userId) }),
-    ...(startDate && { createdAt: { gte: startDate } })
+    ...(startDate && { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    })
   };
 
   const [totalItems, totalLocations, categoryDistribution] = await Promise.all([
-    prisma.roomImage.count({ where: startDate ? { createdAt: { gte: startDate } } : undefined }),
+    prisma.roomImage.count({ where: startDate ? { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    } : undefined }),
     prisma.property.count({ where: whereClause }),
-    getRoomCategoryDistribution(userId, startDate)
+    getRoomCategoryDistribution(userId, startDate, endDate)
   ]);
 
   return {
@@ -498,10 +592,15 @@ async function getInventoryStatistics(userId?: string | null, startDate?: Date) 
   };
 }
 
-async function getRoomCategoryDistribution(userId?: string | null, startDate?: Date) {
+async function getRoomCategoryDistribution(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = {
     ...(userId && { property: { userId: parseInt(userId) } }),
-    ...(startDate && { createdAt: { gte: startDate } })
+    ...(startDate && { 
+      createdAt: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    })
   };
 
   const rooms = await prisma.room.groupBy({
@@ -515,7 +614,7 @@ async function getRoomCategoryDistribution(userId?: string | null, startDate?: D
   );
 }
 
-async function getInventoryActivity(userId?: string | null, startDate?: Date) {
+async function getInventoryActivity(userId?: string | null, startDate?: Date, endDate?: Date) {
   const inventoryActivityTypes: ActivityType[] = [
     ActivityType.ADD_IMAGE,
     ActivityType.EDIT_IMAGE, 
@@ -526,7 +625,12 @@ async function getInventoryActivity(userId?: string | null, startDate?: Date) {
 
   const whereClause = {
     ...(userId && { userId: parseInt(userId) }),
-    ...(startDate && { timestamp: { gte: startDate } }),
+    ...(startDate && { 
+      timestamp: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      } 
+    }),
     activityType: {
       in: inventoryActivityTypes
     }
@@ -691,10 +795,13 @@ async function getTodayStats() {
 }
 
 // 6. Fonctions pour les métriques système
-async function getSystemMetricsData(startDate: Date) {
+async function getSystemMetricsData(startDate: Date, endDate?: Date) {
   return await prisma.systemMetrics.findMany({
     where: {
-      date: { gte: startDate }
+      date: { 
+        gte: startDate,
+        ...(endDate && { lte: endDate })
+      }
     },
     orderBy: { date: 'desc' }
   });
@@ -702,16 +809,29 @@ async function getSystemMetricsData(startDate: Date) {
 
 // Fonctions utilitaires
 function calculatePerformanceScore(visits: number, positiveResponses: number, items: number): number {
-  const responseRate = visits > 0 ? (positiveResponses / visits) : 0;
-  const maildropScore = Math.min(visits / 50, 1); // Score basé sur le nombre de visites maildrop
-  const inventoryScore = Math.min(items / 100, 1); // Score basé sur les items d'inventaire
-  
-  // Pondération: 50% taux de réponse, 35% visites maildrop, 15% inventaire
-  return (responseRate * 0.5 + maildropScore * 0.35 + inventoryScore * 0.15) * 100;
+  // If no activity, return 0
+  if (visits === 0 && items === 0) return 0;
+
+  // Score based on visits (50% of total)
+  // Normalization: 100 visits = 50 points max
+  const visitScore = Math.min((visits / 100) * 50, 50);
+
+  // Score based on inventoried items (25% of total)
+  // Normalization: 100 items = 25 points max
+  const itemScore = Math.min((items / 100) * 25, 25);
+
+  // Score based on positive response rate (25% of total)
+  const responseRate = visits > 0 ? positiveResponses / visits : 0;
+  const responseScore = responseRate * 25;
+
+  // Total score (0-100)
+  const totalScore = visitScore + itemScore + responseScore;
+
+  return Math.min(Math.max(totalScore, 0), 100);
 }
 
-async function calculateAveragePerformance(startDate: Date): Promise<number> {
-  const users = await getUsersWithPerformance(null, startDate);
+async function calculateAveragePerformance(startDate: Date, endDate?: Date): Promise<number> {
+  const users = await getUsersWithPerformance(null, startDate, endDate);
   if (users.length === 0) return 0;
   
   const totalScore = users.reduce((sum, user) => sum + user.performance.performanceScore, 0);
