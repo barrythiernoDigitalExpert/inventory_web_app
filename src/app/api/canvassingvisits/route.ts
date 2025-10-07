@@ -8,6 +8,15 @@ import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
 import { saveCanvassingImage } from '@/lib/utils/fileStorage'
 
+// Configure API route to handle larger uploads (50MB limit for image uploads)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+}
+
 // Define interfaces for better type safety
 interface CanvassingVisitData {
   userId: string;
