@@ -5,6 +5,7 @@ import { compare } from 'bcryptjs';
 import { PrismaClient, AuthType } from '@prisma/client';
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { CustomPrismaAdapter } from '@/lib/utils/CustomPrismaAdapter';
+import { prisma } from '@/lib/utils/prisma';
 
 // Extend the session types to include custom properties
 declare module "next-auth" {
@@ -31,8 +32,6 @@ declare module "next-auth/jwt" {
     isActive: boolean;
   }
 }
-
-const prisma = new PrismaClient();
 
 const authOptions: AuthOptions = {
   adapter: CustomPrismaAdapter(prisma),
