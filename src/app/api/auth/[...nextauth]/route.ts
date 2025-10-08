@@ -56,7 +56,7 @@ const authOptions: AuthOptions = {
 
         try {
           console.log('🔍 [AUTH] Looking up user in database:', credentials.email);
-          const user = await prisma.user.findUnique({
+          const user = await prisma.user.findFirst({
             where: { email: credentials.email },
             select: {
               id: true,
@@ -152,7 +152,7 @@ const authOptions: AuthOptions = {
       try {
         console.log('🔍 [GOOGLE] Looking up existing user by email:', user.email);
         // Check if user exists by email
-        const existingUser = await prisma.user.findUnique({
+        const existingUser = await prisma.user.findFirst({
           where: { email: user.email as string },
         });
 
