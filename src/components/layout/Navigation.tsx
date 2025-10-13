@@ -36,11 +36,17 @@ export const Navigation = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/dashboard">
+              <Link href="/maps">
                 <Logo width={120} height={50} />
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <Link 
+                href="/maps" 
+                className="border-transparent text-neutral-gray hover:text-white hover:border-primary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
+                Maps
+              </Link>
               <Link 
                 href="/dashboard" 
                 className="border-transparent text-neutral-gray hover:text-white hover:border-primary inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"

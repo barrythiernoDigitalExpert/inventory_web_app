@@ -33,7 +33,7 @@ useEffect(() => {
     try {
       const success = await login(email, password);
       if (success) {
-        router.push('/dashboard');
+        router.push('/maps');
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -49,7 +49,7 @@ useEffect(() => {
     setIsGoogleLoading(true);
     try {
       // The redirect will be handled by NextAuth
-      await signIn('google', { callbackUrl: '/dashboard' });
+      await signIn('google', { callbackUrl: '/maps' });
     } catch (error) {
       console.error('Google sign-in error:', error);
       setError('Failed to sign in with Google. Please try again.');
