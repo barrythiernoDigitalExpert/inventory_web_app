@@ -108,16 +108,29 @@ export default function Maps() {
         return;
       }
 
+      // Check if script already exists in DOM
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+      if (existingScript) {
+        existingScript.addEventListener('load', () => setIsLoaded(true));
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        // Load MarkerClusterer library
-        const clustererScript = document.createElement('script');
-        clustererScript.src = 'https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js';
-        clustererScript.onload = () => setIsLoaded(true);
-        document.head.appendChild(clustererScript);
+        // Check if MarkerClusterer script already exists
+        const existingClustererScript = document.querySelector('script[src*="markerclusterer"]');
+        if (!existingClustererScript) {
+          // Load MarkerClusterer library
+          const clustererScript = document.createElement('script');
+          clustererScript.src = 'https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js';
+          clustererScript.onload = () => setIsLoaded(true);
+          document.head.appendChild(clustererScript);
+        } else {
+          setIsLoaded(true);
+        }
       };
       document.head.appendChild(script);
     };
@@ -215,8 +228,12 @@ export default function Maps() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.target && (event.target as HTMLElement).tagName === 'INPUT') return;
-      
+      // Ignore keyboard shortcuts when typing in input fields or textareas
+      const target = event.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+
       switch (event.key) {
         case '+':
         case '=':
@@ -232,10 +249,7 @@ export default function Maps() {
           event.preventDefault();
           handleResetToPortugal();
           break;
-        case ' ':
-          event.preventDefault();
-          toggleMapType();
-          break;
+        // Space key removed to avoid conflicts with text input
       }
     };
 
@@ -953,45 +967,8 @@ export default function Maps() {
                 )}
               </div>
             </div>
-            
-            {/* Keyboard Shortcuts Help */}
-            <div 
-              className={`bg-[#2D2D2D]/95 backdrop-blur-sm rounded-lg border border-[#D4A017]/20 p-3 text-xs text-[#D4A017] transition-all duration-300 ${
-                showLegend ? 'transform translate-y-0' : 'transform -translate-y-2'
-              }`}
-            >
-              <div className="font-semibold mb-2 text-[#D4A017]">Keyboard Shortcuts:</div>
-              <div className="space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-gray-300">+/-</span>
-                  <span>Zoom</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-300">R</span>
-                  <span>Reset</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-300">Space</span>
-                  <span>Toggle</span>
-                </div>
-              </div>
-            </div>
           </div>
         )}
-
-        {/* Add Visit FAB (Floating Action Button) */}
-        <div className="absolute bottom-4 left-4">
-          <button
-            onClick={() => setIsAddVisitModalOpen(true)}
-            className="bg-gradient-to-r from-[#D4A017] to-[#E6B52C] text-black p-4 rounded-full shadow-2xl hover:shadow-[#D4A017]/50 hover:scale-110 transition-all duration-300 flex items-center gap-2 group"
-            title="Add Visit"
-          >
-            <Plus size={24} />
-            <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-semibold">
-              Drop Brochure
-            </span>
-          </button>
-        </div>
       </div>
 
       {/* Add Visit Modal */}
