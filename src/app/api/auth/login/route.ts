@@ -2,12 +2,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient, ActivityType, EntityType } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 import { loggingService } from '@/lib/services/loggingService';
 import { extractRequestContext } from '@/lib/utils/requestHelpers';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || 'your-secret-key'
+);
 
 export async function POST(request: NextRequest) {
   const context = extractRequestContext(request);
@@ -80,16 +82,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        isActive: user.isActive
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = await new SignJWT({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('7d')
+      .sign(JWT_SECRET);
 
     // Log successful login
     await loggingService.logAuth(

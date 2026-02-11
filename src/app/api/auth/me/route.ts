@@ -1,10 +1,12 @@
 // app/api/auth/me/route.ts
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-secret-key'
+);
 
 export async function GET(request: Request) {
   try {
@@ -22,8 +24,9 @@ export async function GET(request: Request) {
     
     try {
       // Verify token
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
-      
+      const { payload } = await jwtVerify(token, JWT_SECRET);
+      const decoded = payload as unknown as { id: number };
+
       // Find user
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },

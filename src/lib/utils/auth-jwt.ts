@@ -14,10 +14,12 @@
 // src/lib/utils/auth-jwt.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || 'your-secret-key'
+);
 
 export interface DecodedToken {
   id: string;
@@ -50,12 +52,13 @@ export async function verifyJwtAuth(request: NextRequest) {
   // Vérifier le token
   let decodedToken: DecodedToken;
   try {
-    decodedToken = jwt.verify(token, JWT_SECRET) as DecodedToken;
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    decodedToken = payload as unknown as DecodedToken;
   } catch (error) {
     return {
-      error: NextResponse.json({ 
+      error: NextResponse.json({
         success: false,
-        error: 'Invalid token' 
+        error: 'Invalid token'
       }, { status: 401 })
     };
   }

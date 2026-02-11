@@ -1,21 +1,17 @@
 // src/app/api/canvassingvisits/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/utils/prisma'
-import { verifyJwtAuth } from '@/lib/utils/auth-jwt'
+import { verifyAuth } from '@/lib/utils/auth-hybrid'
 import { v4 as uuidv4 } from 'uuid'
 import { $Enums, ActivityType, EntityType } from '@prisma/client'
 import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
 import { saveCanvassingImage } from '@/lib/utils/fileStorage'
 
-// Configure API route to handle larger uploads (50MB limit for image uploads)
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
-}
+// Configure API route for dynamic behavior and larger uploads
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs' // Required for jsonwebtoken and file uploads
+export const maxDuration = 300 // 5 minutes for image uploads
 
 // Define interfaces for better type safety
 interface CanvassingVisitData {
@@ -50,8 +46,8 @@ export async function GET(request: NextRequest) {
   let user: any = null
   
   try {
-    // Verify authentication first (same pattern as upload route)
-    const authResult = await verifyJwtAuth(request)
+    // Verify authentication first (supports both NextAuth session and JWT)
+    const authResult = await verifyAuth(request)
     if (authResult.error) {
       return authResult.error
     }
@@ -279,8 +275,8 @@ export async function POST(request: NextRequest) {
   let user: any = null
   
   try {
-    // Verify authentication first (same pattern as upload route)
-    const authResult = await verifyJwtAuth(request)
+    // Verify authentication first (supports both NextAuth session and JWT)
+    const authResult = await verifyAuth(request)
     if (authResult.error) {
       return authResult.error
     }

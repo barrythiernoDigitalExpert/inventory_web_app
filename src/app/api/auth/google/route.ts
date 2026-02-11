@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || 'your-secret-key'
+);
 
 export async function POST(request: Request) {
   try {
@@ -53,17 +55,16 @@ export async function POST(request: Request) {
     }
 
     // Générer un JWT
-    const token = jwt.sign(
-      { 
-        id: String(user.id),
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        isActive: user.isActive
-      },
-      JWT_SECRET,
-      { expiresIn: '30d' }
-    );
+    const token = await new SignJWT({
+      id: String(user.id),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isActive: user.isActive
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('30d')
+      .sign(JWT_SECRET);
 
     // Retourner les données utilisateur et le token
     return NextResponse.json({

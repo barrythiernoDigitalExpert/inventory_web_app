@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Calendar, Filter, MapPin, Users, Clock, MessageSquare, Image, ChevronDown, ChevronUp, Plus, Minus, Home, Maximize2, Navigation, Search } from 'lucide-react';
+import AddVisitModal from '@/components/maps/AddVisitModal';
 
 interface User {
   id: string;
@@ -59,6 +60,7 @@ export default function Maps() {
   const [selectedCreators, setSelectedCreators] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [isAddVisitModalOpen, setIsAddVisitModalOpen] = useState(false);
 
   // Color palette for different creators - highly distinct colors
   const userColors = [
@@ -620,12 +622,34 @@ export default function Maps() {
   const toggleMapType = () => {
     if (map) {
       const currentType = map.getMapTypeId();
-      const newType = currentType === google.maps.MapTypeId.SATELLITE 
-        ? google.maps.MapTypeId.ROADMAP 
+      const newType = currentType === google.maps.MapTypeId.SATELLITE
+        ? google.maps.MapTypeId.ROADMAP
         : google.maps.MapTypeId.SATELLITE;
       map.setMapTypeId(newType);
     }
   };
+
+  // Handle visit creation success
+  const handleVisitCreated = () => {
+    fetchVisits(); // Refresh visits list
+  };
+
+  // Get user location on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error('Error getting user location:', error);
+        }
+      );
+    }
+  }, []);
 
   return (
     <div className="h-screen flex flex-col">
@@ -664,6 +688,15 @@ export default function Maps() {
             >
               <Filter size={20} />
               Filters
+            </button>
+
+            {/* Add Visit Button */}
+            <button
+              onClick={() => setIsAddVisitModalOpen(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-[#D4A017] to-[#E6B52C] text-black px-4 py-2 rounded-lg font-semibold hover:from-[#E6B52C] hover:to-[#D4A017] transition-all duration-300 shadow-lg hover:shadow-[#D4A017]/50"
+            >
+              <Plus size={20} />
+              Drop Brochure
             </button>
           </div>
         </div>
@@ -945,7 +978,30 @@ export default function Maps() {
             </div>
           </div>
         )}
+
+        {/* Add Visit FAB (Floating Action Button) */}
+        <div className="absolute bottom-4 left-4">
+          <button
+            onClick={() => setIsAddVisitModalOpen(true)}
+            className="bg-gradient-to-r from-[#D4A017] to-[#E6B52C] text-black p-4 rounded-full shadow-2xl hover:shadow-[#D4A017]/50 hover:scale-110 transition-all duration-300 flex items-center gap-2 group"
+            title="Add Visit"
+          >
+            <Plus size={24} />
+            <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap font-semibold">
+              Drop Brochure
+            </span>
+          </button>
+        </div>
       </div>
+
+      {/* Add Visit Modal */}
+      <AddVisitModal
+        isOpen={isAddVisitModalOpen}
+        onClose={() => setIsAddVisitModalOpen(false)}
+        onSuccess={handleVisitCreated}
+        userLocation={userLocation}
+        map={map}
+      />
     </div>
   );
 }
