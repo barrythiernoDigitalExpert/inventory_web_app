@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -64,6 +65,7 @@ model User {
   authType          AuthType          @default(LOCAL) @map("auth_type")
   googleId          String?           @unique @map("google_id")
   isActive          Boolean           @default(true) @map("is_active")
+  deactivatedAt     DateTime?         @map("deactivated_at") // Set when isActive → false, cleared on reactivation
   createdAt         DateTime          @default(now()) @map("created_at")
   updatedAt         DateTime          @updatedAt @map("updated_at")
   
@@ -75,6 +77,7 @@ model User {
   activities        UserActivity[]    // User activity tracking
   visitComments     CanvassingVisitComment[] // Comments on canvassing visits
   revisits          Revisit[]         // Revisits performed by this user
+  updatedFeaturesData PropertyFeaturesData[] // Mobile features data updated by this user
   
   @@map("users")
 }
@@ -111,7 +114,8 @@ model Property {
   // Client information fields
   listingPerson   String?           @map("listing_person")
   propertyFeatures PropertyPropertyFeature[]
-  
+  featuresData     PropertyFeaturesData?      // Mobile flat-JSON features
+
   @@map("properties")
   @@index([userId])
   @@index([inventoryStatus])
@@ -266,6 +270,39 @@ model PropertyPropertyFeature {
   @@index([valueFeatureOptionId])
 }
 
+
+// Global application configuration (key-value store)
+// Key used by the pin-retention system: "pin_retention_days" (default "30")
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  @@map("system_configs")
+  @@index([key])
+}
+
+// Mobile flat-JSON features per property (one row per property).
+// Distinct from the structured PropertyPropertyFeature EAV table:
+// this record stores the raw key→value object sent by the mobile app
+// without needing the full feature-definition catalogue.
+model PropertyFeaturesData {
+  id              Int       @id @default(autoincrement())
+  propertyId      Int       @unique @map("property_id")
+  features        Json      @default("{}")
+  schemaVersion   Int       @default(1) @map("schema_version")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  updatedByUserId Int?      @map("updated_by_user_id")
+
+  property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  updatedByUser   User?     @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@map("property_features_data")
+  @@index([propertyId])
+  @@index([updatedAt])
+}
 
 // NEW: Canvassing Visit Model
 model CanvassingVisit {

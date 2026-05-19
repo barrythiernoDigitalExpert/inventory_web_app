@@ -4,6 +4,8 @@ import { prisma } from '@/lib/utils/prisma';
 import { deleteRoomImage, saveRoomImages } from '@/lib/utils/fileStorage';
 import { extractPublicIdFromUrl, addCacheBustingToUrl } from '@/lib/utils/cloudinaryHelpers';
 import { v2 as cloudinary } from 'cloudinary';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/utils/auth';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -21,6 +23,11 @@ export async function GET(
   const params = await props.params;
   
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const propertyId = parseInt(params.id);
     const roomId = parseInt(params.roomId);
     const imageId = parseInt(params.imageId);
@@ -94,6 +101,11 @@ export async function PATCH(
   const params = await props.params;
   
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const propertyId = parseInt(params.id);
     const roomId = parseInt(params.roomId);
     const imageId = parseInt(params.imageId);
@@ -281,6 +293,11 @@ export async function DELETE(
   const params = await props.params;
   
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const propertyId = parseInt(params.id);
     const roomId = parseInt(params.roomId);
     const imageId = parseInt(params.imageId);

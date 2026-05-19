@@ -93,6 +93,8 @@ export async function GET(request: NextRequest) {
       });
 
       // Transform data for response with features
+      const duration = Date.now() - startTime;
+      loggingService.logActivity(user.id, ActivityType.VIEW_PROPERTY, EntityType.PROPERTY, undefined, { includeFeatures: true, userRole: user.role }, context.deviceType, duration).catch(() => {});
       return NextResponse.json(propertiesWithFeatures.map(property => {
         const baseProperty: any = {
           id: property.id.toString(),
@@ -211,6 +213,9 @@ export async function GET(request: NextRequest) {
       });
       
       // Transform data for response
+      const duration = Date.now() - startTime;
+      // Fire-and-forget logging (non-blocking)
+      loggingService.logActivity(user.id, ActivityType.VIEW_PROPERTY, EntityType.PROPERTY, undefined, { includeFeatures: false, userRole: user.role }, context.deviceType, duration).catch(() => {});
       return NextResponse.json(properties.map(property => ({
         id: property.id.toString(),
         reference: property.reference,
@@ -231,22 +236,6 @@ export async function GET(request: NextRequest) {
         })
       })));
     }
-    
-    // Log successful properties view
-    const duration = Date.now() - startTime;
-    await loggingService.logActivity(
-      user.id,
-      ActivityType.VIEW_PROPERTY,
-      EntityType.PROPERTY,
-      undefined,
-      { 
-        includeFeatures,
-        resultCount: 'multiple',
-        userRole: user.role
-      },
-      context.deviceType,
-      duration
-    );
     
   } catch (error) {
     await loggingService.logError(

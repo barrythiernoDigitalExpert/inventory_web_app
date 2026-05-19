@@ -13,15 +13,18 @@
  * The exported prisma object is used for all database operations.
  */
 import { PrismaClient } from '@prisma/client'
+import '@/lib/env' // Validate required environment variables at startup
 
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = 
-  globalForPrisma.prisma ?? 
+export const prisma =
+  globalForPrisma.prisma ??
   new PrismaClient({
-    log: ['query'],
+    log: process.env.NODE_ENV === 'development'
+      ? ['query', 'error', 'warn']
+      : ['error'],
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma

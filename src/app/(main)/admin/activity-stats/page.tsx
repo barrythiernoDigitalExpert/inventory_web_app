@@ -72,14 +72,26 @@ export default function ActivityStatsPage() {
     }
   };
 
-  const fetchStats = async () => {
+  // Accepts optional overrides so callers can pass reset values directly,
+  // without depending on the React state having already been flushed.
+  const fetchStats = async (overrides?: {
+    startDate?: Date;
+    endDate?: Date;
+    selectedUser?: string;
+    selectedActivity?: string;
+  }) => {
     setLoading(true);
     try {
+      const sd = overrides?.startDate !== undefined ? overrides.startDate : startDate;
+      const ed = overrides?.endDate !== undefined ? overrides.endDate : endDate;
+      const su = overrides?.selectedUser !== undefined ? overrides.selectedUser : selectedUser;
+      const sa = overrides?.selectedActivity !== undefined ? overrides.selectedActivity : selectedActivity;
+
       const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate.toISOString());
-      if (endDate) params.append('endDate', endDate.toISOString());
-      if (selectedUser) params.append('userId', selectedUser);
-      if (selectedActivity) params.append('activityType', selectedActivity);
+      if (sd) params.append('startDate', sd.toISOString());
+      if (ed) params.append('endDate', ed.toISOString());
+      if (su) params.append('userId', su);
+      if (sa) params.append('activityType', sa);
 
       const response = await fetch(`/api/admin/activity-stats?${params}`);
       if (response.ok) {
@@ -104,7 +116,8 @@ export default function ActivityStatsPage() {
     setEndDate(undefined);
     setSelectedUser('');
     setSelectedActivity('');
-    setTimeout(fetchStats, 100);
+    // Pass reset values directly — avoids race with React state batch flush
+    fetchStats({ startDate: undefined, endDate: undefined, selectedUser: '', selectedActivity: '' });
   };
 
   const formatActivityType = (type: string) => {

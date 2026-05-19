@@ -117,13 +117,49 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  password: 'password',
+  role: 'role',
+  authType: 'authType',
+  googleId: 'googleId',
+  isActive: 'isActive',
+  deactivatedAt: 'deactivatedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.PropertyScalarFieldEnum = {
   id: 'id',
   reference: 'reference',
   name: 'name',
+  street: 'street',
+  city: 'city',
+  state: 'state',
+  postalCode: 'postalCode',
+  country: 'country',
+  address: 'address',
   imagePath: 'imagePath',
+  roomCount: 'roomCount',
+  imageCount: 'imageCount',
+  inventoryStatus: 'inventoryStatus',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  userId: 'userId',
+  listingPerson: 'listingPerson'
+};
+
+exports.Prisma.PropertyShareScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  userId: 'userId',
+  canEdit: 'canEdit',
+  canDelete: 'canDelete',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.RoomScalarFieldEnum = {
@@ -131,24 +167,227 @@ exports.Prisma.RoomScalarFieldEnum = {
   propertyId: 'propertyId',
   code: 'code',
   name: 'name',
-  createdAt: 'createdAt'
+  imageCount: 'imageCount',
+  isComplete: 'isComplete',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.RoomImageScalarFieldEnum = {
   id: 'id',
   roomId: 'roomId',
   imagePath: 'imagePath',
+  description: 'description',
+  name: 'name',
+  notes: 'notes',
+  condition: 'condition',
+  aiDetected: 'aiDetected',
+  aiAccuracy: 'aiAccuracy',
+  sortOrder: 'sortOrder',
+  isMainImage: 'isMainImage',
+  localId: 'localId',
+  syncStatus: 'syncStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyFeatureCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  sort: 'sort',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyFeatureScalarFieldEnum = {
+  id: 'id',
+  categoryId: 'categoryId',
+  type: 'type',
+  name: 'name',
+  sort: 'sort',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyFeatureOptionScalarFieldEnum = {
+  id: 'id',
+  propertyFeatureId: 'propertyFeatureId',
+  value: 'value',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyPropertyFeatureScalarFieldEnum = {
+  id: 'id',
+  propertyFeatureId: 'propertyFeatureId',
+  propertyId: 'propertyId',
+  valueText: 'valueText',
+  valueBool: 'valueBool',
+  valueInt: 'valueInt',
+  valueFloat: 'valueFloat',
+  valueFeatureOptionId: 'valueFeatureOptionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SystemConfigScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PropertyFeaturesDataScalarFieldEnum = {
+  id: 'id',
+  propertyId: 'propertyId',
+  features: 'features',
+  schemaVersion: 'schemaVersion',
+  updatedAt: 'updatedAt',
+  updatedByUserId: 'updatedByUserId'
+};
+
+exports.Prisma.CanvassingVisitScalarFieldEnum = {
+  id: 'id',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  contactMethod: 'contactMethod',
+  contactMethod2: 'contactMethod2',
+  contactMethod3: 'contactMethod3',
+  contactMethod4: 'contactMethod4',
+  houseName: 'houseName',
+  vendorName: 'vendorName',
+  comments: 'comments',
+  streetAddress: 'streetAddress',
+  neighborhood: 'neighborhood',
+  city: 'city',
+  postalCode: 'postalCode',
+  imagePath: 'imagePath',
+  responseReceived: 'responseReceived',
+  responseDate: 'responseDate',
+  isSynced: 'isSynced',
+  mobileId: 'mobileId',
+  syncedAt: 'syncedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InventorySessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  propertyId: 'propertyId',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  duration: 'duration',
+  deviceType: 'deviceType'
+};
+
+exports.Prisma.SystemMetricsScalarFieldEnum = {
+  id: 'id',
+  date: 'date',
+  totalUsers: 'totalUsers',
+  loggedInUsers: 'loggedInUsers',
+  contributingUsers: 'contributingUsers',
+  totalProperties: 'totalProperties',
+  newProperties: 'newProperties',
+  completedInventories: 'completedInventories',
+  avgCompletionTime: 'avgCompletionTime',
+  storageUsed: 'storageUsed',
+  aiRecognitionRate: 'aiRecognitionRate',
+  totalImageCount: 'totalImageCount',
+  newImageCount: 'newImageCount',
+  totalCanvassingVisits: 'totalCanvassingVisits',
+  newCanvassingVisits: 'newCanvassingVisits',
+  positiveResponses: 'positiveResponses',
+  negativeResponses: 'negativeResponses',
+  pendingResponses: 'pendingResponses'
+};
+
+exports.Prisma.SyncLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  deviceId: 'deviceId',
+  syncStarted: 'syncStarted',
+  syncCompleted: 'syncCompleted',
+  itemsSynced: 'itemsSynced',
+  syncStatus: 'syncStatus',
+  errorMessage: 'errorMessage'
+};
+
+exports.Prisma.UserActivityScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  activityType: 'activityType',
+  entityId: 'entityId',
+  entityType: 'entityType',
+  details: 'details',
+  deviceType: 'deviceType',
+  duration: 'duration',
+  timestamp: 'timestamp',
+  metadata: 'metadata'
+};
+
+exports.Prisma.VisitConfigurationScalarFieldEnum = {
+  id: 'id',
+  revisitDelayHours: 'revisitDelayHours',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CanvassingVisitUserScalarFieldEnum = {
+  id: 'id',
+  visitId: 'visitId',
+  userId: 'userId',
+  userName: 'userName',
+  isCreator: 'isCreator',
+  joinedAt: 'joinedAt'
+};
+
+exports.Prisma.VisitRevisitScalarFieldEnum = {
+  id: 'id',
+  originalVisitId: 'originalVisitId',
+  newVisitId: 'newVisitId',
+  revisitReason: 'revisitReason',
   createdAt: 'createdAt'
 };
 
-exports.Prisma.InventoryItemScalarFieldEnum = {
+exports.Prisma.CanvassingVisitCommentScalarFieldEnum = {
   id: 'id',
-  roomId: 'roomId',
-  name: 'name',
-  description: 'description',
+  visitId: 'visitId',
+  userId: 'userId',
+  comment: 'comment',
+  isInitial: 'isInitial',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RevisitScalarFieldEnum = {
+  id: 'id',
+  originalVisitId: 'originalVisitId',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  contactMethod1: 'contactMethod1',
+  contactMethod2: 'contactMethod2',
+  contactMethod3: 'contactMethod3',
+  contactMethod4: 'contactMethod4',
+  houseName: 'houseName',
+  vendorName: 'vendorName',
+  comments: 'comments',
+  streetAddress: 'streetAddress',
+  neighborhood: 'neighborhood',
+  city: 'city',
+  postalCode: 'postalCode',
   imagePath: 'imagePath',
-  notes: 'notes',
-  createdAt: 'createdAt'
+  responseReceived: 'responseReceived',
+  responseDate: 'responseDate',
+  userId: 'userId',
+  userName: 'userName',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -156,39 +395,131 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
 
-exports.Prisma.PropertyOrderByRelevanceFieldEnum = {
-  reference: 'reference',
-  name: 'name',
-  imagePath: 'imagePath'
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.UserRole = exports.$Enums.UserRole = {
+  ADMIN: 'ADMIN',
+  USER: 'USER'
 };
 
-exports.Prisma.RoomOrderByRelevanceFieldEnum = {
-  code: 'code',
-  name: 'name'
+exports.AuthType = exports.$Enums.AuthType = {
+  LOCAL: 'LOCAL',
+  GOOGLE: 'GOOGLE'
 };
 
-exports.Prisma.RoomImageOrderByRelevanceFieldEnum = {
-  imagePath: 'imagePath'
+exports.InventoryStatus = exports.$Enums.InventoryStatus = {
+  DRAFT: 'DRAFT',
+  COMPLETED: 'COMPLETED',
+  FINALIZED: 'FINALIZED'
 };
 
-exports.Prisma.InventoryItemOrderByRelevanceFieldEnum = {
-  name: 'name',
-  description: 'description',
-  imagePath: 'imagePath',
-  notes: 'notes'
+exports.PropertyFeatureType = exports.$Enums.PropertyFeatureType = {
+  bool: 'bool',
+  text: 'text',
+  integer: 'integer',
+  select: 'select',
+  float: 'float'
 };
 
+exports.ContactMethod = exports.$Enums.ContactMethod = {
+  DOOR: 'DOOR',
+  PHONE: 'PHONE',
+  EMAIL: 'EMAIL',
+  LETTER: 'LETTER',
+  SMS: 'SMS',
+  BROCHURE: 'BROCHURE',
+  VALUATION_CARD: 'VALUATION_CARD',
+  FLYER: 'FLYER',
+  SOCIAL_MEDIA: 'SOCIAL_MEDIA',
+  REFERRAL: 'REFERRAL'
+};
+
+exports.ResponseType = exports.$Enums.ResponseType = {
+  positive: 'positive',
+  negative: 'negative',
+  no_response: 'no_response',
+  pending: 'pending'
+};
+
+exports.ActivityType = exports.$Enums.ActivityType = {
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
+  CREATE_PROPERTY: 'CREATE_PROPERTY',
+  EDIT_PROPERTY: 'EDIT_PROPERTY',
+  DELETE_PROPERTY: 'DELETE_PROPERTY',
+  VIEW_PROPERTY: 'VIEW_PROPERTY',
+  ADD_ROOM: 'ADD_ROOM',
+  EDIT_ROOM: 'EDIT_ROOM',
+  DELETE_ROOM: 'DELETE_ROOM',
+  ADD_IMAGE: 'ADD_IMAGE',
+  DELETE_IMAGE: 'DELETE_IMAGE',
+  EDIT_IMAGE: 'EDIT_IMAGE',
+  COMPLETE_INVENTORY: 'COMPLETE_INVENTORY',
+  CANVASSING_VISIT: 'CANVASSING_VISIT',
+  CREATE_USER: 'CREATE_USER',
+  EDIT_USER: 'EDIT_USER',
+  DELETE_USER: 'DELETE_USER',
+  CHANGE_PASSWORD: 'CHANGE_PASSWORD',
+  RESET_PASSWORD: 'RESET_PASSWORD',
+  PROPERTY_SHARE: 'PROPERTY_SHARE',
+  SYNC_DATA: 'SYNC_DATA',
+  EXPORT_DATA: 'EXPORT_DATA',
+  IMPORT_DATA: 'IMPORT_DATA'
+};
+
+exports.EntityType = exports.$Enums.EntityType = {
+  USER: 'USER',
+  PROPERTY: 'PROPERTY',
+  ROOM: 'ROOM',
+  IMAGE: 'IMAGE',
+  CANVASSING_VISIT: 'CANVASSING_VISIT',
+  SYSTEM: 'SYSTEM'
+};
 
 exports.Prisma.ModelName = {
+  User: 'User',
   Property: 'Property',
+  PropertyShare: 'PropertyShare',
   Room: 'Room',
   RoomImage: 'RoomImage',
-  InventoryItem: 'InventoryItem'
+  PropertyFeatureCategory: 'PropertyFeatureCategory',
+  PropertyFeature: 'PropertyFeature',
+  PropertyFeatureOption: 'PropertyFeatureOption',
+  PropertyPropertyFeature: 'PropertyPropertyFeature',
+  SystemConfig: 'SystemConfig',
+  PropertyFeaturesData: 'PropertyFeaturesData',
+  CanvassingVisit: 'CanvassingVisit',
+  InventorySession: 'InventorySession',
+  SystemMetrics: 'SystemMetrics',
+  SyncLog: 'SyncLog',
+  UserActivity: 'UserActivity',
+  VisitConfiguration: 'VisitConfiguration',
+  CanvassingVisitUser: 'CanvassingVisitUser',
+  VisitRevisit: 'VisitRevisit',
+  CanvassingVisitComment: 'CanvassingVisitComment',
+  Revisit: 'Revisit'
 };
 
 /**

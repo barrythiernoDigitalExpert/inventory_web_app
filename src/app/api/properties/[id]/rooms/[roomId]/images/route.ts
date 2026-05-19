@@ -16,6 +16,11 @@ export async function GET(
   const params = await props.params;
   
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const propertyId = parseInt(params.id);
     const roomId = parseInt(params.roomId);
     

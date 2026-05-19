@@ -149,66 +149,44 @@ async function getPeriodStats(userId: number, period: string,  startDate?: strin
 }
 
 // Helper function to get user's top performing areas
+// Optimized: single raw SQL query replaces N+1 per-area count queries
 async function getUserTopAreas(userId: number) {
   try {
-    // Get areas with highest positive response rates
-    const areaStats = await prisma.canvassingVisit.groupBy({
-      by: ['city', 'neighborhood'],
-      where: { 
-        visitUsers: { some: { userId } },
-        city: { not: null }
-      },
-      _count: {
-        id: true
-      },
-      having: {
-        id: {
-          _count: { gte: 2 } // Only areas with at least 2 visits
-        }
-      },
-      orderBy: {
-        _count: {
-          id: 'desc'
-        }
-      },
-      take: 5
-    });
+    const rows = await prisma.$queryRaw<{
+      city: string | null;
+      neighborhood: string | null;
+      totalVisits: bigint;
+      positiveResponses: bigint;
+    }[]>`
+      SELECT
+        cv."city",
+        cv."neighborhood",
+        COUNT(cv.id)                                                       AS "totalVisits",
+        COUNT(cv.id) FILTER (WHERE cv."responseReceived" = 'positive')     AS "positiveResponses"
+      FROM "CanvassingVisit" cv
+      INNER JOIN "CanvassingVisitUser" cvu ON cvu."visitId" = cv.id
+      WHERE cvu."userId" = ${userId}
+        AND cv."city" IS NOT NULL
+      GROUP BY cv."city", cv."neighborhood"
+      HAVING COUNT(cv.id) >= 2
+      ORDER BY COUNT(cv.id) DESC
+      LIMIT 5
+    `;
 
-    // Get response rates for each area
-    const areaDetails = await Promise.all(
-      areaStats.map(async (area) => {
-        const [totalVisits, positiveResponses] = await Promise.all([
-          prisma.canvassingVisit.count({
-            where: {
-              visitUsers: { some: { userId } },
-              city: area.city,
-              neighborhood: area.neighborhood
-            }
-          }),
-          prisma.canvassingVisit.count({
-            where: {
-              visitUsers: { some: { userId } },
-              city: area.city,
-              neighborhood: area.neighborhood,
-              responseReceived: ResponseType.positive
-            }
-          })
-        ]);
-
+    return rows
+      .map((row) => {
+        const totalVisits = Number(row.totalVisits);
+        const positiveResponses = Number(row.positiveResponses);
         const successRate = totalVisits > 0 ? (positiveResponses / totalVisits) * 100 : 0;
-
         return {
-          city: area.city,
-          neighborhood: area.neighborhood,
+          city: row.city,
+          neighborhood: row.neighborhood,
           totalVisits,
           positiveResponses,
-          successRate: Math.round(successRate * 10) / 10
+          successRate: Math.round(successRate * 10) / 10,
         };
       })
-    );
-
-    return areaDetails.sort((a, b) => b.successRate - a.successRate);
-
+      .sort((a, b) => b.successRate - a.successRate);
   } catch (error) {
     console.error('Error getting user top areas:', error);
     return [];
@@ -216,60 +194,42 @@ async function getUserTopAreas(userId: number) {
 }
 
 // Helper function to get user's contact method statistics
+// Optimized: single raw SQL query replaces N per-method count queries
 async function getUserContactMethodStats(userId: number) {
   try {
-    const methodStats = await prisma.canvassingVisit.groupBy({
-      by: ['contactMethod'],
-      where: { visitUsers: { some: { userId } } },
-      _count: {
-        id: true
-      },
-      orderBy: {
-        _count: {
-          id: 'desc'
-        }
-      }
+    const rows = await prisma.$queryRaw<{
+      contactMethod: string;
+      totalVisits: bigint;
+      totalResponses: bigint;
+      positiveResponses: bigint;
+    }[]>`
+      SELECT
+        cv."contactMethod",
+        COUNT(cv.id)                                                         AS "totalVisits",
+        COUNT(cv.id) FILTER (WHERE cv."responseReceived" IS NOT NULL)        AS "totalResponses",
+        COUNT(cv.id) FILTER (WHERE cv."responseReceived" = 'positive')       AS "positiveResponses"
+      FROM "CanvassingVisit" cv
+      INNER JOIN "CanvassingVisitUser" cvu ON cvu."visitId" = cv.id
+      WHERE cvu."userId" = ${userId}
+      GROUP BY cv."contactMethod"
+      ORDER BY COUNT(cv.id) DESC
+    `;
+
+    return rows.map((row) => {
+      const totalVisits = Number(row.totalVisits);
+      const totalResponses = Number(row.totalResponses);
+      const positiveResponses = Number(row.positiveResponses);
+      const responseRate = totalVisits > 0 ? (totalResponses / totalVisits) * 100 : 0;
+      const successRate = totalResponses > 0 ? (positiveResponses / totalResponses) * 100 : 0;
+      return {
+        contactMethod: row.contactMethod,
+        totalVisits,
+        totalResponses,
+        positiveResponses,
+        responseRate: Math.round(responseRate * 10) / 10,
+        successRate: Math.round(successRate * 10) / 10,
+      };
     });
-
-    // Get effectiveness for each method
-    const methodDetails = await Promise.all(
-      methodStats.map(async (method) => {
-        const [totalVisits, positiveResponses, totalResponses] = await Promise.all([
-          prisma.canvassingVisit.count({
-            where: { visitUsers: { some: { userId } }, contactMethod: method.contactMethod }
-          }),
-          prisma.canvassingVisit.count({
-            where: { 
-              visitUsers: { some: { userId } }, 
-              contactMethod: method.contactMethod,
-              responseReceived: ResponseType.positive
-            }
-          }),
-          prisma.canvassingVisit.count({
-            where: { 
-              visitUsers: { some: { userId } }, 
-              contactMethod: method.contactMethod,
-              responseReceived: { not: null }
-            }
-          })
-        ]);
-
-        const responseRate = totalVisits > 0 ? (totalResponses / totalVisits) * 100 : 0;
-        const successRate = totalResponses > 0 ? (positiveResponses / totalResponses) * 100 : 0;
-
-        return {
-          contactMethod: method.contactMethod,
-          totalVisits,
-          totalResponses,
-          positiveResponses,
-          responseRate: Math.round(responseRate * 10) / 10,
-          successRate: Math.round(successRate * 10) / 10
-        };
-      })
-    );
-
-    return methodDetails;
-
   } catch (error) {
     console.error('Error getting contact method stats:', error);
     return [];
@@ -277,39 +237,41 @@ async function getUserContactMethodStats(userId: number) {
 }
 
 // Helper function to get user's activity timeline
+// Optimized: single query with groupBy instead of 60 individual count queries
 async function getUserActivityTimeline(userId: number, days: number = 30) {
   try {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    
-    const timeline = [];
-    
-    for (let i = 0; i < days; i++) {
+
+    // Single query: group visits by day
+    const visitsByDay = await prisma.$queryRaw<{ day: string; visits: bigint; responses: bigint }[]>`
+      SELECT
+        TO_CHAR(cv."createdAt", 'YYYY-MM-DD') AS day,
+        COUNT(cv.id) AS visits,
+        COUNT(cv.id) FILTER (WHERE cv."responseReceived" IS NOT NULL) AS responses
+      FROM "CanvassingVisit" cv
+      INNER JOIN "CanvassingVisitUser" cvu ON cvu."visitId" = cv.id
+      WHERE cvu."userId" = ${userId}
+        AND cv."createdAt" >= ${startDate}
+      GROUP BY TO_CHAR(cv."createdAt", 'YYYY-MM-DD')
+      ORDER BY day ASC
+    `;
+
+    // Build the full 30-day timeline (fill gaps with 0s)
+    const dataMap = new Map(
+      visitsByDay.map(r => [r.day, { visits: Number(r.visits), responses: Number(r.responses) }])
+    );
+
+    const timeline = Array.from({ length: days }, (_, i) => {
       const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
-      const nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000);
-
-      const [visits, responses] = await Promise.all([
-        prisma.canvassingVisit.count({
-          where: {
-            visitUsers: { some: { userId } },
-            createdAt: { gte: date, lt: nextDate }
-          }
-        }),
-        prisma.canvassingVisit.count({
-          where: {
-            visitUsers: { some: { userId } },
-            createdAt: { gte: date, lt: nextDate },
-            responseReceived: { not: null }
-          }
-        })
-      ]);
-
-      timeline.push({
-        date: date.toISOString().split('T')[0],
-        visits,
-        responses,
-        responseRate: visits > 0 ? Math.round((responses / visits) * 100) : 0
-      });
-    }
+      const key = date.toISOString().split('T')[0];
+      const data = dataMap.get(key) ?? { visits: 0, responses: 0 };
+      return {
+        date: key,
+        visits: data.visits,
+        responses: data.responses,
+        responseRate: data.visits > 0 ? Math.round((data.responses / data.visits) * 100) : 0
+      };
+    });
 
     return timeline;
 

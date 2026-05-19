@@ -1,65 +1,28 @@
 // app/api/auth/me/route.ts
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-secret-key'
-);
-
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    // Get token from header
-    const authHeader = request.headers.get('authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { message: 'Authentication required' },
-        { status: 401 }
-      );
+    const authResult = await verifyJwtAuth(request);
+    if (authResult.error) {
+      return authResult.error;
     }
-    
-    const token = authHeader.split(' ')[1];
-    
-    try {
-      // Verify token
-      const { payload } = await jwtVerify(token, JWT_SECRET);
-      const decoded = payload as unknown as { id: number };
 
-      // Find user
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.id },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-        },
-      });
-      
-      if (!user) {
-        return NextResponse.json(
-          { message: 'User not found' },
-          { status: 404 }
-        );
-      }
-      
-      // Return user data
-      return NextResponse.json(user);
-    } catch (error) {
-      return NextResponse.json(
-        { message: 'Invalid token' },
-        { status: 401 }
-      );
-    }
+    const user = authResult.user!;
+
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isActive: user.isActive,
+    });
   } catch (error) {
-    console.error('Auth error:', error);
+    console.error('Auth /me error:', error);
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

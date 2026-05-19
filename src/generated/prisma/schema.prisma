@@ -1,63 +1,603 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Property {
-  id        Int      @id @default(autoincrement())
-  reference String   @unique
-  name      String?
-  imagePath String?  @map("image_path")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  rooms     Room[]
+// User model with role enum and active status
+enum UserRole {
+  ADMIN
+  USER
+}
 
+enum AuthType {
+  LOCAL
+  GOOGLE
+}
+
+// Status for inventory progress tracking
+enum InventoryStatus {
+  DRAFT // Started but not completed
+  COMPLETED // All items inventoried
+  FINALIZED // Process complete
+}
+
+// Canvassing visit contact methods
+enum ContactMethod {
+  DOOR // Door to door
+  PHONE // Phone call
+  EMAIL // Email contact
+  LETTER // Letter drop
+  SMS // SMS message
+  BROCHURE // Brochure drop
+  VALUATION_CARD // Valuation card
+  FLYER // Flyer distribution
+  SOCIAL_MEDIA // Social media contact
+  REFERRAL // Referral contact
+}
+
+// Response types for canvassing visits
+enum ResponseType {
+  positive // Interested
+  negative // Not interested
+  no_response // No response received
+  pending // Awaiting response
+}
+
+enum PropertyFeatureType {
+  bool
+  text
+  integer
+  select
+  float
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  name          String
+  password      String? // Optional as Google auth won't need it
+  role          UserRole  @default(USER)
+  authType      AuthType  @default(LOCAL) @map("auth_type")
+  googleId      String?   @unique @map("google_id")
+  isActive      Boolean   @default(true) @map("is_active")
+  deactivatedAt DateTime? @map("deactivated_at") // Set when isActive → false, cleared on reactivation
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  properties          Property[] // Properties created by this user
+  sharedProperties    PropertyShare[] // Properties shared with this user
+  inventorySessions   InventorySession[] // Track time spent on inventories
+  canvassingVisits    CanvassingVisitUser[] // Canvassing visits by this user
+  activities          UserActivity[] // User activity tracking
+  visitComments       CanvassingVisitComment[] // Comments on canvassing visits
+  revisits            Revisit[] // Revisits performed by this user
+  updatedFeaturesData PropertyFeaturesData[] // Mobile features data updated by this user
+
+  @@map("users")
+}
+
+model Property {
+  id                Int                       @id @default(autoincrement())
+  reference         String                    @unique
+  name              String?
+  // Address fields
+  street            String?
+  city              String?
+  state             String?
+  postalCode        String?                   @map("postal_code")
+  country           String?
+  address           String?
+  // End of address fields
+  imagePath         String?                   @map("image_path")
+  // Summary data for performance optimization
+  roomCount         Int                       @default(0) @map("room_count")
+  imageCount        Int                       @default(0) @map("image_count")
+  // Inventory status
+  inventoryStatus   InventoryStatus           @default(DRAFT) @map("inventory_status")
+  startedAt         DateTime?                 @map("started_at")
+  completedAt       DateTime?                 @map("completed_at")
+  // Timestamps
+  createdAt         DateTime                  @default(now()) @map("created_at")
+  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  // Relations
+  userId            Int                       @map("user_id")
+  user              User                      @relation(fields: [userId], references: [id])
+  rooms             Room[]
+  sharedWith        PropertyShare[]
+  inventorySessions InventorySession[]
+  // Client information fields
+  listingPerson     String?                   @map("listing_person")
+  propertyFeatures  PropertyPropertyFeature[]
+  featuresData      PropertyFeaturesData? // Mobile flat-JSON features
+
+  @@index([userId])
+  @@index([inventoryStatus])
   @@map("properties")
 }
 
+// Model for sharing properties with other users
+model PropertyShare {
+  id         Int      @id @default(autoincrement())
+  propertyId Int      @map("property_id")
+  userId     Int      @map("user_id")
+  canEdit    Boolean  @default(false) @map("can_edit")
+  canDelete  Boolean  @default(false) @map("can_delete")
+  createdAt  DateTime @default(now()) @map("created_at")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, userId])
+  @@index([propertyId])
+  @@index([userId])
+  @@map("property_shares")
+}
+
 model Room {
-  id         Int             @id @default(autoincrement())
-  propertyId Int             @map("property_id")
+  id         Int         @id @default(autoincrement())
+  propertyId Int         @map("property_id")
   code       String
   name       String
-  createdAt  DateTime        @default(now()) @map("created_at")
-  property   Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  // Summary data for performance optimization
+  imageCount Int         @default(0) @map("image_count")
+  isComplete Boolean     @default(false) @map("is_complete")
+  // Add common query filter fields
+  sortOrder  Int         @default(0) @map("sort_order")
+  // Timestamps
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  // Relations
+  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   images     RoomImage[]
-  items      InventoryItem[]
 
+  @@index([propertyId])
+  @@index([propertyId, sortOrder])
+  @@index([propertyId, isComplete])
   @@map("rooms")
 }
 
 model RoomImage {
-  id        Int      @id @default(autoincrement())
-  roomId    Int      @map("room_id")
-  imagePath String   @map("image_path")
-  createdAt DateTime @default(now()) @map("created_at")
-  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  id          Int      @id @default(autoincrement())
+  roomId      Int      @map("room_id")
+  imagePath   String   @map("image_path")
+  description String?  @db.Text
+  name        String? // Name of the item in the image
+  notes       String?  @db.Text
+  condition   String?
+  aiDetected  Boolean  @default(false) @map("ai_detected")
+  aiAccuracy  Float?   @map("ai_accuracy") // Score between 0 and 1
+  // Add common query filter fields
+  sortOrder   Int      @default(0) @map("sort_order")
+  isMainImage Boolean  @default(false) @map("is_main_image")
+  // Synchronization and mobile app fields
+  localId     String?  @map("local_id") // For mobile sync
+  syncStatus  String?  @map("sync_status") // "pending", "synced", "conflict"
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  // Relations
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
+  @@index([roomId])
+  @@index([roomId, sortOrder])
+  @@index([roomId, isMainImage])
+  @@index([aiDetected, aiAccuracy])
+  @@index([syncStatus])
   @@map("room_images")
 }
 
-model InventoryItem {
-  id          Int      @id @default(autoincrement())
-  roomId      Int      @map("room_id")
-  name        String
-  description String?  @db.Text
-  imagePath   String?  @map("image_path")
-  notes       String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at")
-  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+model PropertyFeatureCategory {
+  id        Int      @id @default(autoincrement())
+  name      Json // Multilingual names stored as JSON
+  sort      Int      @default(1)
+  isActive  Boolean  @default(false) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("inventory_items")
+  // Relations
+  features PropertyFeature[]
+
+  @@index([sort])
+  @@index([isActive])
+  @@map("property_feature_categories")
+}
+
+model PropertyFeature {
+  id         Int                 @id @default(autoincrement())
+  categoryId Int                 @map("category_id")
+  type       PropertyFeatureType
+  name       Json // Multilingual names stored as JSON
+  sort       Int                 @default(1)
+  isActive   Boolean             @default(false) @map("is_active")
+  createdAt  DateTime            @default(now()) @map("created_at")
+  updatedAt  DateTime            @updatedAt @map("updated_at")
+
+  // Relations
+  category   PropertyFeatureCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  options    PropertyFeatureOption[]
+  properties PropertyPropertyFeature[]
+
+  @@index([categoryId])
+  @@index([type])
+  @@index([sort])
+  @@index([isActive])
+  @@map("property_features")
+}
+
+// NEW: Property Feature Options (for select type features)
+model PropertyFeatureOption {
+  id                Int      @id @default(autoincrement())
+  propertyFeatureId Int      @map("property_feature_id")
+  value             Json // Multilingual values stored as JSON
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  propertyFeature  PropertyFeature           @relation(fields: [propertyFeatureId], references: [id], onDelete: Cascade)
+  propertyFeatures PropertyPropertyFeature[]
+
+  @@index([propertyFeatureId])
+  @@map("property_feature_options")
+}
+
+// NEW: Junction table for Property and PropertyFeature with values
+model PropertyPropertyFeature {
+  id                   Int      @id @default(autoincrement())
+  propertyFeatureId    Int      @map("property_feature_id")
+  propertyId           Int      @map("property_id")
+  valueText            Json?    @map("value_text") // For text type, multilingual
+  valueBool            Boolean? @map("value_bool") // For boolean type
+  valueInt             Int?     @map("value_int") // For integer type
+  valueFloat           Float?   @map("value_float") // For float type
+  valueFeatureOptionId Int?     @map("value_feature_option_id") // For select type
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  property           Property               @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyFeature    PropertyFeature        @relation(fields: [propertyFeatureId], references: [id], onDelete: Cascade)
+  valueFeatureOption PropertyFeatureOption? @relation(fields: [valueFeatureOptionId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, propertyFeatureId])
+  @@index([propertyFeatureId])
+  @@index([propertyId])
+  @@index([valueFeatureOptionId])
+  @@map("property_property_feature")
+}
+
+// Global application configuration (key-value store)
+// Key used by the pin-retention system: "pin_retention_days" (default "30")
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([key])
+  @@map("system_configs")
+}
+
+// Mobile flat-JSON features per property (one row per property).
+// Distinct from the structured PropertyPropertyFeature EAV table:
+// this record stores the raw key→value object sent by the mobile app
+// without needing the full feature-definition catalogue.
+model PropertyFeaturesData {
+  id              Int      @id @default(autoincrement())
+  propertyId      Int      @unique @map("property_id")
+  features        Json     @default("{}")
+  schemaVersion   Int      @default(1) @map("schema_version")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  updatedByUserId Int?     @map("updated_by_user_id")
+
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  updatedByUser User?    @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([propertyId])
+  @@index([updatedAt])
+  @@map("property_features_data")
+}
+
+// NEW: Canvassing Visit Model
+model CanvassingVisit {
+  id String @id @default(cuid())
+
+  // GPS coordinates
+  latitude  Float
+  longitude Float
+
+  // Contact information
+  contactMethod  ContactMethod  @map("contact_method")
+  contactMethod2 ContactMethod? @map("contact_method_2")
+  contactMethod3 ContactMethod? @map("contact_method_3")
+  contactMethod4 ContactMethod? @map("contact_method_4")
+  houseName      String         @map("house_name")
+  vendorName     String?        @map("vendor_name")
+  comments       String?        @db.Text // Initial comment
+
+  // Address components (optional, from geocoding)
+  streetAddress String? @map("street_address")
+  neighborhood  String?
+  city          String?
+  postalCode    String? @map("postal_code")
+
+  // Optional image
+  imagePath String? @map("image_path")
+
+  // Response tracking
+  responseReceived ResponseType? @map("response_received")
+  responseDate     DateTime?     @map("response_date")
+
+  // Sync status
+  isSynced Boolean   @default(false) @map("is_synced")
+  mobileId String?   @map("mobile_id") // Original mobile UUID
+  syncedAt DateTime? @map("synced_at")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations - Many-to-many with users
+  visitUsers CanvassingVisitUser[]
+
+  // Revisit tracking
+  originalRevisits VisitRevisit[] @relation("OriginalVisit")
+  revisitOf        VisitRevisit[] @relation("RevisitVisit")
+
+  // Additional comments
+  additionalComments CanvassingVisitComment[]
+
+  // Revisits - this visit can have multiple revisits
+  revisits Revisit[] @relation("OriginalVisit")
+
+  @@index([latitude, longitude])
+  @@index([contactMethod])
+  @@index([responseReceived])
+  @@index([createdAt])
+  @@index([isSynced])
+  @@map("canvassing_visits")
+}
+
+// Track time spent on inventory tasks
+model InventorySession {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  propertyId Int       @map("property_id")
+  startTime  DateTime  @map("start_time")
+  endTime    DateTime? @map("end_time")
+  duration   Int? // Duration in seconds
+  deviceType String?   @map("device_type") // "mobile" or "desktop"
+  // Relations
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([propertyId])
+  @@map("inventory_sessions")
+}
+
+// System metrics
+model SystemMetrics {
+  id                   Int      @id @default(autoincrement())
+  date                 DateTime @default(now())
+  totalUsers           Int      @default(0) @map("total_users")
+  loggedInUsers        Int      @default(0) @map("logged_in_users") // Utilisateurs connectés
+  contributingUsers    Int      @default(0) @map("contributing_users") // Utilisateurs ayant créé/modifié du contenu
+  totalProperties      Int      @default(0) @map("total_properties")
+  newProperties        Int      @default(0) @map("new_properties") // Nouvelles propriétés ce jour
+  completedInventories Int      @default(0) @map("completed_inventories")
+  avgCompletionTime    Int?     @map("avg_completion_time") // En secondes
+  storageUsed          Float    @default(0) @map("storage_used") // En MB
+  aiRecognitionRate    Float?   @map("ai_recognition_rate") // Taux de réussite
+  totalImageCount      Int      @default(0) @map("total_image_count") // Nombre total d'images
+  newImageCount        Int      @default(0) @map("new_image_count") // Nouvelles images ce jour
+
+  // Canvassing metrics
+  totalCanvassingVisits Int @default(0) @map("total_canvassing_visits")
+  newCanvassingVisits   Int @default(0) @map("new_canvassing_visits")
+  positiveResponses     Int @default(0) @map("positive_responses")
+  negativeResponses     Int @default(0) @map("negative_responses")
+  pendingResponses      Int @default(0) @map("pending_responses")
+
+  @@index([date])
+  @@map("system_metrics")
+}
+
+// Mobile app sync tracking
+model SyncLog {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @map("user_id")
+  deviceId      String    @map("device_id")
+  syncStarted   DateTime  @map("sync_started")
+  syncCompleted DateTime? @map("sync_completed")
+  itemsSynced   Int       @default(0) @map("items_synced")
+  syncStatus    String    @default("in_progress") // "in_progress", "completed", "failed"
+  errorMessage  String?   @map("error_message") @db.Text
+
+  @@index([userId])
+  @@index([syncStatus])
+  @@map("sync_logs")
+}
+
+// User activity tracking for detailed analytics
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  CREATE_PROPERTY
+  EDIT_PROPERTY
+  DELETE_PROPERTY
+  VIEW_PROPERTY
+  ADD_ROOM
+  EDIT_ROOM
+  DELETE_ROOM
+  ADD_IMAGE
+  DELETE_IMAGE
+  EDIT_IMAGE
+  COMPLETE_INVENTORY
+  CANVASSING_VISIT
+  CREATE_USER
+  EDIT_USER
+  DELETE_USER
+  CHANGE_PASSWORD
+  RESET_PASSWORD
+  PROPERTY_SHARE
+  SYNC_DATA
+  EXPORT_DATA
+  IMPORT_DATA
+}
+
+enum EntityType {
+  USER
+  PROPERTY
+  ROOM
+  IMAGE
+  CANVASSING_VISIT
+  SYSTEM
+}
+
+model UserActivity {
+  id           Int          @id @default(autoincrement())
+  userId       Int          @map("user_id")
+  activityType ActivityType @default(LOGIN) @map("activity_type")
+  entityId     String?      @map("entity_id")
+  entityType   EntityType?  @map("entity_type")
+  details      String?      @db.Text
+  deviceType   String?      @map("device_type")
+  duration     Int?
+  timestamp    DateTime     @default(now())
+  metadata     String?      @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([timestamp])
+  @@index([activityType])
+  @@index([entityType, entityId])
+  @@map("user_activities")
+}
+
+// Visit configuration settings
+model VisitConfiguration {
+  id                Int      @id @default(autoincrement())
+  revisitDelayHours Int      @default(168) @map("revisit_delay_hours") // Default 1 week (168 hours)
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("visit_configurations")
+}
+
+// Junction table for visit-user relationships
+model CanvassingVisitUser {
+  id        Int      @id @default(autoincrement())
+  visitId   String   @map("visit_id")
+  userId    Int      @map("user_id")
+  userName  String   @map("user_name")
+  isCreator Boolean  @default(false) @map("is_creator") // Who created the visit
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  // Relations
+  visit CanvassingVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([visitId, userId])
+  @@index([visitId])
+  @@index([userId])
+  @@index([isCreator])
+  @@index([joinedAt])
+  @@map("canvassing_visit_users")
+}
+
+// Visit Revisit tracking
+model VisitRevisit {
+  id              String   @id @default(cuid())
+  originalVisitId String   @map("original_visit_id")
+  newVisitId      String   @map("new_visit_id")
+  revisitReason   String?  @map("revisit_reason")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  originalVisit CanvassingVisit @relation("OriginalVisit", fields: [originalVisitId], references: [id], onDelete: Cascade)
+  newVisit      CanvassingVisit @relation("RevisitVisit", fields: [newVisitId], references: [id], onDelete: Cascade)
+
+  @@index([originalVisitId])
+  @@index([newVisitId])
+  @@map("visit_revisits")
+}
+
+// Additional comments for CanvassingVisit
+model CanvassingVisitComment {
+  id        String   @id @default(cuid())
+  visitId   String   @map("visit_id")
+  userId    Int      @map("user_id")
+  comment   String   @db.Text
+  isInitial Boolean  @default(false) @map("is_initial") // True if this is the initial comment
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  visit CanvassingVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([visitId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("canvassing_visit_comments")
+}
+
+// Revisit Model - similar to CanvassingVisit but linked to an original visit
+model Revisit {
+  id              String @id @default(cuid())
+  originalVisitId String @map("original_visit_id")
+
+  // GPS coordinates
+  latitude  Float
+  longitude Float
+
+  // Contact information - can use up to 4 contact methods
+  contactMethod1 ContactMethod? @map("contact_method_1")
+  contactMethod2 ContactMethod? @map("contact_method_2")
+  contactMethod3 ContactMethod? @map("contact_method_3")
+  contactMethod4 ContactMethod? @map("contact_method_4")
+
+  houseName  String  @map("house_name")
+  vendorName String? @map("vendor_name")
+  comments   String? @db.Text
+
+  // Address components (optional, from geocoding)
+  streetAddress String? @map("street_address")
+  neighborhood  String?
+  city          String?
+  postalCode    String? @map("postal_code")
+
+  // Optional image
+  imagePath String? @map("image_path")
+
+  // Response tracking
+  responseReceived ResponseType? @map("response_received")
+  responseDate     DateTime?     @map("response_date")
+
+  // User who performed the revisit
+  userId   Int    @map("user_id")
+  userName String @map("user_name")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  originalVisit CanvassingVisit @relation("OriginalVisit", fields: [originalVisitId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([originalVisitId])
+  @@index([userId])
+  @@index([latitude, longitude])
+  @@index([responseReceived])
+  @@index([createdAt])
+  @@map("revisits")
 }

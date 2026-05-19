@@ -9,16 +9,11 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
-    // Check authentication
+
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if the authenticated user is an admin
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { role: true },
@@ -31,61 +26,64 @@ export async function PATCH(
       );
     }
 
-    // Await params and validate user ID
     const { id } = await params;
     if (!id) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
     const userId = parseInt(id);
-
-    // Get request body
-    const { isActive } = await req.json();
-    
-    // Validate isActive parameter
-    if (typeof isActive !== 'boolean') {
-      return NextResponse.json(
-        { error: 'Invalid active status value' },
-        { status: 400 }
-      );
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
     }
 
-    // Update user status
+    const { isActive } = await req.json();
+
+    if (typeof isActive !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid active status value' }, { status: 400 });
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { isActive },
+      data: {
+        isActive,
+        // Set timestamp when deactivating, clear it when reactivating
+        deactivatedAt: isActive ? null : new Date(),
+      },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
         isActive: true,
+        deactivatedAt: true,
+        authType: true,
         createdAt: true,
         updatedAt: true,
       },
     });
 
     return NextResponse.json({
-      user: updatedUser,
+      success: true,
+      data: {
+        user: {
+          id: updatedUser.id.toString(),
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          isActive: updatedUser.isActive,
+          deactivatedAt: updatedUser.deactivatedAt?.toISOString() ?? null,
+          authType: updatedUser.authType,
+          createdAt: updatedUser.createdAt.toISOString(),
+          updatedAt: updatedUser.updatedAt.toISOString(),
+        },
+      },
       message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
     });
-  } catch (error: any) {
-    console.error('Error updating user status:', error);
-    
-    // Handle Prisma errors
-    if (error.code === 'P2025') {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+  } catch (error: unknown) {
+    if ((error as { code?: string }).code === 'P2025') {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
-    return NextResponse.json(
-      { error: 'Failed to update user status' },
-      { status: 500 }
-    );
+    console.error('Error updating user status:', error);
+    return NextResponse.json({ error: 'Failed to update user status' }, { status: 500 });
   }
 }

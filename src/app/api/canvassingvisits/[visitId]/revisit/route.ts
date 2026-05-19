@@ -72,6 +72,19 @@ export async function POST(
       )
     }
 
+    // Check membership: only visit members or admins can create revisits
+    const isMember = originalVisit.visitUsers.some(vu => vu.userId === user.id)
+    if (user.role !== 'ADMIN' && !isMember) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Forbidden: you are not a member of this visit',
+          processingTime: Date.now() - startTime
+        },
+        { status: 403 }
+      )
+    }
+
     // Validate required fields
     if (!latitude || !longitude || !contactMethod1 || !houseName) {
       return NextResponse.json(
@@ -292,9 +305,10 @@ export async function GET(
 
     console.log(`Getting revisits for visit: ${visitId} by user: ${user.id}`)
 
-    // Check if original visit exists
+    // Check if original visit exists and user is a member
     const originalVisit = await prisma.canvassingVisit.findUnique({
-      where: { id: visitId }
+      where: { id: visitId },
+      include: { visitUsers: { select: { userId: true } } }
     })
 
     if (!originalVisit) {
@@ -305,6 +319,19 @@ export async function GET(
           processingTime: Date.now() - startTime
         },
         { status: 404 }
+      )
+    }
+
+    // Only visit members or admins can read revisits
+    const isMember = originalVisit.visitUsers.some(vu => vu.userId === user.id)
+    if (user.role !== 'ADMIN' && !isMember) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Forbidden: you are not a member of this visit',
+          processingTime: Date.now() - startTime
+        },
+        { status: 403 }
       )
     }
 

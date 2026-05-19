@@ -59,39 +59,27 @@ export async function GET(request: NextRequest) {
     const responseReceived = searchParams.get('responseReceived')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const limit = parseInt(searchParams.get('limit') || '10000')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 500)
     const offset = parseInt(searchParams.get('offset') || '0')
     const forMap = searchParams.get('forMap') === 'true'
-
-    console.log(`Fetching canvassing visits for user: ${user.id}`)
 
     // Build where clause
     const whereClause: any = {}
 
-    // For non-admin users, restrict to their own visits unless they specify a user
-    if (user.role !== UserRole.ADMIN && !userId) {
-      const userVisitIds = await prisma.canvassingVisitUser.findMany({
-        where: { userId: user.id },
-        select: { visitId: true }
-      })
-      console.log(`Non-admin user ${user.id} has ${userVisitIds.length} visits`)
-      whereClause.id = {
-        in: userVisitIds.map(uv => uv.visitId)
+    if (user.role !== UserRole.ADMIN) {
+      // Non-admin: can only see their own visits
+      // If they try to request another user's visits, block it
+      if (userId && parseInt(userId) !== user.id) {
+        return NextResponse.json({
+          success: false,
+          error: 'Forbidden: you cannot view another user\'s visits'
+        }, { status: 403 })
       }
+      whereClause.visitUsers = { some: { userId: user.id } }
     } else if (userId) {
-      // Filter by specific user if requested
-      console.log(`Filtering by user ID: ${userId}`)
-      const userVisitIds = await prisma.canvassingVisitUser.findMany({
-        where: { userId: parseInt(userId) },
-        select: { visitId: true }
-      })
-      console.log(`User ${userId} has ${userVisitIds.length} visits`)
-      whereClause.id = {
-        in: userVisitIds.map(uv => uv.visitId)
-      }
+      // Admin can filter by any user
+      whereClause.visitUsers = { some: { userId: parseInt(userId) } }
     }
-
-    console.log('Final whereClause:', whereClause);
 
     if (contactMethod) whereClause.contactMethod = contactMethod
     if (responseReceived) whereClause.responseReceived = responseReceived

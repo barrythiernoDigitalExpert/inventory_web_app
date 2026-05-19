@@ -39,23 +39,15 @@ export async function GET(request: NextRequest) {
     // Build where clause for visits
     let visitWhereClause: any = {}
 
-    // If userSpecific is true, filter by user's visits only (non-admin users)
-    if (userSpecific && user.role !== 'ADMIN') {
-      // Get visit IDs where user is a member
-      const userVisitIds = await prisma.canvassingVisitUser.findMany({
-        where: { userId: user.id },
-        select: { visitId: true }
-      })
-      visitWhereClause.id = { in: userVisitIds.map(uv => uv.visitId) }
-    }
-
-    // If userId is specified and user is admin, filter by that user
-    if (userId && user.role === 'ADMIN') {
-      const targetUserVisitIds = await prisma.canvassingVisitUser.findMany({
-        where: { userId: parseInt(userId) },
-        select: { visitId: true }
-      })
-      visitWhereClause.id = { in: targetUserVisitIds.map(uv => uv.visitId) }
+    if (user.role !== 'ADMIN') {
+      // Non-admin: always restricted to their own visits regardless of userSpecific flag
+      visitWhereClause.visitUsers = { some: { userId: user.id } }
+    } else if (userId) {
+      // Admin filtering by specific user
+      visitWhereClause.visitUsers = { some: { userId: parseInt(userId) } }
+    } else if (userSpecific) {
+      // Admin with userSpecific=true: filter by own visits
+      visitWhereClause.visitUsers = { some: { userId: user.id } }
     }
 
     // Add other filters

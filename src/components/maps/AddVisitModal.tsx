@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import NextImage from 'next/image';
 import { X, MapPin, Home, User, MessageSquare, Image as ImageIcon, Navigation, Link as LinkIcon, MapPinned, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -473,8 +474,8 @@ export default function AddVisitModal({ isOpen, onClose, onSuccess, userLocation
 
         {/* Mini-map preview */}
         {miniMapUrl ? (
-          <div className="relative flex-shrink-0">
-            <img src={miniMapUrl} alt="Selected location" className="w-full h-[160px] object-cover" />
+          <div className="relative flex-shrink-0 h-[160px]">
+            <NextImage src={miniMapUrl} alt="Selected location" fill className="object-cover" sizes="400px" />
             <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#1A1A1A] to-transparent" />
             <div className="absolute bottom-2 left-2 right-2">
               <p className="text-white text-[11px] font-medium bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1 truncate">

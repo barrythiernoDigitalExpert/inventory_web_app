@@ -50,9 +50,9 @@ export default function ImageUploadComponent({ roomName, onUpload, generateDescr
       });
     }
     
-    setImages([...images, ...newImages]);
-    
-    // Reset the file input
+    // Functional update avoids stale closure in async handler
+    setImages(prev => [...prev, ...newImages]);
+
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -68,15 +68,13 @@ export default function ImageUploadComponent({ roomName, onUpload, generateDescr
   };
   
   const updateDescription = (index: number, description: string) => {
-    const updatedImages = [...images];
-    updatedImages[index].description = description;
-    setImages(updatedImages);
+    setImages(prev =>
+      prev.map((img, i) => (i === index ? { ...img, description } : img))
+    );
   };
-  
+
   const removeImage = (index: number) => {
-    const updatedImages = [...images];
-    updatedImages.splice(index, 1);
-    setImages(updatedImages);
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
   
   const handleUpload = async () => {

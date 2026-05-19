@@ -20,85 +20,100 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '200'), 1000);
+    const offset = parseInt(searchParams.get('offset') || '0');
 
     // Build date filter
     const dateFilter: any = {};
     if (startDate) dateFilter.gte = new Date(startDate);
     if (endDate) dateFilter.lte = new Date(endDate);
+    const dateWhere = Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
-    // Get all visits with user information
-    const visits = await prisma.canvassingVisit.findMany({
-      where: Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {},
-      include: {
-        visitUsers: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            }
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    // Get all users who have canvassing visits
+    const usersWithVisits = await prisma.canvassingVisitUser.findMany({
+      where: dateWhere.createdAt
+        ? { visit: { createdAt: dateWhere.createdAt } }
+        : {},
+      select: { userId: true },
+      distinct: ['userId'],
     });
 
-    // Group visits by user
-    const visitsByUser: Record<string, any[]> = {};
+    const userIds = usersWithVisits.map(u => u.userId);
+    const totalUsers = userIds.length;
+
+    // Paginate the user list
+    const paginatedUserIds = userIds.slice(offset, offset + limit);
+
+    // Fetch aggregate stats per user in parallel (one Promise.all, no per-user loops)
+    const [usersInfo, visitAggregates] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: paginatedUserIds } },
+        select: { id: true, name: true, email: true }
+      }),
+      Promise.all(paginatedUserIds.map(uid =>
+        Promise.all([
+          prisma.canvassingVisit.count({ where: { ...dateWhere, visitUsers: { some: { userId: uid } } } }),
+          prisma.canvassingVisit.count({ where: { ...dateWhere, visitUsers: { some: { userId: uid } }, createdAt: { gte: todayStart } } }),
+          prisma.canvassingVisit.count({ where: { ...dateWhere, visitUsers: { some: { userId: uid } }, responseReceived: 'positive' } }),
+          prisma.canvassingVisit.count({ where: { ...dateWhere, visitUsers: { some: { userId: uid } }, responseReceived: 'negative' } }),
+          prisma.canvassingVisit.count({ where: { ...dateWhere, visitUsers: { some: { userId: uid } }, responseReceived: null } }),
+          prisma.canvassingVisit.findFirst({ where: { ...dateWhere, visitUsers: { some: { userId: uid } } }, orderBy: { createdAt: 'desc' }, select: { createdAt: true } })
+        ])
+      ))
+    ]);
+
+    const userMap = new Map(usersInfo.map(u => [u.id, u]));
     const userStats: Record<string, any> = {};
 
-    visits.forEach(visit => {
-      // A visit can have multiple users, so we need to handle each user
-      visit.visitUsers.forEach(visitUser => {
-        const userId = visitUser.userId.toString();
-        
-        if (!visitsByUser[userId]) {
-          visitsByUser[userId] = [];
-        }
-        visitsByUser[userId].push({
-          ...visit,
-          user: visitUser.user // Add user info for compatibility
-        });
-      });
+    paginatedUserIds.forEach((uid, i) => {
+      const [total, todayCount, positive, negative, pending, lastVisit] = visitAggregates[i];
+      const responded = positive + negative;
+      const u = userMap.get(uid);
+      userStats[uid.toString()] = {
+        userName: u?.name ?? 'Unknown',
+        userEmail: u?.email ?? '',
+        totalVisits: total,
+        todayVisits: todayCount,
+        responseRate: total > 0 ? Math.round((responded / total) * 1000) / 10 : 0,
+        positiveResponses: positive,
+        negativeResponses: negative,
+        pendingResponses: pending,
+        lastActivity: lastVisit?.createdAt ?? null
+      };
     });
 
-    // Calculate stats for each user
-    for (const [userId, userVisits] of Object.entries(visitsByUser)) {
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    // Recent visits (max 50 per user) — loaded once for all paginated users
+    const visits = await prisma.canvassingVisit.findMany({
+      where: { ...dateWhere, visitUsers: { some: { userId: { in: paginatedUserIds } } } },
+      select: {
+        id: true, houseName: true, contactMethod: true,
+        responseReceived: true, createdAt: true, latitude: true, longitude: true,
+        visitUsers: { select: { userId: true, userName: true, isCreator: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50 * paginatedUserIds.length
+    });
 
-      const todayVisits = userVisits.filter(v => 
-        new Date(v.createdAt) >= todayStart && new Date(v.createdAt) < todayEnd
-      ).length;
-
-      const responded = userVisits.filter(v => v.responseReceived !== null).length;
-      const responseRate = userVisits.length > 0 ? (responded / userVisits.length * 100) : 0;
-
-      userStats[userId] = {
-        userName: userVisits[0]?.user?.name || 'Unknown',
-        totalVisits: userVisits.length,
-        todayVisits,
-        responseRate: Math.round(responseRate * 10) / 10,
-        positiveResponses: userVisits.filter(v => v.responseReceived === 'positive').length,
-        negativeResponses: userVisits.filter(v => v.responseReceived === 'negative').length,
-        pendingResponses: userVisits.filter(v => v.responseReceived === null).length,
-        lastActivity: userVisits.length > 0 ? 
-          userVisits.reduce((latest, visit) => 
-            new Date(visit.createdAt) > new Date(latest.createdAt) ? visit : latest
-          ).createdAt : null
-      };
-    }
+    const visitsByUser: Record<string, any[]> = {};
+    visits.forEach(visit => {
+      visit.visitUsers.forEach(vu => {
+        if (!paginatedUserIds.includes(vu.userId)) return;
+        const uid = vu.userId.toString();
+        if (!visitsByUser[uid]) visitsByUser[uid] = [];
+        if (visitsByUser[uid].length < 50) visitsByUser[uid].push(visit);
+      });
+    });
 
     return NextResponse.json({
       success: true,
       data: {
         visitsByUser,
         userStats,
-        totalUsers: Object.keys(visitsByUser).length,
-        totalVisits: visits.length
+        totalUsers,
+        pagination: { limit, offset, hasMore: offset + limit < totalUsers }
       }
     });
 

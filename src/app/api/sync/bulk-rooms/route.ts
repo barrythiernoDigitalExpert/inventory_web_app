@@ -9,12 +9,27 @@ import { verifyJwtAuth } from '@/lib/utils/auth-jwt'
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify JWT authentication
+    const authResult = await verifyJwtAuth(request);
+    if (authResult.error) {
+      return authResult.error;
+    }
+    const user = authResult.user!;
+
     const { syncId, rooms } = await request.json();
-    
-    // Verify sync session
+
+    if (!syncId || !Array.isArray(rooms)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields: syncId and rooms array'
+      }, { status: 400 });
+    }
+
+    // Verify sync session belongs to the authenticated user
     const syncLog = await prisma.syncLog.findFirst({
       where: {
         id: parseInt(syncId),
+        userId: user.id,
         syncStatus: 'in_progress'
       }
     });

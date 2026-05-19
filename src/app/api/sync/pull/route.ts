@@ -22,6 +22,8 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const lastSyncTimestamp = url.searchParams.get('lastSyncTimestamp');
     const propertyReference = url.searchParams.get('propertyReference');
+    const take = Math.min(parseInt(url.searchParams.get('limit') || '20'), 50);
+    const cursor = url.searchParams.get('cursor'); // last property id for pagination
 
     // Valider le timestamp
     let lastSync = new Date(0); // 1970-01-01 par défaut
@@ -50,32 +52,26 @@ export async function GET(request: NextRequest) {
       whereClause.reference = propertyReference;
     }
 
-    // Récupérer les propriétés mises à jour depuis le dernier sync
+    // Récupérer les propriétés mises à jour depuis le dernier sync (paginées)
     const updatedProperties = await prisma.property.findMany({
       where: whereClause,
       include: {
         rooms: {
-          where: {
-            updatedAt: { gt: lastSync }
-          },
+          where: { updatedAt: { gt: lastSync } },
           include: {
             images: {
-              where: {
-                updatedAt: { gt: lastSync }
-              },
-              orderBy: {
-                sortOrder: 'asc'
-              }
+              where: { updatedAt: { gt: lastSync } },
+              orderBy: { sortOrder: 'asc' },
+              take: 100,
             }
           },
-          orderBy: {
-            sortOrder: 'asc'
-          }
+          orderBy: { sortOrder: 'asc' },
+          take: 50,
         }
       },
-      orderBy: {
-        updatedAt: 'desc'
-      }
+      orderBy: { updatedAt: 'desc' },
+      take,
+      ...(cursor ? { cursor: { id: parseInt(cursor) }, skip: 1 } : {}),
     });
 
     // Transformer les données pour la réponse
@@ -125,11 +121,20 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    const nextCursor = updatedProperties.length === take
+      ? updatedProperties[updatedProperties.length - 1].id.toString()
+      : null;
+
     return NextResponse.json({
       success: true,
       data: response,
       timestamp: new Date().getTime(),
-      message: `Retrieved ${response.length} updated properties`
+      message: `Retrieved ${response.length} updated properties`,
+      pagination: {
+        hasMore: nextCursor !== null,
+        nextCursor,
+        limit: take,
+      }
     });
   } catch (error) {
     console.error('Pull updates error:', error);

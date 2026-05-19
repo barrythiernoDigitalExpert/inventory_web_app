@@ -1,9 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import NextImage from 'next/image';
 import { Calendar, Filter, MapPin, Users, Clock, MessageSquare, Plus, Minus, Home, Search, X, Eye, Layers } from 'lucide-react';
-import AddVisitPanel from '@/components/maps/AddVisitModal';
 import toast from 'react-hot-toast';
+
+// Chargement différé — réduit le bundle initial de la page carte
+const AddVisitPanel = dynamic(() => import('@/components/maps/AddVisitModal'), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-[#1E1E1E] rounded-xl p-6">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-[#D4A017] mx-auto" />
+      </div>
+    </div>
+  ),
+});
 
 interface User {
   id: string;
@@ -555,16 +568,16 @@ export default function Maps() {
                   </button>
 
                   {/* Mini-map satellite */}
-                  <div className="relative">
-                    <img src={staticMapUrl} alt="Location satellite view" className="w-full h-[180px] object-cover" />
+                  <div className="relative h-[180px]">
+                    <NextImage src={staticMapUrl} alt="Location satellite view" fill className="object-cover" sizes="400px" />
                     <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#1A1A1A] to-transparent" />
                   </div>
 
                   {/* Visit photo */}
                   {selectedVisit.imagePath && (
                     <div className="px-4 -mt-4 relative z-10">
-                      <div className="relative rounded-xl overflow-hidden cursor-pointer group shadow-xl border-2 border-[#333]" onClick={() => setShowLightbox(true)}>
-                        <img src={selectedVisit.imagePath} alt="Visit photo" className="w-full h-48 object-cover" />
+                      <div className="relative h-48 rounded-xl overflow-hidden cursor-pointer group shadow-xl border-2 border-[#333]" onClick={() => setShowLightbox(true)}>
+                        <NextImage src={selectedVisit.imagePath} alt="Visit photo" fill className="object-cover" sizes="400px" />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                           <Eye size={28} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
@@ -737,7 +750,9 @@ export default function Maps() {
       {showLightbox && selectedVisit?.imagePath && (
         <div className="fixed inset-0 bg-black/95 z-[60] flex items-center justify-center cursor-pointer" onClick={() => setShowLightbox(false)}>
           <button onClick={() => setShowLightbox(false)} className="absolute top-6 right-6 text-white hover:text-[#D4A017] transition-colors"><X size={28} /></button>
-          <img src={selectedVisit.imagePath} alt="Visit photo" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+          <div className="relative max-w-[90vw] max-h-[90vh] w-[900px] h-[675px]" onClick={(e) => e.stopPropagation()}>
+            <NextImage src={selectedVisit.imagePath} alt="Visit photo" fill className="object-contain rounded-lg" sizes="90vw" />
+          </div>
         </div>
       )}
     </div>

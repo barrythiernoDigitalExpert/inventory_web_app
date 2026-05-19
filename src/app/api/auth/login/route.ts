@@ -1,15 +1,16 @@
 // app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, ActivityType, EntityType } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { ActivityType, EntityType } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import { loggingService } from '@/lib/services/loggingService';
 import { extractRequestContext } from '@/lib/utils/requestHelpers';
+import { prisma } from '@/lib/utils/prisma';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'your-secret-key'
-);
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error('NEXTAUTH_SECRET environment variable is required');
+}
+const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
 
 export async function POST(request: NextRequest) {
   const context = extractRequestContext(request);
@@ -129,7 +130,5 @@ export async function POST(request: NextRequest) {
       { message: 'Internal server error' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

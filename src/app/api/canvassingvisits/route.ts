@@ -1,6 +1,7 @@
 // src/app/api/canvassingvisits/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/utils/prisma'
+import { logger } from '@/lib/utils/logger'
 import { verifyAuth } from '@/lib/utils/auth-hybrid'
 import { v4 as uuidv4 } from 'uuid'
 import { $Enums, ActivityType, EntityType } from '@prisma/client'
@@ -61,17 +62,20 @@ export async function GET(request: NextRequest) {
     const responseReceived = searchParams.get('responseReceived')
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const limit = parseInt(searchParams.get('limit') || '10000')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 500)
     const offset = parseInt(searchParams.get('offset') || '0')
     const forMap = searchParams.get('forMap') === 'true'
-
-    console.log(`Fetching canvassing visits for user: ${user.id}`)
 
     // Build where clause
     const whereClause: any = {}
 
-    // For non-admin users, restrict to their own visits
-   
+    // For non-admin users, restrict to their own visits only
+    if (user.role !== 'ADMIN') {
+      whereClause.visitUsers = { some: { userId: user.id } }
+    } else if (userId) {
+      // Admin can filter by a specific user
+      whereClause.visitUsers = { some: { userId: parseInt(userId) } }
+    }
 
     if (contactMethod) whereClause.contactMethod = contactMethod
     if (responseReceived) whereClause.responseReceived = responseReceived
@@ -210,7 +214,7 @@ export async function GET(request: NextRequest) {
     }))
 
     const processingTime = Date.now() - startTime
-    console.log(`Retrieved ${visits.length} visits in ${processingTime}ms`)
+    logger.info(`Retrieved ${visits.length} visits in ${processingTime}ms`)
 
     // Log the view activity
     await loggingService.logActivity(
@@ -322,13 +326,13 @@ export async function POST(request: NextRequest) {
       body = await request.json()
     }
     
-    console.log(`Creating canvassing visit(s) for user: ${user.id}`)
-    console.log(`Request body type: ${Array.isArray(body) ? 'array' : 'single'}`)
+    logger.info(`Creating canvassing visit(s) for user: ${user.id}`)
+    logger.info(`Request body type: ${Array.isArray(body) ? 'array' : 'single'}`)
 
     // Handle both single visit and bulk sync (like upload route handles images)
     if (Array.isArray(body)) {
       // Bulk sync from mobile app
-      console.log(`Processing bulk sync with ${body.length} visits`)
+      logger.info(`Processing bulk sync with ${body.length} visits`)
       
       const createdVisits: any[] = [];
       let successCount = 0
@@ -355,7 +359,7 @@ export async function POST(request: NextRequest) {
             }
 
             if (existingVisit) {
-              console.log(`Visit with mobileId ${visitData.mobileId} already exists, skipping`)
+              logger.info(`Visit with mobileId ${visitData.mobileId} already exists, skipping`)
               continue
             }
 
@@ -363,10 +367,10 @@ export async function POST(request: NextRequest) {
             let finalImagePath = null;
             if (visitData.imagePath && visitData.imagePath.startsWith('data:')) {
               try {
-                console.log(`Uploading image for bulk visit`);
+                logger.info(`Uploading image for bulk visit`);
                 const tempVisitId = visitData.mobileId || uuidv4();
                 finalImagePath = await saveCanvassingImage(visitData.imagePath, tempVisitId);
-                console.log(`Bulk image uploaded successfully: ${finalImagePath}`);
+                logger.info(`Bulk image uploaded successfully: ${finalImagePath}`);
               } catch (imageError) {
                 console.error('Error uploading bulk canvassing image:', imageError);
                 // Continue with visit creation even if image upload fails
@@ -558,7 +562,7 @@ export async function POST(request: NextRequest) {
       }))
 
       const processingTime = Date.now() - startTime
-      console.log(`Bulk sync completed in ${processingTime}ms: ${successCount} success, ${errorCount} errors`)
+      logger.info(`Bulk sync completed in ${processingTime}ms: ${successCount} success, ${errorCount} errors`)
 
       return NextResponse.json({
         success: successCount > 0,
@@ -613,7 +617,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      console.log(`Creating single visit: ${houseName} at ${latitude}, ${longitude}`)
+      logger.info(`Creating single visit: ${houseName} at ${latitude}, ${longitude}`)
 
       // Helper function to normalize contact method
       const normalizeContactMethod = (method: string) => {
@@ -647,7 +651,7 @@ export async function POST(request: NextRequest) {
       if (isMultipart && imageFile) {
         // Handle file upload from multipart/form-data
         try {
-          console.log(`Processing uploaded image file: ${imageFile.name}, size: ${imageFile.size} bytes`);
+          logger.info(`Processing uploaded image file: ${imageFile.name}, size: ${imageFile.size} bytes`);
           
           // Convert file to base64 for Cloudinary upload
           const buffer = await imageFile.arrayBuffer();
@@ -658,7 +662,7 @@ export async function POST(request: NextRequest) {
           // Upload to Cloudinary
           const tempVisitId = mobileId || uuidv4();
           finalImagePath = await saveCanvassingImage(base64Image, tempVisitId);
-          console.log(`Image file uploaded successfully: ${finalImagePath}`);
+          logger.info(`Image file uploaded successfully: ${finalImagePath}`);
         } catch (imageError) {
           console.error('Error uploading canvassing image file:', imageError);
           // Continue with visit creation even if image upload fails
@@ -666,10 +670,10 @@ export async function POST(request: NextRequest) {
       } else if (imagePath && imagePath.startsWith('data:')) {
         // Handle base64 image from JSON request (existing behavior)
         try {
-          console.log(`Uploading base64 image for new visit`);
+          logger.info(`Uploading base64 image for new visit`);
           const tempVisitId = uuidv4(); // Generate temp ID for Cloudinary
           finalImagePath = await saveCanvassingImage(imagePath, tempVisitId);
-          console.log(`Base64 image uploaded successfully: ${finalImagePath}`);
+          logger.info(`Base64 image uploaded successfully: ${finalImagePath}`);
         } catch (imageError) {
           console.error('Error uploading canvassing base64 image:', imageError);
           // Continue with visit creation even if image upload fails
@@ -850,7 +854,7 @@ export async function POST(request: NextRequest) {
         processingTime
       )
 
-      console.log(`Single visit created in ${processingTime}ms: ${visit.id}`)
+      logger.info(`Single visit created in ${processingTime}ms: ${visit.id}`)
 
       return NextResponse.json({
         success: true,

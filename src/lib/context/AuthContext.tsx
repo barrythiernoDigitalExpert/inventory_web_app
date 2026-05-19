@@ -4,7 +4,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-type UserRole = 'admin' | 'user' | 'consultant' | 'client';
+// Must match Prisma UserRole enum exactly
+export type UserRole = 'ADMIN' | 'USER';
 
 interface User {
   id: string;
@@ -19,11 +20,12 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   error: string | null;
   checkPermission: (allowedRoles: UserRole[]) => boolean;
-  checkActive: () => boolean; 
+  checkActive: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,48 +35,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  
+
   const isLoading = status === 'loading';
   const isAuthenticated = !!session?.user;
+  const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
     if (session?.user) {
-      // Transform session user to our User type
+      const rawRole = session.user.role as string | undefined;
+      // Normalise: accept 'ADMIN' or legacy 'admin' from older tokens
+      const role: UserRole =
+        rawRole?.toUpperCase() === 'ADMIN' ? 'ADMIN' : 'USER';
+
       setUser({
         id: session.user.id as string,
         email: session.user.email as string,
         name: session.user.name as string,
-        role: (session.user.role as UserRole) || 'client',
+        role,
         isActive: session.user.isActive as boolean,
-        image: session.user.image || undefined
+        image: session.user.image || undefined,
       });
     } else {
       setUser(null);
     }
   }, [session]);
 
-  // Add this function to check if user is active
-const checkActive = () => {
-  if (!user) return false;
-  return user.isActive;
-};
+  const checkActive = () => (user ? user.isActive : false);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setError(null);
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password
+        password,
       });
-      
+
       if (result?.error) {
         setError(result.error);
         return false;
       }
-      
+
       return true;
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
       return false;
     }
@@ -85,22 +88,23 @@ const checkActive = () => {
     router.push('/login');
   };
 
-  const checkPermission = (allowedRoles: UserRole[]) => {
-    if (!user) return false;
-    return allowedRoles.includes(user.role);
-  };
+  const checkPermission = (allowedRoles: UserRole[]) =>
+    user ? allowedRoles.includes(user.role) : false;
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated,
-      isLoading,
-      login,
-      logout,
-      error,
-      checkPermission,
-      checkActive
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        isLoading,
+        isAdmin,
+        login,
+        logout,
+        error,
+        checkPermission,
+        checkActive,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

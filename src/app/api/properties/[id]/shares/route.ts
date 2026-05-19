@@ -81,8 +81,9 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
-    // Only the owner can manage shares
-    if (property.user.email !== session.user.email) {
+    // Owners and admins can manage shares
+    const isAdmin = session.user.role === 'ADMIN';
+    if (property.user.email !== session.user.email && !isAdmin) {
       return NextResponse.json({ error: 'Forbidden: You do not own this property' }, { status: 403 });
     }
 
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
 
-    // Check if the target user exists and is a regular user (not ADMIN)
+    // Check if the target user exists
     const targetUser = await prisma.user.findUnique({
       where: { id: parseInt(userId) },
       select: { id: true, role: true },
@@ -101,10 +102,6 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
 
     if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    if (targetUser.role !== 'USER') {
-      return NextResponse.json({ error: 'Can only share with regular users' }, { status: 400 });
     }
 
     // Check if share already exists

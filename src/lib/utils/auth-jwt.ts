@@ -13,13 +13,14 @@
  */
 // src/lib/utils/auth-jwt.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/utils/prisma';
 import { jwtVerify } from 'jose';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'your-secret-key'
-);
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error('NEXTAUTH_SECRET environment variable is required');
+}
+
+const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET);
 
 export interface DecodedToken {
   id: string;

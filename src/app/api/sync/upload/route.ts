@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       if (property.imagePath !== propertyImagePath) {
         property = await prisma.property.update({
           where: { id: property.id },
-          data: { imagePath: propertyImagePath, updatedAt: Date() }
+          data: { imagePath: propertyImagePath, updatedAt: new Date() }
 
         })
         console.log(`Property image updated: ${propertyImagePath}`)
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
       // Room exists but name has changed, update it
       room = await prisma.room.update({
         where: { id: room.id },
-        data: { name: roomName , updatedAt: Date()}
+        data: { name: roomName, updatedAt: new Date() }
       })
       roomUpdated = true
       console.log(`Room name updated to: ${roomName}`)

@@ -184,6 +184,14 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Invalid features data' }, { status: 400 });
     }
     
+    // Pre-fetch all feature definitions in one query to avoid N+1
+    const featureIds = features.map((f: any) => f.featureId).filter(Boolean);
+    const propertyFeatures = await prisma.propertyFeature.findMany({
+      where: { id: { in: featureIds } },
+      select: { id: true, type: true }
+    });
+    const featureMap = new Map(propertyFeatures.map(f => [f.id, f]));
+
     // Use transaction to ensure data consistency
     await prisma.$transaction(async (tx) => {
       // Process each feature
@@ -192,10 +200,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
         
         if (!featureId) continue;
         
-        // Get feature details to determine type
-        const propertyFeature = await tx.propertyFeature.findUnique({
-          where: { id: featureId }
-        });
+        const propertyFeature = featureMap.get(featureId);
         
         if (!propertyFeature) continue;
         
