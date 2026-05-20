@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/utils/prisma';
-import { ActivityType, EntityType } from '@prisma/client';
+﻿import { prisma } from '@/lib/utils/prisma';
+import { ActivityType, EntityType } from '@/generated/prisma';
 
 export enum LogLevel {
   DEBUG = 'DEBUG',

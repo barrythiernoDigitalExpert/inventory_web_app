@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils/auth';
 import { prisma } from '@/lib/utils/prisma';
-import { UserRole, ActivityType } from '@prisma/client';
+import { UserRole, ActivityType } from '@/generated/prisma';
 import { loggingService } from '@/lib/services/loggingService';
 
 // Helper function to convert BigInt to Number

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/utils/auth';
 import { loggingService } from '@/lib/services/loggingService';
 import { extractRequestContext, createPerformanceTimer } from '@/lib/utils/requestHelpers';
-import { ActivityType, EntityType } from '@prisma/client';
+import { ActivityType, EntityType } from '@/generated/prisma';
 import { prisma } from '@/lib/utils/prisma';
 
 export interface LoggingOptions {

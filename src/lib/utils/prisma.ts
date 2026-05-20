@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Prisma Client Singleton Utility
  * ------------------------------
  * Ensures a single instance of PrismaClient is used throughout the application, especially in development
@@ -12,7 +12,7 @@
  *
  * The exported prisma object is used for all database operations.
  */
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@/generated/prisma'
 import '@/lib/env' // Validate required environment variables at startup
 
 const globalForPrisma = global as unknown as {

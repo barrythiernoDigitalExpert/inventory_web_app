@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+﻿import { PrismaClient } from '@/generated/prisma'
 import { Adapter, AdapterUser } from 'next-auth/adapters'
 
 /**

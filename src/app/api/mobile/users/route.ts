@@ -1,9 +1,9 @@
-// src/app/api/mobile/users/route.ts
+﻿// src/app/api/mobile/users/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
 import { hash } from 'bcryptjs';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@/generated/prisma';
 
 // GET: List all users (for mobile app)
 export async function GET(request: NextRequest) {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NextAuth Configuration Utility
  * -----------------------------
  * Provides the configuration for NextAuth authentication, including providers, session strategy,
@@ -18,7 +18,7 @@ import { AuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
-import { UserRole } from '@prisma/client'
+import { UserRole } from '@/generated/prisma'
 import { prisma } from '@/lib/utils/prisma'
 
 export const authOptions: AuthOptions = {

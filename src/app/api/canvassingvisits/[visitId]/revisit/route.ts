@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/utils/prisma'
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt'
 import { v4 as uuidv4 } from 'uuid'
-import { ContactMethod, ResponseType, ActivityType, EntityType } from '@prisma/client'
+import { ContactMethod, ResponseType, ActivityType, EntityType } from '@/generated/prisma'
 import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
 

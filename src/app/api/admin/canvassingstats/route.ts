@@ -1,4 +1,4 @@
-// src/app/api/admin/canvassing-stats/route.ts
+﻿// src/app/api/admin/canvassing-stats/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
@@ -6,7 +6,7 @@ import { CanvassingService } from '@/lib/services/canvassingService';
 import { ProximityService } from '@/lib/services/proximityService';
 import { prisma } from '@/lib/utils/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
-import { ResponseType } from '@prisma/client';
+import { ResponseType } from '@/generated/prisma';
 
 // GET: Get comprehensive admin statistics for canvassing
 export async function GET(request: NextRequest) {

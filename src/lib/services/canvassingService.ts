@@ -1,6 +1,6 @@
-// src/lib/services/canvassingService.ts
+﻿// src/lib/services/canvassingService.ts
 import { prisma } from '@/lib/utils/prisma';
-import { ContactMethod, ResponseType, ActivityType, EntityType } from '@prisma/client';
+import { ContactMethod, ResponseType, ActivityType, EntityType } from '@/generated/prisma';
 import { loggingService } from '@/lib/services/loggingService';
 
 interface CreateVisitParams {

@@ -1,9 +1,9 @@
-// src/app/api/canvassingvisits/web/route.ts
+﻿// src/app/api/canvassingvisits/web/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/utils/prisma'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/utils/auth'
-import { ActivityType, EntityType, UserRole } from '@prisma/client'
+import { ActivityType, EntityType, UserRole } from '@/generated/prisma'
 import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
 

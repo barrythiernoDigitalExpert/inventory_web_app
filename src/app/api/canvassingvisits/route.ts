@@ -1,10 +1,10 @@
-// src/app/api/canvassingvisits/route.ts
+﻿// src/app/api/canvassingvisits/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/utils/prisma'
 import { logger } from '@/lib/utils/logger'
 import { verifyAuth } from '@/lib/utils/auth-hybrid'
 import { v4 as uuidv4 } from 'uuid'
-import { $Enums, ActivityType, EntityType } from '@prisma/client'
+import { $Enums, ActivityType, EntityType } from '@/generated/prisma'
 import { loggingService } from '@/lib/services/loggingService'
 import { extractRequestContext } from '@/lib/utils/requestHelpers'
 import { saveCanvassingImage } from '@/lib/utils/fileStorage'

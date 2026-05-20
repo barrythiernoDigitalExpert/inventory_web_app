@@ -1,6 +1,6 @@
-// app/api/auth/login/route.ts
+﻿// app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { ActivityType, EntityType } from '@prisma/client';
+import { ActivityType, EntityType } from '@/generated/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import { loggingService } from '@/lib/services/loggingService';

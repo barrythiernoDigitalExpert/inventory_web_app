@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
 import { CanvassingService } from '@/lib/services/canvassingService';
-import { ResponseType } from '@prisma/client';
+import { ResponseType } from '@/generated/prisma';
 import { prisma } from '@/lib/utils/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
 

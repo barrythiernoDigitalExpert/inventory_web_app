@@ -1,4 +1,4 @@
-// src/app/api/stats/route.ts
+﻿// src/app/api/stats/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
@@ -868,4 +868,4 @@ function generateActivityDescription(activity: any): string {
 }
 
 // Import Prisma for raw queries
-import { Prisma, ActivityType } from '@prisma/client';
+import { Prisma, ActivityType } from '@/generated/prisma';

@@ -1,9 +1,9 @@
-// src/app/api/properties/recent/route.ts
+﻿// src/app/api/properties/recent/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@/generated/prisma';
 
 export async function GET(request: NextRequest) {
   try {

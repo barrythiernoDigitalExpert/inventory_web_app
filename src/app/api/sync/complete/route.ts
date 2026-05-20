@@ -1,9 +1,9 @@
-// src/app/api/sync/complete/route.ts
+﻿// src/app/api/sync/complete/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
-import { InventoryStatus, ActivityType, EntityType } from '@prisma/client';
+import { InventoryStatus, ActivityType, EntityType } from '@/generated/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
 import { loggingService } from '@/lib/services/loggingService';
 import { extractRequestContext } from '@/lib/utils/requestHelpers';

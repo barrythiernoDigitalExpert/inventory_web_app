@@ -1,10 +1,10 @@
-// src/app/api/sync/initiate/route.ts
+﻿// src/app/api/sync/initiate/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
-import { ActivityType, EntityType } from '@prisma/client';
+import { ActivityType, EntityType } from '@/generated/prisma';
 import { loggingService } from '@/lib/services/loggingService';
 import { extractRequestContext } from '@/lib/utils/requestHelpers';
 

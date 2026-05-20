@@ -1,8 +1,8 @@
-// src/app/api/properties/route.ts
+﻿// src/app/api/properties/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/utils/prisma';
 import { savePropertyImage, saveRoomImages } from '@/lib/utils/fileStorage';
-import { Prisma, UserRole, ActivityType, EntityType } from '@prisma/client';
+import { Prisma, UserRole, ActivityType, EntityType } from '@/generated/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
 import { loggingService } from '@/lib/services/loggingService';

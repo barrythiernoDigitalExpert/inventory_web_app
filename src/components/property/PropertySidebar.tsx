@@ -1,4 +1,4 @@
-// Voici les modifications à apporter au fichier PropertySidebar.tsx
+﻿// Voici les modifications à apporter au fichier PropertySidebar.tsx
 
 // 1. Limiter l'affichage de la section "Shared With" aux admins et propriétaires
 // 2. Améliorer l'affichage pour une meilleure expérience avec de nombreux utilisateurs partagés
@@ -9,7 +9,7 @@ import { Property } from '@/lib/services/propertyService';
 import PropertyShareComponent from '@/components/property/PropertyShare';
 import { getPropertyShares, PropertyShare } from '@/lib/services/propertyService';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@/generated/prisma';
 
 interface PropertySidebarProps {
   property: Property;

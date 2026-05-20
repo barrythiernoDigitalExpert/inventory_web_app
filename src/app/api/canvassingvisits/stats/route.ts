@@ -1,10 +1,10 @@
-// src/app/api/canvassing-visits/stats/route.ts
+﻿// src/app/api/canvassing-visits/stats/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
 import { CanvassingService } from '@/lib/services/canvassingService';
 import { prisma } from '@/lib/utils/prisma';
-import { ResponseType } from '@prisma/client';
+import { ResponseType } from '@/generated/prisma';
 
 // GET: Get user-specific canvassing statistics
 export async function GET(request: NextRequest) {

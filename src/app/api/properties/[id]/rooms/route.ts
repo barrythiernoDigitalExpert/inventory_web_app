@@ -4,7 +4,7 @@ import { prisma } from '@/lib/utils/prisma';
 import { saveRoomImages } from '@/lib/utils/fileStorage';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/utils/auth';
-import { ActivityType, EntityType } from '@prisma/client';
+import { ActivityType, EntityType } from '@/generated/prisma';
 import { loggingService } from '@/lib/services/loggingService';
 import { extractRequestContext } from '@/lib/utils/requestHelpers';
 
