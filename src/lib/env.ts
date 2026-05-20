@@ -40,8 +40,9 @@ function validateEnv(): Record<EnvKey, string> {
 
   if (missing.length > 0) {
     const isProd = process.env.NODE_ENV === 'production';
+    const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
     const msg = `[env] Variables d'environnement manquantes : ${missing.join(', ')}`;
-    if (isProd) {
+    if (isProd && !isBuildPhase) {
       throw new Error(msg);
     } else {
       console.warn(`\x1b[33m⚠ ${msg}\x1b[0m`);
