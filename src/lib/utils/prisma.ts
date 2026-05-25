@@ -13,7 +13,6 @@
  * The exported prisma object is used for all database operations.
  */
 import { PrismaClient } from '@/generated/prisma'
-import '@/lib/env' // Validate required environment variables at startup
 
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient | undefined
