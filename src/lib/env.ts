@@ -18,6 +18,7 @@ const OPTIONAL_VARS = [
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET',
   'CRON_SECRET',
+  'MAILDROP_ADMIN_TOKEN',
 ] as const;
 
 export type CoreEnvKey = (typeof CORE_VARS)[number];
@@ -87,4 +88,5 @@ export const env = {
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
   cronSecret: process.env.CRON_SECRET,
+  maildropAdminToken: process.env.MAILDROP_ADMIN_TOKEN,
 };
