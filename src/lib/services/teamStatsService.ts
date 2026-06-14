@@ -1,5 +1,9 @@
 import { Prisma, ResponseType } from '@/generated/prisma';
 import { prisma } from '@/lib/utils/prisma';
+import {
+  locationKey,
+  resolveVisitLocation,
+} from '@/lib/utils/canvassingGeoHelpers';
 
 /** Durée moyenne estimée par pin (visite initiale ou revisit) en minutes */
 export const ESTIMATED_MINUTES_PER_PIN = 6;
@@ -421,11 +425,14 @@ export async function getCityStatsAggregate(
   const visits = await prisma.canvassingVisit.findMany({
     where: {
       createdAt: dateFilter,
-      city: { not: null },
       ...(userFilter && { visitUsers: { some: { userId: userFilter } } }),
     },
     select: {
+      latitude: true,
+      longitude: true,
       city: true,
+      streetAddress: true,
+      neighborhood: true,
       responseReceived: true,
     },
   });
@@ -433,16 +440,21 @@ export async function getCityStatsAggregate(
   const revisits = await prisma.revisit.findMany({
     where: {
       createdAt: dateFilter,
-      city: { not: null },
       ...(userFilter && { userId: userFilter }),
     },
     select: {
+      latitude: true,
+      longitude: true,
       city: true,
+      streetAddress: true,
+      neighborhood: true,
       responseReceived: true,
     },
   });
 
   type CityBucket = {
+    city: string;
+    country: string;
     totalVisits: number;
     positive: number;
     negative: number;
@@ -453,10 +465,12 @@ export async function getCityStatsAggregate(
 
   const buckets = new Map<string, CityBucket>();
 
-  const ensure = (city: string): CityBucket => {
-    const key = city.trim();
+  const ensure = (location: { city: string; country: string }): CityBucket => {
+    const key = locationKey({ city: location.city, country: location.country, source: 'city' });
     if (!buckets.has(key)) {
       buckets.set(key, {
+        city: location.city,
+        country: location.country,
         totalVisits: 0,
         positive: 0,
         negative: 0,
@@ -469,8 +483,10 @@ export async function getCityStatsAggregate(
   };
 
   for (const visit of visits) {
-    if (!visit.city) continue;
-    const bucket = ensure(visit.city);
+    const location = resolveVisitLocation(visit);
+    if (!location) continue;
+
+    const bucket = ensure(location);
     bucket.totalVisits++;
     if (visit.responseReceived === ResponseType.positive) bucket.positive++;
     else if (visit.responseReceived === ResponseType.negative) bucket.negative++;
@@ -479,17 +495,20 @@ export async function getCityStatsAggregate(
   }
 
   for (const revisit of revisits) {
-    if (!revisit.city) continue;
-    const bucket = ensure(revisit.city);
+    const location = resolveVisitLocation(revisit);
+    if (!location) continue;
+
+    const bucket = ensure(location);
     bucket.totalRevisits++;
   }
 
-  return Array.from(buckets.entries())
-    .map(([city, stats]) => {
+  return Array.from(buckets.values())
+    .filter((stats) => stats.totalVisits > 0)
+    .map((stats) => {
       const responded = stats.positive + stats.negative;
       return {
-        city,
-        country: '',
+        city: stats.city,
+        country: stats.country,
         totalVisits: stats.totalVisits,
         positive: stats.positive,
         negative: stats.negative,

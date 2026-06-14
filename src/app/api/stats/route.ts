@@ -13,6 +13,7 @@ import {
   getRevisitsAggregate,
   getStartDateByPeriod,
 } from '@/lib/services/teamStatsService';
+import { resolveVisitLocation } from '@/lib/utils/canvassingGeoHelpers';
 
 // GET: Récupérer toutes les statistiques pour le dashboard
 export async function GET(request: NextRequest) {
@@ -201,21 +202,31 @@ function round1(value: number): number {
 function formatCanvassingVisitsForMobile(
   visits: Awaited<ReturnType<typeof getCanvassingVisits>>
 ) {
-  return visits.map((visit) => ({
-    id: visit.id,
-    latitude: visit.latitude,
-    longitude: visit.longitude,
-    contactMethod: visit.contactMethod,
-    contactMethod2: visit.contactMethod2,
-    contactMethod3: visit.contactMethod3,
-    contactMethod4: visit.contactMethod4,
-    responseReceived: visit.responseReceived,
-    createdAt: visit.createdAt.toISOString(),
-    isRevisit: false,
-    originalVisitId: null,
-    city: visit.city ?? null,
-    country: null,
-  }));
+  return visits.map((visit) => {
+    const resolved = resolveVisitLocation({
+      latitude: visit.latitude,
+      longitude: visit.longitude,
+      city: visit.city,
+      streetAddress: visit.streetAddress,
+      neighborhood: visit.neighborhood,
+    });
+
+    return {
+      id: visit.id,
+      latitude: visit.latitude,
+      longitude: visit.longitude,
+      contactMethod: visit.contactMethod,
+      contactMethod2: visit.contactMethod2,
+      contactMethod3: visit.contactMethod3,
+      contactMethod4: visit.contactMethod4,
+      responseReceived: visit.responseReceived,
+      createdAt: visit.createdAt.toISOString(),
+      isRevisit: false,
+      originalVisitId: null,
+      city: resolved?.city ?? visit.city ?? null,
+      country: resolved?.country ?? null,
+    };
+  });
 }
 
 async function getUsersWithPerformance(userId?: string | null, startDate?: Date, endDate?: Date) {
@@ -404,6 +415,8 @@ async function getCanvassingVisits(userId?: string | null, startDate?: Date, end
       responseReceived: true,
       createdAt: true,
       city: true,
+      streetAddress: true,
+      neighborhood: true,
       visitUsers: {
         select: {
           userName: true,
