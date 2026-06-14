@@ -47,12 +47,73 @@ export interface RevisitsAggregate {
   };
 }
 
+export interface RevisitEfficiency {
+  totalRevisits: number;
+  revisitSuccessRate: number;
+  revisitNoResponseRate: number;
+  revisitNegativeRate: number;
+  revisitsByResponseType: RevisitsAggregate['revisitsByResponseType'];
+}
+
+export interface GeographicCoverage {
+  hasData: boolean;
+  cityCount: number;
+  totalVisitsMapped: number;
+  unmappedVisits: number;
+  topTwoCitiesShare: number;
+  topCities: Array<{ city: string; country: string; totalVisits: number; share: number }>;
+  concentrationLevel: 'high' | 'medium' | 'low';
+}
+
+export interface MemberActivityRow {
+  userId: string;
+  daysWithVisits: number;
+  daysWithRevisits: number;
+  daysWithActivity: number;
+  calendarDaysInPeriod: number;
+  streakDays: number;
+  activityRate: number;
+}
+
+export interface TeamBenchmarks {
+  avgVisitsPerMember: number;
+  avgConversionRate: number;
+  avgFieldWindowHours: number;
+  avgCompletedInventories: number;
+  totalMembers: number;
+  membersWithVisits: number;
+}
+
+export interface TodayPulse {
+  onlineUsers: number;
+  todayVisits: number;
+  todayItems: number;
+  activeUserIds: string[];
+  membersWithPinToday: number;
+  totalActiveMembers: number;
+  membersWithPinTodayRatio: string;
+  periodDailyAverageVisits: number;
+  todayVisitsVsPeriodAverage: number;
+}
+
+export interface DormantMembersSummary {
+  zeroVisitsInPeriod: Array<{ userId: string; name: string }>;
+  inactiveOver7Days: Array<{ userId: string; name: string; daysSinceLastActivity: number | null }>;
+}
+
 export interface TrendsAggregate {
   visitsTrend: number;
   itemsTrend: number;
   performanceTrend: number;
   locationsTrend: number;
   categoriesTrend: number;
+  /** Taux conversion positive/drops (%) vs période précédente */
+  conversionTrend: number;
+  /** Visites par membre actif vs période précédente */
+  productivityTrend: number;
+  /** Visites / membres ayant posé ≥ 1 pin sur la période */
+  currentProductivity: number;
+  previousProductivity: number;
 }
 
 function round1(value: number): number {
@@ -66,75 +127,153 @@ export function calcTrendPercent(current: number, previous: number): number {
   return round1(((current - previous) / previous) * 100);
 }
 
-export function getPreviousDateRange(period: string, now: Date): DateRange {
-  const currentStart = getStartDateByPeriod(period, now);
-  const currentEnd = getEndDateByPeriod(period, now);
-  const durationMs = currentEnd.getTime() - currentStart.getTime();
-
-  const previousEnd = new Date(currentStart.getTime() - 1);
-  const previousStart = new Date(previousEnd.getTime() - durationMs);
-
-  if (period === 'today') {
-    previousStart.setHours(0, 0, 0, 0);
-    previousEnd.setHours(23, 59, 59, 999);
-  }
-
-  return { start: previousStart, end: previousEnd };
+function startOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
-export function getStartDateByPeriod(period: string, now: Date): Date {
-  const startDate = new Date(now);
+function endOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+/** Lundi 00:00 de la semaine calendaire contenant `date` (ISO : semaine lun→dim) */
+function getMondayOfWeek(date: Date): Date {
+  const d = startOfDay(date);
+  const weekday = d.getDay(); // 0 = dimanche
+  const daysFromMonday = weekday === 0 ? 6 : weekday - 1;
+  d.setDate(d.getDate() - daysFromMonday);
+  return d;
+}
+
+/** Dimanche 23:59:59.999 de la semaine calendaire contenant `date` */
+function getSundayOfWeek(date: Date): Date {
+  const monday = getMondayOfWeek(date);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return endOfDay(sunday);
+}
+
+/**
+ * Période courante (calendaire).
+ * - today : jour en cours
+ * - week : lundi→dimanche de la semaine courante
+ * - month : 1er du mois courant → aujourd'hui
+ * - last3months : 3 mois complets avant le mois courant (ex. en juin → mars–mai)
+ * - quarter : trimestre calendaire courant → aujourd'hui
+ * - year : 1er janvier → aujourd'hui
+ */
+export function getDateRangeByPeriod(period: string, now: Date): DateRange {
+  const year = now.getFullYear();
+  const month = now.getMonth();
 
   switch (period) {
     case 'today':
-      startDate.setHours(0, 0, 0, 0);
-      break;
+      return { start: startOfDay(now), end: endOfDay(now) };
     case 'week':
-      startDate.setDate(now.getDate() - 7);
-      break;
+      return { start: getMondayOfWeek(now), end: getSundayOfWeek(now) };
     case 'month':
-      startDate.setMonth(now.getMonth() - 1);
-      break;
-    case 'last3months': {
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      startDate.setFullYear(currentYear);
-      startDate.setMonth(currentMonth - 3);
-      startDate.setDate(1);
-      startDate.setHours(0, 0, 0, 0);
-      break;
+      return {
+        start: startOfDay(new Date(year, month, 1)),
+        end: endOfDay(now),
+      };
+    case 'last3months':
+      return {
+        start: startOfDay(new Date(year, month - 3, 1)),
+        end: endOfDay(new Date(year, month, 0)),
+      };
+    case 'quarter': {
+      const quarterIndex = Math.floor(month / 3);
+      return {
+        start: startOfDay(new Date(year, quarterIndex * 3, 1)),
+        end: endOfDay(now),
+      };
     }
-    case 'quarter':
-      startDate.setMonth(now.getMonth() - 3);
-      break;
     case 'year':
-      startDate.setFullYear(now.getFullYear() - 1);
-      break;
+      return {
+        start: startOfDay(new Date(year, 0, 1)),
+        end: endOfDay(now),
+      };
     default:
-      startDate.setMonth(now.getMonth() - 1);
+      return {
+        start: startOfDay(new Date(year, month, 1)),
+        end: endOfDay(now),
+      };
   }
+}
 
-  return startDate;
+/**
+ * Période de comparaison (N−1 calendaire).
+ * - today → hier
+ * - week → semaine précédente (lun→dim)
+ * - month → mois précédent complet
+ * - last3months → 3 mois précédant la fenêtre courante (ex. mar–mai vs déc–fév)
+ * - quarter → trimestre précédent
+ * - year → année précédente complète
+ */
+export function getPreviousDateRange(period: string, now: Date): DateRange {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  switch (period) {
+    case 'today': {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return { start: startOfDay(yesterday), end: endOfDay(yesterday) };
+    }
+    case 'week': {
+      const thisMonday = getMondayOfWeek(now);
+      const previousSunday = endOfDay(new Date(thisMonday.getTime() - 24 * 60 * 60 * 1000));
+      return {
+        start: getMondayOfWeek(previousSunday),
+        end: getSundayOfWeek(previousSunday),
+      };
+    }
+    case 'month':
+      return {
+        start: startOfDay(new Date(year, month - 1, 1)),
+        end: endOfDay(new Date(year, month, 0)),
+      };
+    case 'last3months':
+      return {
+        start: startOfDay(new Date(year, month - 6, 1)),
+        end: endOfDay(new Date(year, month - 3, 0)),
+      };
+    case 'quarter': {
+      const quarterIndex = Math.floor(month / 3);
+      if (quarterIndex === 0) {
+        return {
+          start: startOfDay(new Date(year - 1, 9, 1)),
+          end: endOfDay(new Date(year - 1, 11, 31)),
+        };
+      }
+      const prevQuarterIndex = quarterIndex - 1;
+      return {
+        start: startOfDay(new Date(year, prevQuarterIndex * 3, 1)),
+        end: endOfDay(new Date(year, prevQuarterIndex * 3 + 3, 0)),
+      };
+    }
+    case 'year':
+      return {
+        start: startOfDay(new Date(year - 1, 0, 1)),
+        end: endOfDay(new Date(year - 1, 11, 31)),
+      };
+    default:
+      return {
+        start: startOfDay(new Date(year, month - 1, 1)),
+        end: endOfDay(new Date(year, month, 0)),
+      };
+  }
+}
+
+export function getStartDateByPeriod(period: string, now: Date): Date {
+  return getDateRangeByPeriod(period, now).start;
 }
 
 export function getEndDateByPeriod(period: string, now: Date): Date {
-  const endDate = new Date(now);
-
-  switch (period) {
-    case 'last3months': {
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      endDate.setFullYear(currentYear);
-      endDate.setMonth(currentMonth);
-      endDate.setDate(0);
-      endDate.setHours(23, 59, 59, 999);
-      break;
-    }
-    default:
-      break;
-  }
-
-  return endDate;
+  return getDateRangeByPeriod(period, now).end;
 }
 
 function buildDateFilter(startDate: Date, endDate?: Date) {
@@ -364,6 +503,48 @@ async function calcPerformanceRate(
   return total > 0 ? (positive / total) * 100 : 0;
 }
 
+async function calcConversionRate(
+  startDate: Date,
+  endDate: Date | undefined,
+  userId?: string | null
+): Promise<number> {
+  return calcPerformanceRate(startDate, endDate, userId);
+}
+
+async function countActiveMembersInPeriod(
+  startDate: Date,
+  endDate: Date | undefined,
+  userId?: string | null
+): Promise<number> {
+  if (userId) return 1;
+
+  const rows = await prisma.canvassingVisitUser.findMany({
+    where: {
+      visit: {
+        createdAt: buildDateFilter(startDate, endDate),
+      },
+    },
+    select: { userId: true },
+    distinct: ['userId'],
+  });
+
+  return rows.length;
+}
+
+async function calcProductivity(
+  startDate: Date,
+  endDate: Date | undefined,
+  userId?: string | null
+): Promise<number> {
+  const [visits, activeMembers] = await Promise.all([
+    countVisitsInRange(startDate, endDate, userId),
+    countActiveMembersInPeriod(startDate, endDate, userId),
+  ]);
+
+  if (activeMembers === 0) return 0;
+  return round1(visits / activeMembers);
+}
+
 export async function calculateTrendsForPeriods(
   current: DateRange,
   previous: DateRange,
@@ -380,6 +561,10 @@ export async function calculateTrendsForPeriods(
     previousLocations,
     currentCategories,
     previousCategories,
+    currentConversion,
+    previousConversion,
+    currentProductivity,
+    previousProductivity,
   ] = await Promise.all([
     countVisitsInRange(current.start, current.end, userId),
     countVisitsInRange(previous.start, previous.end, userId),
@@ -391,6 +576,10 @@ export async function calculateTrendsForPeriods(
     countDistinctLocationsInRange(previous.start, previous.end, userId),
     countDistinctCategoriesInRange(current.start, current.end, userId),
     countDistinctCategoriesInRange(previous.start, previous.end, userId),
+    calcConversionRate(current.start, current.end, userId),
+    calcConversionRate(previous.start, previous.end, userId),
+    calcProductivity(current.start, current.end, userId),
+    calcProductivity(previous.start, previous.end, userId),
   ]);
 
   return {
@@ -399,6 +588,10 @@ export async function calculateTrendsForPeriods(
     performanceTrend: calcTrendPercent(currentPerformance, previousPerformance),
     locationsTrend: calcTrendPercent(currentLocations, previousLocations),
     categoriesTrend: calcTrendPercent(currentCategories, previousCategories),
+    conversionTrend: calcTrendPercent(currentConversion, previousConversion),
+    productivityTrend: calcTrendPercent(currentProductivity, previousProductivity),
+    currentProductivity,
+    previousProductivity,
   };
 }
 
@@ -483,8 +676,11 @@ export async function getCityStatsAggregate(
   };
 
   for (const visit of visits) {
-    const location = resolveVisitLocation(visit);
-    if (!location) continue;
+    const location = resolveVisitLocation(visit) ?? {
+      city: 'Unknown',
+      country: '',
+      source: 'country_only' as const,
+    };
 
     const bucket = ensure(location);
     bucket.totalVisits++;
@@ -495,15 +691,18 @@ export async function getCityStatsAggregate(
   }
 
   for (const revisit of revisits) {
-    const location = resolveVisitLocation(revisit);
-    if (!location) continue;
+    const location = resolveVisitLocation(revisit) ?? {
+      city: 'Unknown',
+      country: '',
+      source: 'country_only' as const,
+    };
 
     const bucket = ensure(location);
     bucket.totalRevisits++;
   }
 
   return Array.from(buckets.values())
-    .filter((stats) => stats.totalVisits > 0)
+    .filter((stats) => stats.totalVisits > 0 || stats.totalRevisits > 0)
     .map((stats) => {
       const responded = stats.positive + stats.negative;
       return {
@@ -568,4 +767,303 @@ export async function enrichVisitHoursWithResponses(
   }
 
   return hourResponses;
+}
+
+export function buildRevisitEfficiency(
+  revisits: RevisitsAggregate
+): RevisitEfficiency {
+  const { totalRevisits, revisitsByResponseType: r } = revisits;
+
+  return {
+    totalRevisits,
+    revisitSuccessRate:
+      totalRevisits > 0 ? round1((r.positive / totalRevisits) * 100) : 0,
+    revisitNoResponseRate:
+      totalRevisits > 0 ? round1((r.no_response / totalRevisits) * 100) : 0,
+    revisitNegativeRate:
+      totalRevisits > 0 ? round1((r.negative / totalRevisits) * 100) : 0,
+    revisitsByResponseType: r,
+  };
+}
+
+export function buildGeographicCoverage(
+  cityStats: Awaited<ReturnType<typeof getCityStatsAggregate>>,
+  totalDrops: number
+): GeographicCoverage {
+  const sorted = [...cityStats].sort((a, b) => b.totalVisits - a.totalVisits);
+  const totalVisitsMapped = sorted.reduce((sum, row) => sum + row.totalVisits, 0);
+  const topTwoVisits = sorted
+    .slice(0, 2)
+    .reduce((sum, row) => sum + row.totalVisits, 0);
+  const denominator = totalDrops > 0 ? totalDrops : totalVisitsMapped;
+  const topTwoCitiesShare =
+    denominator > 0 ? round1((topTwoVisits / denominator) * 100) : 0;
+
+  let concentrationLevel: GeographicCoverage['concentrationLevel'] = 'low';
+  if (topTwoCitiesShare >= 80) concentrationLevel = 'high';
+  else if (topTwoCitiesShare >= 50) concentrationLevel = 'medium';
+
+  return {
+    hasData: denominator > 0,
+    cityCount: sorted.length,
+    totalVisitsMapped,
+    unmappedVisits: Math.max(0, denominator - totalVisitsMapped),
+    topTwoCitiesShare,
+    topCities: sorted.slice(0, 5).map((row) => ({
+      city: row.city,
+      country: row.country,
+      totalVisits: row.totalVisits,
+      share: denominator > 0 ? round1((row.totalVisits / denominator) * 100) : 0,
+    })),
+    concentrationLevel,
+  };
+}
+
+function calendarDaysInPeriod(startDate: Date, endDate: Date): number {
+  const start = startOfDay(startDate);
+  const end = startOfDay(endDate);
+  return Math.max(1, Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)) + 1);
+}
+
+function longestDayStreak(sortedDayKeys: string[]): number {
+  if (sortedDayKeys.length === 0) return 0;
+
+  let longest = 1;
+  let current = 1;
+
+  for (let i = 1; i < sortedDayKeys.length; i++) {
+    const prev = new Date(`${sortedDayKeys[i - 1]}T00:00:00.000Z`);
+    const curr = new Date(`${sortedDayKeys[i]}T00:00:00.000Z`);
+    const diffDays = Math.round((curr.getTime() - prev.getTime()) / (24 * 60 * 60 * 1000));
+
+    if (diffDays === 1) {
+      current++;
+      longest = Math.max(longest, current);
+    } else if (diffDays > 1) {
+      current = 1;
+    }
+  }
+
+  return longest;
+}
+
+export async function getMemberActivityStats(
+  startDate: Date,
+  endDate: Date,
+  userId?: string | null
+): Promise<MemberActivityRow[]> {
+  const userFilter = userId ? parseInt(userId, 10) : null;
+  const calendarDays = calendarDaysInPeriod(startDate, endDate);
+
+  const users = await prisma.user.findMany({
+    where: userFilter ? { id: userFilter, isActive: true } : { isActive: true },
+    select: { id: true },
+  });
+
+  const visitRows = await prisma.canvassingVisit.findMany({
+    where: {
+      createdAt: buildDateFilter(startDate, endDate),
+      ...(userFilter && { visitUsers: { some: { userId: userFilter } } }),
+    },
+    select: {
+      createdAt: true,
+      visitUsers: { select: { userId: true } },
+    },
+  });
+
+  const revisitRows = await prisma.revisit.findMany({
+    where: {
+      createdAt: buildDateFilter(startDate, endDate),
+      ...(userFilter && { userId: userFilter }),
+    },
+    select: {
+      createdAt: true,
+      userId: true,
+    },
+  });
+
+  const visitDaysByUser = new Map<number, Set<string>>();
+  const revisitDaysByUser = new Map<number, Set<string>>();
+
+  for (const visit of visitRows) {
+    const day = visit.createdAt.toISOString().slice(0, 10);
+    for (const vu of visit.visitUsers) {
+      if (userFilter && vu.userId !== userFilter) continue;
+      if (!visitDaysByUser.has(vu.userId)) visitDaysByUser.set(vu.userId, new Set());
+      visitDaysByUser.get(vu.userId)!.add(day);
+    }
+  }
+
+  for (const revisit of revisitRows) {
+    const day = revisit.createdAt.toISOString().slice(0, 10);
+    if (!revisitDaysByUser.has(revisit.userId)) revisitDaysByUser.set(revisit.userId, new Set());
+    revisitDaysByUser.get(revisit.userId)!.add(day);
+  }
+
+  return users.map((user) => {
+    const visitDays = visitDaysByUser.get(user.id) ?? new Set<string>();
+    const revisitDays = revisitDaysByUser.get(user.id) ?? new Set<string>();
+    const activityDays = new Set([...visitDays, ...revisitDays]);
+    const sortedDays = [...activityDays].sort();
+
+    return {
+      userId: user.id.toString(),
+      daysWithVisits: visitDays.size,
+      daysWithRevisits: revisitDays.size,
+      daysWithActivity: activityDays.size,
+      calendarDaysInPeriod: calendarDays,
+      streakDays: longestDayStreak(sortedDays),
+      activityRate:
+        calendarDays > 0 ? round1((activityDays.size / calendarDays) * 100) : 0,
+    };
+  });
+}
+
+export function buildTeamBenchmarks(
+  users: Array<{
+    performance: {
+      totalVisits: number;
+      responseRate: number;
+      completedInventories: number;
+      fieldTime?: { fieldWindowHours: number } | null;
+    };
+  }>
+): TeamBenchmarks {
+  const totalMembers = users.length;
+  const membersWithVisits = users.filter((u) => u.performance.totalVisits > 0).length;
+
+  if (totalMembers === 0) {
+    return {
+      avgVisitsPerMember: 0,
+      avgConversionRate: 0,
+      avgFieldWindowHours: 0,
+      avgCompletedInventories: 0,
+      totalMembers: 0,
+      membersWithVisits: 0,
+    };
+  }
+
+  const sumVisits = users.reduce((s, u) => s + u.performance.totalVisits, 0);
+  const sumConversion = users.reduce((s, u) => s + u.performance.responseRate, 0);
+  const sumFieldHours = users.reduce(
+    (s, u) => s + (u.performance.fieldTime?.fieldWindowHours ?? 0),
+    0
+  );
+  const sumInventories = users.reduce(
+    (s, u) => s + u.performance.completedInventories,
+    0
+  );
+
+  return {
+    avgVisitsPerMember: round1(sumVisits / totalMembers),
+    avgConversionRate: round1(sumConversion / totalMembers),
+    avgFieldWindowHours: round1(sumFieldHours / totalMembers),
+    avgCompletedInventories: round1(sumInventories / totalMembers),
+    totalMembers,
+    membersWithVisits,
+  };
+}
+
+export function buildDormantMembersSummary(
+  users: Array<{
+    id: string;
+    name: string;
+    performance: {
+      totalVisits: number;
+      daysSinceLastActivity: number | null;
+    };
+  }>
+): DormantMembersSummary {
+  return {
+    zeroVisitsInPeriod: users
+      .filter((u) => u.performance.totalVisits === 0)
+      .map((u) => ({ userId: u.id, name: u.name })),
+    inactiveOver7Days: users
+      .filter(
+        (u) =>
+          u.performance.daysSinceLastActivity === null ||
+          u.performance.daysSinceLastActivity > 7
+      )
+      .map((u) => ({
+        userId: u.id,
+        name: u.name,
+        daysSinceLastActivity: u.performance.daysSinceLastActivity,
+      })),
+  };
+}
+
+export function enrichUsersWithTeamComparison<
+  T extends {
+    performance: {
+      totalVisits: number;
+      responseRate: number;
+      fieldTime?: { fieldWindowHours: number } | null;
+    };
+  },
+>(users: T[], benchmarks: TeamBenchmarks): Array<
+  T & {
+    vsTeamAverage: {
+      visitsDelta: number;
+      conversionDelta: number;
+      fieldHoursDelta: number;
+    };
+  }
+> {
+  return users.map((user) => ({
+    ...user,
+    vsTeamAverage: {
+      visitsDelta: round1(user.performance.totalVisits - benchmarks.avgVisitsPerMember),
+      conversionDelta: round1(user.performance.responseRate - benchmarks.avgConversionRate),
+      fieldHoursDelta: round1(
+        (user.performance.fieldTime?.fieldWindowHours ?? 0) -
+          benchmarks.avgFieldWindowHours
+      ),
+    },
+  }));
+}
+
+export async function buildTodayPulse(
+  dailyMetrics: Array<{ visits: number }>,
+  totalActiveMembers: number
+): Promise<TodayPulse> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [todayVisits, todayItems, todayPinUsers] = await Promise.all([
+    prisma.canvassingVisit.count({ where: { createdAt: { gte: today } } }),
+    prisma.roomImage.count({ where: { createdAt: { gte: today } } }),
+    prisma.canvassingVisitUser.findMany({
+      where: { visit: { createdAt: { gte: today } } },
+      select: { userId: true },
+      distinct: ['userId'],
+    }),
+  ]);
+
+  const onlineUsers = await prisma.userActivity.findMany({
+    where: { timestamp: { gte: new Date(Date.now() - 15 * 60 * 1000) } },
+    select: { userId: true },
+    distinct: ['userId'],
+  });
+
+  const periodDays = Math.max(dailyMetrics.length, 1);
+  const totalPeriodVisits = dailyMetrics.reduce((sum, day) => sum + day.visits, 0);
+  const periodDailyAverageVisits = round1(totalPeriodVisits / periodDays);
+  const membersWithPinToday = todayPinUsers.length;
+
+  return {
+    onlineUsers: onlineUsers.length,
+    todayVisits,
+    todayItems,
+    activeUserIds: todayPinUsers.map((row) => row.userId.toString()),
+    membersWithPinToday,
+    totalActiveMembers,
+    membersWithPinTodayRatio: `${membersWithPinToday}/${totalActiveMembers}`,
+    periodDailyAverageVisits,
+    todayVisitsVsPeriodAverage:
+      periodDailyAverageVisits > 0
+        ? round1(
+            ((todayVisits - periodDailyAverageVisits) / periodDailyAverageVisits) * 100
+          )
+        : 0,
+  };
 }

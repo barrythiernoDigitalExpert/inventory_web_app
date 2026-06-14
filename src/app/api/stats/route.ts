@@ -4,14 +4,20 @@ import { Prisma, ActivityType, ResponseType } from '@/generated/prisma';
 import { prisma } from '@/lib/utils/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
 import {
+  buildDormantMembersSummary,
+  buildGeographicCoverage,
+  buildRevisitEfficiency,
+  buildTeamBenchmarks,
+  buildTodayPulse,
   calculateFieldTimeMetrics,
   calculateTrendsForPeriods,
+  enrichUsersWithTeamComparison,
   enrichVisitHoursWithResponses,
   getCityStatsAggregate,
-  getEndDateByPeriod,
+  getDateRangeByPeriod,
+  getMemberActivityStats,
   getPreviousDateRange,
   getRevisitsAggregate,
-  getStartDateByPeriod,
 } from '@/lib/services/teamStatsService';
 import { resolveVisitLocation } from '@/lib/utils/canvassingGeoHelpers';
 
@@ -37,8 +43,7 @@ export async function GET(request: NextRequest) {
     
     // Calculer les dates basées sur la période
     const now = new Date();
-    const startDate = getStartDateByPeriod(period, now);
-    const endDate = getEndDateByPeriod(period, now);
+    const { start: startDate, end: endDate } = getDateRangeByPeriod(period, now);
     const previousDateRange = getPreviousDateRange(period, now);
     const currentRange = { start: startDate, end: endDate };
 
@@ -74,7 +79,8 @@ export async function GET(request: NextRequest) {
       revisitsAggregate,
       trends,
       cityStats,
-      visitHourResponses
+      visitHourResponses,
+      memberActivityStats,
     ] = await Promise.all([
       // 1. Users & Team
       getUsersWithPerformance(userId, startDate, endDate),
@@ -106,8 +112,19 @@ export async function GET(request: NextRequest) {
       getRevisitsAggregate(startDate, endDate, userId),
       calculateTrendsForPeriods(currentRange, previousDateRange, userId),
       getCityStatsAggregate(startDate, endDate, userId),
-      enrichVisitHoursWithResponses(userId, startDate, endDate)
+      enrichVisitHoursWithResponses(userId, startDate, endDate),
+      getMemberActivityStats(startDate, endDate, userId),
     ]);
+
+    const teamBenchmarks = buildTeamBenchmarks(usersData);
+    const usersWithComparison = enrichUsersWithTeamComparison(usersData, teamBenchmarks);
+    const dormantMembers = buildDormantMembersSummary(usersWithComparison);
+    const revisitEfficiency = buildRevisitEfficiency(revisitsAggregate);
+    const geographicCoverage = buildGeographicCoverage(
+      cityStats,
+      canvassingStats.totalDrops
+    );
+    const todayPulse = await buildTodayPulse(dailyMetrics, teamStats.activeMembers);
 
     const maildropStats = {
       ...canvassingStats,
@@ -146,9 +163,16 @@ export async function GET(request: NextRequest) {
         
         // 1. Données utilisateurs & équipe
         team: {
-          users: usersData,
+          users: usersWithComparison,
           stats: teamStats,
-          activities: userActivities
+          activities: userActivities,
+          benchmarks: teamBenchmarks,
+          dormantMembers,
+          memberActivity: memberActivityStats,
+          activityRegularity: {
+            hasData: memberActivityStats.length > 0,
+            members: memberActivityStats,
+          },
         },
         
         // 2. Données maildrop
@@ -158,7 +182,9 @@ export async function GET(request: NextRequest) {
           responses: responseDistribution,
           contactMethods: contactMethodStats,
           visitHours: visitHoursEnriched,
-          cityStats
+          cityStats,
+          revisitEfficiency,
+          geographicCoverage,
         },
         
         // 3. Données inventory
@@ -177,8 +203,9 @@ export async function GET(request: NextRequest) {
         // 5. Données temps réel
         realTime: {
           activities: recentActivities,
-          onlineUsers: await getOnlineUsersCount(),
-          todayStats: await getTodayStats()
+          pulse: todayPulse,
+          onlineUsers: todayPulse.onlineUsers,
+          todayStats: todayPulse,
         },
         
         // 6. Métriques système
@@ -268,21 +295,20 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date,
           imageCount: true,
           inventoryStatus: true
         }
-      },
-      activities: {
-        where: startDate ? { 
-          timestamp: { 
-            gte: startDate,
-            ...(endDate && { lte: endDate })
-          } 
-        } : undefined,
-        select: {
-          timestamp: true,
-          activityType: true
-        }
       }
     }
   });
+
+  const lastActivityRows = users.length
+    ? await prisma.userActivity.groupBy({
+        by: ['userId'],
+        where: { userId: { in: users.map((u) => u.id) } },
+        _max: { timestamp: true },
+      })
+    : [];
+  const lastActivityByUserId = new Map(
+    lastActivityRows.map((row) => [row.userId, row._max.timestamp])
+  );
 
   const usersWithFieldTime = await Promise.all(
     users.map(async (user) => {
@@ -300,6 +326,13 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date,
           ? await calculateFieldTimeMetrics(user.id, startDate, endDate)
           : null;
 
+      const lastActivityDate = lastActivityByUserId.get(user.id) ?? null;
+      const lastActivity = lastActivityDate ? lastActivityDate.getTime() : null;
+      const daysSinceLastActivity =
+        lastActivityDate !== null && lastActivityDate !== undefined
+          ? Math.floor((Date.now() - lastActivityDate.getTime()) / (24 * 60 * 60 * 1000))
+          : null;
+
       return {
         id: user.id.toString(),
         name: user.name,
@@ -313,8 +346,10 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date,
           completedInventories,
           responseRate: totalVisits > 0 ? round1(positiveResponses / totalVisits * 100) : 0,
           performanceScore: calculatePerformanceScore(totalVisits, positiveResponses, totalItems),
-          lastActivity: user.activities.length > 0 ?
-            Math.max(...user.activities.map(a => new Date(a.timestamp).getTime())) : null,
+          lastActivity,
+          daysSinceLastActivity,
+          zeroVisitsInPeriod: totalVisits === 0,
+          isDormant: daysSinceLastActivity === null || daysSinceLastActivity > 7,
           ...(fieldTime && {
             fieldTime: {
               totalPins: fieldTime.totalPins,
@@ -809,44 +844,6 @@ async function getRecentActivities(limit: number = 20) {
   }));
 }
 
-async function getOnlineUsersCount(): Promise<number> {
-  // Considérer qu'un utilisateur est en ligne s'il a eu une activité dans les 15 dernières minutes
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-  
-  const activeUsers = await prisma.userActivity.findMany({
-    where: {
-      timestamp: { gte: fifteenMinutesAgo }
-    },
-    select: { userId: true },
-    distinct: ['userId']
-  });
-  
-  return activeUsers.length;
-}
-
-async function getTodayStats() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const [todayVisits, todayItems, todayUsers] = await Promise.all([
-    prisma.canvassingVisit.count({ where: { createdAt: { gte: today } } }),
-    prisma.roomImage.count({ where: { createdAt: { gte: today } } }),
-    prisma.userActivity.findMany({
-      where: { timestamp: { gte: today } },
-      select: { userId: true },
-      distinct: ['userId']
-    })
-  ]);
-
-  return {
-    onlineUsers: await getOnlineUsersCount(),
-    todayVisits,
-    todayItems,
-    activeUserIds: todayUsers.map(u => u.userId.toString())
-  };
-}
-
-// 6. Fonctions pour les métriques système
 async function getSystemMetricsData(startDate: Date, endDate?: Date) {
   return await prisma.systemMetrics.findMany({
     where: {
