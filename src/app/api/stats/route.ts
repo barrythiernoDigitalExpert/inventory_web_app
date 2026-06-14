@@ -1,7 +1,18 @@
 ﻿// src/app/api/stats/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma, ActivityType, ResponseType } from '@/generated/prisma';
 import { prisma } from '@/lib/utils/prisma';
 import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
+import {
+  calculateFieldTimeMetrics,
+  calculateTrendsForPeriods,
+  enrichVisitHoursWithResponses,
+  getCityStatsAggregate,
+  getEndDateByPeriod,
+  getPreviousDateRange,
+  getRevisitsAggregate,
+  getStartDateByPeriod,
+} from '@/lib/services/teamStatsService';
 
 // GET: Récupérer toutes les statistiques pour le dashboard
 export async function GET(request: NextRequest) {
@@ -27,6 +38,8 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const startDate = getStartDateByPeriod(period, now);
     const endDate = getEndDateByPeriod(period, now);
+    const previousDateRange = getPreviousDateRange(period, now);
+    const currentRange = { start: startDate, end: endDate };
 
     // Exécuter toutes les requêtes en parallèle
     const [
@@ -54,7 +67,13 @@ export async function GET(request: NextRequest) {
       recentActivities,
       
       // 6. Métriques système
-      systemMetrics
+      systemMetrics,
+
+      // 7. Enrichissements Team Performance
+      revisitsAggregate,
+      trends,
+      cityStats,
+      visitHourResponses
     ] = await Promise.all([
       // 1. Users & Team
       getUsersWithPerformance(userId, startDate, endDate),
@@ -80,8 +99,31 @@ export async function GET(request: NextRequest) {
       getRecentActivities(20),
       
       // 6. System
-      getSystemMetricsData(startDate, endDate)
+      getSystemMetricsData(startDate, endDate),
+
+      // 7. Enrichissements
+      getRevisitsAggregate(startDate, endDate, userId),
+      calculateTrendsForPeriods(currentRange, previousDateRange, userId),
+      getCityStatsAggregate(startDate, endDate, userId),
+      enrichVisitHoursWithResponses(userId, startDate, endDate)
     ]);
+
+    const maildropStats = {
+      ...canvassingStats,
+      totalRevisits: revisitsAggregate.totalRevisits,
+      revisitsByResponseType: revisitsAggregate.revisitsByResponseType,
+      responseRate: round1(canvassingStats.responseRate),
+    };
+
+    const visitHoursEnriched = visitHours.map((row) => ({
+      ...row,
+      responses: visitHourResponses[row.hour] ?? {
+        positive: 0,
+        negative: 0,
+        no_response: 0,
+        pending: 0,
+      },
+    }));
 
     return NextResponse.json({
       success: true,
@@ -94,6 +136,10 @@ export async function GET(request: NextRequest) {
           dateRange: {
             start: startDate.toISOString(),
             end: endDate.toISOString()
+          },
+          previousDateRange: {
+            start: previousDateRange.start.toISOString(),
+            end: previousDateRange.end.toISOString()
           }
         },
         
@@ -106,11 +152,12 @@ export async function GET(request: NextRequest) {
         
         // 2. Données maildrop
         maildrop: {
-          visits: canvassingVisits,
-          stats: canvassingStats,
+          visits: formatCanvassingVisitsForMobile(canvassingVisits),
+          stats: maildropStats,
           responses: responseDistribution,
           contactMethods: contactMethodStats,
-          visitHours: visitHours
+          visitHours: visitHoursEnriched,
+          cityStats
         },
         
         // 3. Données inventory
@@ -123,7 +170,7 @@ export async function GET(request: NextRequest) {
         // 4. Données temporelles
         temporal: {
           daily: dailyMetrics,
-          trends: calculateTrends(dailyMetrics)
+          trends
         },
         
         // 5. Données temps réel
@@ -147,65 +194,30 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Fonction utilitaire pour calculer la date de début selon la période
-function getStartDateByPeriod(period: string, now: Date): Date {
-  const startDate = new Date(now);
-  
-  switch (period) {
-    case 'today':
-      startDate.setHours(0, 0, 0, 0);
-      break;
-    case 'week':
-      startDate.setDate(now.getDate() - 7);
-      break;
-    case 'month':
-      startDate.setMonth(now.getMonth() - 1);
-      break;
-    case 'last3months':
-      // Last 3 months excluding current month
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      // Start: beginning of 3 months ago
-      startDate.setFullYear(currentYear);
-      startDate.setMonth(currentMonth - 3);
-      startDate.setDate(1);
-      startDate.setHours(0, 0, 0, 0);
-      break;
-    case 'quarter':
-      startDate.setMonth(now.getMonth() - 3);
-      break;
-    case 'year':
-      startDate.setFullYear(now.getFullYear() - 1);
-      break;
-    default:
-      startDate.setMonth(now.getMonth() - 1);
-  }
-  
-  return startDate;
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
 }
 
-function getEndDateByPeriod(period: string, now: Date): Date {
-  const endDate = new Date(now);
-  
-  switch (period) {
-    case 'last3months':
-      // End: last day of previous month
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      endDate.setFullYear(currentYear);
-      endDate.setMonth(currentMonth);
-      endDate.setDate(0); // Last day of previous month
-      endDate.setHours(23, 59, 59, 999);
-      break;
-    default:
-      // For all other periods, use current time as end date
-      break;
-  }
-  
-  return endDate;
+function formatCanvassingVisitsForMobile(
+  visits: Awaited<ReturnType<typeof getCanvassingVisits>>
+) {
+  return visits.map((visit) => ({
+    id: visit.id,
+    latitude: visit.latitude,
+    longitude: visit.longitude,
+    contactMethod: visit.contactMethod,
+    contactMethod2: visit.contactMethod2,
+    contactMethod3: visit.contactMethod3,
+    contactMethod4: visit.contactMethod4,
+    responseReceived: visit.responseReceived,
+    createdAt: visit.createdAt.toISOString(),
+    isRevisit: false,
+    originalVisitId: null,
+    city: visit.city ?? null,
+    country: null,
+  }));
 }
 
-// 1. Fonctions pour les données utilisateurs & équipe
 async function getUsersWithPerformance(userId?: string | null, startDate?: Date, endDate?: Date) {
   const whereClause = userId ? { id: parseInt(userId) } : { isActive: true };
   
@@ -261,34 +273,57 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date,
     }
   });
 
-  return users.map(user => {
-    const totalVisits = user.canvassingVisits.length;
-    const positiveResponses = user.canvassingVisits.filter(
-      cv => cv.visit.responseReceived === 'positive'
-    ).length;
-    const totalItems = user.properties.reduce((sum, p) => sum + p.imageCount, 0);
-    const completedInventories = user.properties.filter(
-      p => p.inventoryStatus === 'COMPLETED' || p.inventoryStatus === 'FINALIZED'
-    ).length;
-    
-    return {
-      id: user.id.toString(),
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      isActive: user.isActive,
-      performance: {
-        totalVisits,
-        totalItems,
-        positiveResponses,
-        completedInventories,
-        responseRate: totalVisits > 0 ? (positiveResponses / totalVisits * 100) : 0,
-        performanceScore: calculatePerformanceScore(totalVisits, positiveResponses, totalItems),
-        lastActivity: user.activities.length > 0 ? 
-          Math.max(...user.activities.map(a => new Date(a.timestamp).getTime())) : null
-      }
-    };
-  });
+  const usersWithFieldTime = await Promise.all(
+    users.map(async (user) => {
+      const totalVisits = user.canvassingVisits.length;
+      const positiveResponses = user.canvassingVisits.filter(
+        cv => cv.visit.responseReceived === 'positive'
+      ).length;
+      const totalItems = user.properties.reduce((sum, p) => sum + p.imageCount, 0);
+      const completedInventories = user.properties.filter(
+        p => p.inventoryStatus === 'COMPLETED' || p.inventoryStatus === 'FINALIZED'
+      ).length;
+
+      const fieldTime =
+        startDate
+          ? await calculateFieldTimeMetrics(user.id, startDate, endDate)
+          : null;
+
+      return {
+        id: user.id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        performance: {
+          totalVisits,
+          totalItems,
+          positiveResponses,
+          completedInventories,
+          responseRate: totalVisits > 0 ? round1(positiveResponses / totalVisits * 100) : 0,
+          performanceScore: calculatePerformanceScore(totalVisits, positiveResponses, totalItems),
+          lastActivity: user.activities.length > 0 ?
+            Math.max(...user.activities.map(a => new Date(a.timestamp).getTime())) : null,
+          ...(fieldTime && {
+            fieldTime: {
+              totalPins: fieldTime.totalPins,
+              totalVisits: fieldTime.totalVisits,
+              totalRevisits: fieldTime.totalRevisits,
+              activeHoursDistinct: fieldTime.activeHoursDistinct,
+              fieldWindowHours: fieldTime.fieldWindowHours,
+              fieldWindowMinutes: fieldTime.fieldWindowMinutes,
+              estimatedFieldHours: fieldTime.estimatedFieldHours,
+              estimatedFieldMinutes: fieldTime.estimatedFieldMinutes,
+              averageMinutesPerPin: fieldTime.averageMinutesPerPin,
+              estimationMethod: fieldTime.estimationMethod,
+            },
+          }),
+        }
+      };
+    })
+  );
+
+  return usersWithFieldTime;
 }
 
 async function getTeamStats(startDate: Date, endDate?: Date) {
@@ -368,6 +403,7 @@ async function getCanvassingVisits(userId?: string | null, startDate?: Date, end
       contactMethod4: true,
       responseReceived: true,
       createdAt: true,
+      city: true,
       visitUsers: {
         select: {
           userName: true,
@@ -424,7 +460,7 @@ async function getCanvassingStatistics(userId?: string | null, startDate?: Date,
     negativeResponses,
     noResponses,
     pendingResponses,
-    responseRate: totalVisits > 0 ? ((positiveResponses / totalVisits) * 100) : 0
+    responseRate: totalVisits > 0 ? round1((positiveResponses / totalVisits) * 100) : 0
   };
 }
 
@@ -593,25 +629,28 @@ async function getInventoryStatistics(userId?: string | null, startDate?: Date, 
 }
 
 async function getRoomCategoryDistribution(userId?: string | null, startDate?: Date, endDate?: Date) {
-  const whereClause = {
-    ...(userId && { property: { userId: parseInt(userId) } }),
-    ...(startDate && { 
-      createdAt: { 
-        gte: startDate,
-        ...(endDate && { lte: endDate })
-      } 
-    })
-  };
-
-  const rooms = await prisma.room.groupBy({
-    where: whereClause,
-    by: ['name'],
-    _count: { id: true }
+  const images = await prisma.roomImage.findMany({
+    where: {
+      ...(userId && { room: { property: { userId: parseInt(userId) } } }),
+      ...(startDate && {
+        createdAt: {
+          gte: startDate,
+          ...(endDate && { lte: endDate }),
+        },
+      }),
+    },
+    select: {
+      room: { select: { name: true } },
+    },
   });
 
-  return Object.fromEntries(
-    rooms.map(r => [r.name, r._count.id])
-  );
+  const distribution: Record<string, number> = {};
+  for (const image of images) {
+    const name = image.room.name;
+    distribution[name] = (distribution[name] ?? 0) + 1;
+  }
+
+  return distribution;
 }
 
 async function getInventoryActivity(userId?: string | null, startDate?: Date, endDate?: Date) {
@@ -838,19 +877,6 @@ async function calculateAveragePerformance(startDate: Date, endDate?: Date): Pro
   return totalScore / users.length;
 }
 
-function calculateTrends(dailyMetrics: any[]) {
-  if (dailyMetrics.length < 2) return { visitsTrend: 0, itemsTrend: 0, performanceTrend: 0 };
-  
-  const first = dailyMetrics[0];
-  const last = dailyMetrics[dailyMetrics.length - 1];
-  
-  const visitsTrend = first.visits > 0 ? ((last.visits - first.visits) / first.visits) * 100 : 0;
-  const itemsTrend = first.items > 0 ? ((last.items - first.items) / first.items) * 100 : 0;
-  const performanceTrend = first.performance > 0 ? ((last.performance - first.performance) / first.performance) * 100 : 0;
-  
-  return { visitsTrend, itemsTrend, performanceTrend };
-}
-
 function generateActivityDescription(activity: any): string {
   const activityDescriptions = {
     LOGIN: 'S\'est connecté',
@@ -866,6 +892,3 @@ function generateActivityDescription(activity: any): string {
   
   return activityDescriptions[activity.activityType as keyof typeof activityDescriptions] || 'Activité inconnue';
 }
-
-// Import Prisma for raw queries
-import { Prisma, ActivityType } from '@/generated/prisma';
