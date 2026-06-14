@@ -156,8 +156,98 @@ function getSundayOfWeek(date: Date): Date {
   return endOfDay(sunday);
 }
 
+export interface ResolvedStatsDateRanges {
+  current: DateRange;
+  previous: DateRange | null;
+}
+
+export function isAllTimePeriod(period: string): boolean {
+  return period === 'all';
+}
+
+export function emptyTrendsAggregate(): TrendsAggregate {
+  return {
+    visitsTrend: 0,
+    itemsTrend: 0,
+    performanceTrend: 0,
+    locationsTrend: 0,
+    categoriesTrend: 0,
+    conversionTrend: 0,
+    productivityTrend: 0,
+    currentProductivity: 0,
+    previousProductivity: 0,
+  };
+}
+
+async function getEarliestActivityDate(userId?: string | null): Promise<Date> {
+  const parsedUserId = userId ? parseInt(userId, 10) : null;
+
+  const [visit, revisit, property, image] = await Promise.all([
+    prisma.canvassingVisit.findFirst({
+      where: parsedUserId
+        ? { visitUsers: { some: { userId: parsedUserId } } }
+        : undefined,
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    }),
+    prisma.revisit.findFirst({
+      where: parsedUserId ? { userId: parsedUserId } : undefined,
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    }),
+    prisma.property.findFirst({
+      where: parsedUserId ? { userId: parsedUserId } : undefined,
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    }),
+    prisma.roomImage.findFirst({
+      where: parsedUserId
+        ? { room: { property: { userId: parsedUserId } } }
+        : undefined,
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    }),
+  ]);
+
+  const timestamps = [visit, revisit, property, image]
+    .map((row) => row?.createdAt?.getTime())
+    .filter((value): value is number => value !== undefined);
+
+  if (timestamps.length === 0) {
+    return startOfDay(new Date());
+  }
+
+  return startOfDay(new Date(Math.min(...timestamps)));
+}
+
+/**
+ * Résout la fenêtre courante et la fenêtre de comparaison.
+ * `period=all` → toutes les données depuis la 1re activité ; pas de période précédente.
+ */
+export async function resolveStatsDateRanges(
+  period: string,
+  now: Date,
+  userId?: string | null
+): Promise<ResolvedStatsDateRanges> {
+  if (isAllTimePeriod(period)) {
+    return {
+      current: {
+        start: await getEarliestActivityDate(userId),
+        end: endOfDay(now),
+      },
+      previous: null,
+    };
+  }
+
+  return {
+    current: getDateRangeByPeriod(period, now),
+    previous: getPreviousDateRange(period, now),
+  };
+}
+
 /**
  * Période courante (calendaire).
+ * - all : depuis la 1re activité en base → aujourd'hui (voir resolveStatsDateRanges)
  * - today : jour en cours
  * - week : lundi→dimanche de la semaine courante
  * - month : 1er du mois courant → aujourd'hui
@@ -170,6 +260,8 @@ export function getDateRangeByPeriod(period: string, now: Date): DateRange {
   const month = now.getMonth();
 
   switch (period) {
+    case 'all':
+      return { start: startOfDay(now), end: endOfDay(now) };
     case 'today':
       return { start: startOfDay(now), end: endOfDay(now) };
     case 'week':
@@ -218,6 +310,8 @@ export function getPreviousDateRange(period: string, now: Date): DateRange {
   const month = now.getMonth();
 
   switch (period) {
+    case 'all':
+      return { start: startOfDay(now), end: endOfDay(now) };
     case 'today': {
       const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);

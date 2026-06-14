@@ -18,6 +18,8 @@ import {
   getMemberActivityStats,
   getPreviousDateRange,
   getRevisitsAggregate,
+  emptyTrendsAggregate,
+  resolveStatsDateRanges,
 } from '@/lib/services/teamStatsService';
 import { resolveVisitLocation } from '@/lib/utils/canvassingGeoHelpers';
 
@@ -43,9 +45,10 @@ export async function GET(request: NextRequest) {
     
     // Calculer les dates basées sur la période
     const now = new Date();
-    const { start: startDate, end: endDate } = getDateRangeByPeriod(period, now);
-    const previousDateRange = getPreviousDateRange(period, now);
-    const currentRange = { start: startDate, end: endDate };
+    const { current: currentRange, previous: previousDateRange } =
+      await resolveStatsDateRanges(period, now, userId);
+    const startDate = currentRange.start;
+    const endDate = currentRange.end;
 
     // Exécuter toutes les requêtes en parallèle
     const [
@@ -110,7 +113,9 @@ export async function GET(request: NextRequest) {
 
       // 7. Enrichissements
       getRevisitsAggregate(startDate, endDate, userId),
-      calculateTrendsForPeriods(currentRange, previousDateRange, userId),
+      previousDateRange
+        ? calculateTrendsForPeriods(currentRange, previousDateRange, userId)
+        : Promise.resolve(emptyTrendsAggregate()),
       getCityStatsAggregate(startDate, endDate, userId),
       enrichVisitHoursWithResponses(userId, startDate, endDate),
       getMemberActivityStats(startDate, endDate, userId),
@@ -155,10 +160,12 @@ export async function GET(request: NextRequest) {
             start: startDate.toISOString(),
             end: endDate.toISOString()
           },
-          previousDateRange: {
-            start: previousDateRange.start.toISOString(),
-            end: previousDateRange.end.toISOString()
-          }
+          previousDateRange: previousDateRange
+            ? {
+                start: previousDateRange.start.toISOString(),
+                end: previousDateRange.end.toISOString(),
+              }
+            : null,
         },
         
         // 1. Données utilisateurs & équipe
