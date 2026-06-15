@@ -6,6 +6,7 @@ import { verifyJwtAuth } from '@/lib/utils/auth-jwt';
 import {
   buildDormantMembersSummary,
   buildGeographicCoverage,
+  buildMembersToFollowUp,
   buildRevisitEfficiency,
   buildTeamBenchmarks,
   buildTodayPulse,
@@ -15,6 +16,7 @@ import {
   enrichVisitHoursWithResponses,
   getCityStatsAggregate,
   getDateRangeByPeriod,
+  getLastFieldActivityByUserIds,
   getMemberActivityStats,
   getPreviousDateRange,
   getRevisitsAggregate,
@@ -121,9 +123,14 @@ export async function GET(request: NextRequest) {
       getMemberActivityStats(startDate, endDate, userId),
     ]);
 
-    const teamBenchmarks = buildTeamBenchmarks(usersData);
-    const usersWithComparison = enrichUsersWithTeamComparison(usersData, teamBenchmarks);
-    const dormantMembers = buildDormantMembersSummary(usersWithComparison);
+    const teamBenchmarks = buildTeamBenchmarks(usersData, memberActivityStats);
+    const usersWithComparison = enrichUsersWithTeamComparison(
+      usersData,
+      teamBenchmarks,
+      memberActivityStats
+    );
+    const dormantMembers = buildDormantMembersSummary(usersWithComparison, teamBenchmarks);
+    const membersToFollowUp = buildMembersToFollowUp(usersWithComparison, teamBenchmarks);
     const revisitEfficiency = buildRevisitEfficiency(revisitsAggregate);
     const geographicCoverage = buildGeographicCoverage(
       cityStats,
@@ -175,6 +182,7 @@ export async function GET(request: NextRequest) {
           activities: userActivities,
           benchmarks: teamBenchmarks,
           dormantMembers,
+          membersToFollowUp,
           memberActivity: memberActivityStats,
           activityRegularity: {
             hasData: memberActivityStats.length > 0,
@@ -276,11 +284,13 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date,
       isActive: true,
       createdAt: true,
       canvassingVisits: {
-        where: startDate ? { 
-          joinedAt: { 
-            gte: startDate,
-            ...(endDate && { lte: endDate })
-          } 
+        where: startDate ? {
+          visit: {
+            createdAt: {
+              gte: startDate,
+              ...(endDate && { lte: endDate }),
+            },
+          },
         } : undefined,
         select: {
           visit: {
@@ -306,16 +316,9 @@ async function getUsersWithPerformance(userId?: string | null, startDate?: Date,
     }
   });
 
-  const lastActivityRows = users.length
-    ? await prisma.userActivity.groupBy({
-        by: ['userId'],
-        where: { userId: { in: users.map((u) => u.id) } },
-        _max: { timestamp: true },
-      })
-    : [];
-  const lastActivityByUserId = new Map(
-    lastActivityRows.map((row) => [row.userId, row._max.timestamp])
-  );
+  const lastActivityByUserId = users.length
+    ? await getLastFieldActivityByUserIds(users.map((user) => user.id))
+    : new Map<number, Date>();
 
   const usersWithFieldTime = await Promise.all(
     users.map(async (user) => {

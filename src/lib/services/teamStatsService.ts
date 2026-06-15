@@ -70,18 +70,72 @@ export interface MemberActivityRow {
   daysWithVisits: number;
   daysWithRevisits: number;
   daysWithActivity: number;
+  /** Alias mobile Individual Performance */
+  activeDays: number;
   calendarDaysInPeriod: number;
   streakDays: number;
   activityRate: number;
 }
 
 export interface TeamBenchmarks {
-  avgVisitsPerMember: number;
+  /** Moyennes calculées sur les membres avec ≥ 1 visite sur la période */
+  avgVisitsPerActiveMember: number;
   avgConversionRate: number;
   avgFieldWindowHours: number;
   avgCompletedInventories: number;
+  avgPerformanceScore: number;
+  avgTotalItems: number;
+  avgActiveDays: number;
   totalMembers: number;
   membersWithVisits: number;
+  /** Alias rétrocompatibilité mobile */
+  avgVisitsPerMember: number;
+}
+
+export interface VsTeamAverageComparison {
+  team: {
+    totalVisits: number;
+    responseRate: number;
+    completedInventories: number;
+    fieldWindowHours: number;
+    performanceScore: number;
+    totalItems: number;
+    activeDays: number;
+  };
+  delta: {
+    totalVisits: number;
+    responseRate: number;
+    completedInventories: number;
+    fieldWindowHours: number;
+    performanceScore: number;
+    totalItems: number;
+    activeDays: number;
+  };
+  /** Alias plats rétrocompatibilité */
+  visitsDelta: number;
+  conversionDelta: number;
+  fieldHoursDelta: number;
+  completedInventoriesDelta: number;
+  performanceScoreDelta: number;
+  activeDaysDelta: number;
+}
+
+export interface MemberToFollowUp {
+  userId: string;
+  name: string;
+  reasons: Array<'zero_visits_in_period' | 'below_team_avg_visits'>;
+  daysSinceLastActivity: number | null;
+  totalVisitsInPeriod: number;
+  teamAvgVisitsInPeriod: number;
+  visitsVsTeamAverage: number;
+  priority: 'high' | 'medium';
+}
+
+export interface MembersToFollowUpSummary {
+  hasData: boolean;
+  count: number;
+  teamAvgVisitsInPeriod: number;
+  members: MemberToFollowUp[];
 }
 
 export interface TodayPulse {
@@ -97,7 +151,18 @@ export interface TodayPulse {
 }
 
 export interface DormantMembersSummary {
+  hasData: boolean;
+  count: number;
+  teamAvgVisitsInPeriod: number;
   zeroVisitsInPeriod: Array<{ userId: string; name: string }>;
+  belowTeamAverage: Array<{
+    userId: string;
+    name: string;
+    totalVisitsInPeriod: number;
+    teamAvgVisitsInPeriod: number;
+    visitsVsTeamAverage: number;
+  }>;
+  /** Informatif uniquement — ne déclenche plus de relance si pins ≥ moyenne équipe */
   inactiveOver7Days: Array<{ userId: string; name: string; daysSinceLastActivity: number | null }>;
 }
 
@@ -1005,6 +1070,7 @@ export async function getMemberActivityStats(
       daysWithVisits: visitDays.size,
       daysWithRevisits: revisitDays.size,
       daysWithActivity: activityDays.size,
+      activeDays: activityDays.size,
       calendarDaysInPeriod: calendarDays,
       streakDays: longestDayStreak(sortedDays),
       activityRate:
@@ -1013,49 +1079,153 @@ export async function getMemberActivityStats(
   });
 }
 
+export function formatLastActivityLabel(daysSinceLastActivity: number | null): string {
+  if (daysSinceLastActivity === null) return 'Never active';
+  if (daysSinceLastActivity === 0) return 'Today';
+  if (daysSinceLastActivity === 1) return '1 day ago';
+  return `${daysSinceLastActivity} days ago`;
+}
+
+export async function getLastFieldActivityByUserIds(
+  userIds: number[]
+): Promise<Map<number, Date>> {
+  if (userIds.length === 0) return new Map();
+
+  const [activityRows, visitRows, revisitRows] = await Promise.all([
+    prisma.userActivity.groupBy({
+      by: ['userId'],
+      where: { userId: { in: userIds } },
+      _max: { timestamp: true },
+    }),
+    prisma.$queryRaw<Array<{ user_id: number; last_at: Date }>>`
+      SELECT
+        cvu.user_id,
+        MAX(GREATEST(cvu.joined_at, cv.created_at)) AS last_at
+      FROM canvassing_visit_users cvu
+      INNER JOIN canvassing_visits cv ON cv.id = cvu.visit_id
+      WHERE cvu.user_id IN (${Prisma.join(userIds)})
+      GROUP BY cvu.user_id
+    `,
+    prisma.revisit.groupBy({
+      by: ['userId'],
+      where: { userId: { in: userIds } },
+      _max: { createdAt: true },
+    }),
+  ]);
+
+  const result = new Map<number, Date>();
+
+  for (const userId of userIds) {
+    const candidates: Date[] = [];
+
+    const activity = activityRows.find((row) => row.userId === userId)?._max.timestamp;
+    if (activity) candidates.push(activity);
+
+    const visit = visitRows.find((row) => Number(row.user_id) === userId)?.last_at;
+    if (visit) candidates.push(new Date(visit));
+
+    const revisit = revisitRows.find((row) => row.userId === userId)?._max.createdAt;
+    if (revisit) candidates.push(revisit);
+
+    if (candidates.length > 0) {
+      result.set(userId, new Date(Math.max(...candidates.map((date) => date.getTime()))));
+    }
+  }
+
+  return result;
+}
+
 export function buildTeamBenchmarks(
   users: Array<{
+    id: string;
     performance: {
       totalVisits: number;
+      totalItems: number;
       responseRate: number;
+      performanceScore: number;
       completedInventories: number;
       fieldTime?: { fieldWindowHours: number } | null;
     };
-  }>
+  }>,
+  memberActivityStats: MemberActivityRow[] = []
 ): TeamBenchmarks {
   const totalMembers = users.length;
-  const membersWithVisits = users.filter((u) => u.performance.totalVisits > 0).length;
+  const activeUsers = users.filter((u) => u.performance.totalVisits > 0);
+  const membersWithVisits = activeUsers.length;
+  const activityByUserId = new Map(memberActivityStats.map((row) => [row.userId, row]));
 
-  if (totalMembers === 0) {
-    return {
-      avgVisitsPerMember: 0,
-      avgConversionRate: 0,
-      avgFieldWindowHours: 0,
-      avgCompletedInventories: 0,
-      totalMembers: 0,
-      membersWithVisits: 0,
-    };
+  const emptyBenchmarks: TeamBenchmarks = {
+    avgVisitsPerActiveMember: 0,
+    avgVisitsPerMember: 0,
+    avgConversionRate: 0,
+    avgFieldWindowHours: 0,
+    avgCompletedInventories: 0,
+    avgPerformanceScore: 0,
+    avgTotalItems: 0,
+    avgActiveDays: 0,
+    totalMembers,
+    membersWithVisits: 0,
+  };
+
+  if (activeUsers.length === 0) {
+    return emptyBenchmarks;
   }
 
-  const sumVisits = users.reduce((s, u) => s + u.performance.totalVisits, 0);
-  const sumConversion = users.reduce((s, u) => s + u.performance.responseRate, 0);
-  const sumFieldHours = users.reduce(
-    (s, u) => s + (u.performance.fieldTime?.fieldWindowHours ?? 0),
+  const sumVisits = activeUsers.reduce((sum, user) => sum + user.performance.totalVisits, 0);
+  const sumConversion = activeUsers.reduce((sum, user) => sum + user.performance.responseRate, 0);
+  const sumFieldHours = activeUsers.reduce(
+    (sum, user) => sum + (user.performance.fieldTime?.fieldWindowHours ?? 0),
     0
   );
-  const sumInventories = users.reduce(
-    (s, u) => s + u.performance.completedInventories,
+  const sumInventories = activeUsers.reduce(
+    (sum, user) => sum + user.performance.completedInventories,
     0
   );
+  const sumPerformanceScore = activeUsers.reduce(
+    (sum, user) => sum + user.performance.performanceScore,
+    0
+  );
+  const sumItems = activeUsers.reduce((sum, user) => sum + user.performance.totalItems, 0);
+  const sumActiveDays = activeUsers.reduce(
+    (sum, user) => sum + (activityByUserId.get(user.id)?.daysWithActivity ?? 0),
+    0
+  );
+  const activeCount = activeUsers.length;
+
+  const avgVisitsPerActiveMember = round1(sumVisits / activeCount);
 
   return {
-    avgVisitsPerMember: round1(sumVisits / totalMembers),
-    avgConversionRate: round1(sumConversion / totalMembers),
-    avgFieldWindowHours: round1(sumFieldHours / totalMembers),
-    avgCompletedInventories: round1(sumInventories / totalMembers),
+    avgVisitsPerActiveMember,
+    avgVisitsPerMember: avgVisitsPerActiveMember,
+    avgConversionRate: round1(sumConversion / activeCount),
+    avgFieldWindowHours: round1(sumFieldHours / activeCount),
+    avgCompletedInventories: round1(sumInventories / activeCount),
+    avgPerformanceScore: round1(sumPerformanceScore / activeCount),
+    avgTotalItems: round1(sumItems / activeCount),
+    avgActiveDays: round1(sumActiveDays / activeCount),
     totalMembers,
     membersWithVisits,
   };
+}
+
+export function shouldFollowUpMember(
+  totalVisitsInPeriod: number,
+  teamAvgVisitsInPeriod: number
+): boolean {
+  return totalVisitsInPeriod === 0 || totalVisitsInPeriod < teamAvgVisitsInPeriod;
+}
+
+export function buildFollowUpReasons(
+  totalVisitsInPeriod: number,
+  teamAvgVisitsInPeriod: number
+): MemberToFollowUp['reasons'] {
+  const reasons: MemberToFollowUp['reasons'] = [];
+  if (totalVisitsInPeriod === 0) {
+    reasons.push('zero_visits_in_period');
+  } else if (totalVisitsInPeriod < teamAvgVisitsInPeriod) {
+    reasons.push('below_team_avg_visits');
+  }
+  return reasons;
 }
 
 export function buildDormantMembersSummary(
@@ -1065,55 +1235,209 @@ export function buildDormantMembersSummary(
     performance: {
       totalVisits: number;
       daysSinceLastActivity: number | null;
+      zeroVisitsInPeriod?: boolean;
+      isDormant?: boolean;
     };
-  }>
+  }>,
+  benchmarks: TeamBenchmarks
 ): DormantMembersSummary {
+  const teamAvgVisitsInPeriod = benchmarks.avgVisitsPerActiveMember;
+
+  const zeroVisitsInPeriod = users
+    .filter((user) => user.performance.zeroVisitsInPeriod ?? user.performance.totalVisits === 0)
+    .map((user) => ({ userId: user.id, name: user.name }));
+
+  const belowTeamAverage = users
+    .filter(
+      (user) =>
+        user.performance.totalVisits > 0 &&
+        user.performance.totalVisits < teamAvgVisitsInPeriod
+    )
+    .map((user) => ({
+      userId: user.id,
+      name: user.name,
+      totalVisitsInPeriod: user.performance.totalVisits,
+      teamAvgVisitsInPeriod,
+      visitsVsTeamAverage: round1(user.performance.totalVisits - teamAvgVisitsInPeriod),
+    }));
+
+  const inactiveOver7Days = users
+    .filter((user) => user.performance.isDormant ?? false)
+    .map((user) => ({
+      userId: user.id,
+      name: user.name,
+      daysSinceLastActivity: user.performance.daysSinceLastActivity,
+    }));
+
+  const followUpIds = new Set([
+    ...zeroVisitsInPeriod.map((member) => member.userId),
+    ...belowTeamAverage.map((member) => member.userId),
+  ]);
+
   return {
-    zeroVisitsInPeriod: users
-      .filter((u) => u.performance.totalVisits === 0)
-      .map((u) => ({ userId: u.id, name: u.name })),
-    inactiveOver7Days: users
-      .filter(
-        (u) =>
-          u.performance.daysSinceLastActivity === null ||
-          u.performance.daysSinceLastActivity > 7
-      )
-      .map((u) => ({
-        userId: u.id,
-        name: u.name,
-        daysSinceLastActivity: u.performance.daysSinceLastActivity,
-      })),
+    hasData: followUpIds.size > 0,
+    count: followUpIds.size,
+    teamAvgVisitsInPeriod,
+    zeroVisitsInPeriod,
+    belowTeamAverage,
+    inactiveOver7Days,
+  };
+}
+
+export function buildMembersToFollowUp(
+  users: Array<{
+    id: string;
+    name: string;
+    performance: {
+      totalVisits: number;
+      daysSinceLastActivity: number | null;
+    };
+  }>,
+  benchmarks: TeamBenchmarks
+): MembersToFollowUpSummary {
+  const teamAvgVisitsInPeriod = benchmarks.avgVisitsPerActiveMember;
+
+  const members = users
+    .filter((user) =>
+      shouldFollowUpMember(user.performance.totalVisits, teamAvgVisitsInPeriod)
+    )
+    .map((user) => {
+      const totalVisitsInPeriod = user.performance.totalVisits;
+      const reasons = buildFollowUpReasons(totalVisitsInPeriod, teamAvgVisitsInPeriod);
+      const visitsVsTeamAverage = round1(totalVisitsInPeriod - teamAvgVisitsInPeriod);
+
+      return {
+        userId: user.id,
+        name: user.name,
+        reasons,
+        daysSinceLastActivity: user.performance.daysSinceLastActivity,
+        totalVisitsInPeriod,
+        teamAvgVisitsInPeriod,
+        visitsVsTeamAverage,
+        priority: totalVisitsInPeriod === 0 ? ('high' as const) : ('medium' as const),
+      };
+    })
+    .sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return a.priority === 'high' ? -1 : 1;
+      }
+      return a.visitsVsTeamAverage - b.visitsVsTeamAverage;
+    });
+
+  return {
+    hasData: members.length > 0,
+    count: members.length,
+    teamAvgVisitsInPeriod,
+    members,
+  };
+}
+
+function buildVsTeamAverageComparison(
+  performance: {
+    totalVisits: number;
+    totalItems: number;
+    responseRate: number;
+    performanceScore: number;
+    completedInventories: number;
+    activeDays?: number;
+    fieldTime?: { fieldWindowHours: number } | null;
+  },
+  benchmarks: TeamBenchmarks
+): VsTeamAverageComparison {
+  const team = {
+    totalVisits: benchmarks.avgVisitsPerActiveMember,
+    responseRate: benchmarks.avgConversionRate,
+    completedInventories: benchmarks.avgCompletedInventories,
+    fieldWindowHours: benchmarks.avgFieldWindowHours,
+    performanceScore: benchmarks.avgPerformanceScore,
+    totalItems: benchmarks.avgTotalItems,
+    activeDays: benchmarks.avgActiveDays,
+  };
+
+  const delta = {
+    totalVisits: round1(performance.totalVisits - team.totalVisits),
+    responseRate: round1(performance.responseRate - team.responseRate),
+    completedInventories: round1(performance.completedInventories - team.completedInventories),
+    fieldWindowHours: round1(
+      (performance.fieldTime?.fieldWindowHours ?? 0) - team.fieldWindowHours
+    ),
+    performanceScore: round1(performance.performanceScore - team.performanceScore),
+    totalItems: round1(performance.totalItems - team.totalItems),
+    activeDays: round1((performance.activeDays ?? 0) - team.activeDays),
+  };
+
+  return {
+    team,
+    delta,
+    visitsDelta: delta.totalVisits,
+    conversionDelta: delta.responseRate,
+    fieldHoursDelta: delta.fieldWindowHours,
+    completedInventoriesDelta: delta.completedInventories,
+    performanceScoreDelta: delta.performanceScore,
+    activeDaysDelta: delta.activeDays,
   };
 }
 
 export function enrichUsersWithTeamComparison<
   T extends {
+    id: string;
     performance: {
       totalVisits: number;
+      totalItems: number;
       responseRate: number;
+      performanceScore: number;
+      completedInventories: number;
+      daysSinceLastActivity: number | null;
+      zeroVisitsInPeriod?: boolean;
+      isDormant?: boolean;
       fieldTime?: { fieldWindowHours: number } | null;
     };
   },
->(users: T[], benchmarks: TeamBenchmarks): Array<
+>(
+  users: T[],
+  benchmarks: TeamBenchmarks,
+  memberActivityStats: MemberActivityRow[] = []
+): Array<
   T & {
-    vsTeamAverage: {
-      visitsDelta: number;
-      conversionDelta: number;
-      fieldHoursDelta: number;
+    performance: T['performance'] & {
+      activeDays: number;
+      daysWithVisits: number;
+      daysWithRevisits: number;
+      streakDays: number;
+      activityRate: number;
+      calendarDaysInPeriod: number;
+      lastActivityLabel: string;
+      needsFollowUp: boolean;
     };
+    vsTeamAverage: VsTeamAverageComparison;
   }
 > {
-  return users.map((user) => ({
-    ...user,
-    vsTeamAverage: {
-      visitsDelta: round1(user.performance.totalVisits - benchmarks.avgVisitsPerMember),
-      conversionDelta: round1(user.performance.responseRate - benchmarks.avgConversionRate),
-      fieldHoursDelta: round1(
-        (user.performance.fieldTime?.fieldWindowHours ?? 0) -
-          benchmarks.avgFieldWindowHours
-      ),
-    },
-  }));
+  const activityByUserId = new Map(memberActivityStats.map((row) => [row.userId, row]));
+
+  return users.map((user) => {
+    const activity = activityByUserId.get(user.id);
+    const activeDays = activity?.daysWithActivity ?? 0;
+    const teamAvgVisits = benchmarks.avgVisitsPerActiveMember;
+    const needsFollowUp = shouldFollowUpMember(user.performance.totalVisits, teamAvgVisits);
+
+    const enrichedPerformance = {
+      ...user.performance,
+      activeDays,
+      daysWithVisits: activity?.daysWithVisits ?? 0,
+      daysWithRevisits: activity?.daysWithRevisits ?? 0,
+      streakDays: activity?.streakDays ?? 0,
+      activityRate: activity?.activityRate ?? 0,
+      calendarDaysInPeriod: activity?.calendarDaysInPeriod ?? 0,
+      lastActivityLabel: formatLastActivityLabel(user.performance.daysSinceLastActivity),
+      needsFollowUp,
+    };
+
+    return {
+      ...user,
+      performance: enrichedPerformance,
+      vsTeamAverage: buildVsTeamAverageComparison(enrichedPerformance, benchmarks),
+    };
+  });
 }
 
 export async function buildTodayPulse(
