@@ -6,32 +6,11 @@ import { CrmAgent, parseAgentsJson } from '@/lib/services/crmCanvassingService';
 export { parseAgentsJson };
 export type { CrmAgent };
 
-export type FeatureFillStatus = 'no_features' | 'partial' | 'fully_filled';
-
 export interface CrmInventoryOwner {
   crmEmail: string;
   userName: string;
   maildropUserId: number;
   crmUserId?: number;
-}
-
-export interface CrmInventoryFeatureSummary {
-  filledCount: number;
-  activeFeaturesCatalogTotal: number;
-  status: FeatureFillStatus;
-}
-
-export interface CrmStructuredFeature {
-  id: number;
-  name: unknown;
-  type: string;
-  currentValue: unknown;
-}
-
-export interface CrmStructuredFeatureCategory {
-  id: number;
-  name: unknown;
-  features: CrmStructuredFeature[];
 }
 
 export interface CrmInventoryImage {
@@ -79,11 +58,6 @@ export interface CrmInventory {
   startedAt: Date | null;
   completedAt: Date | null;
   owner: CrmInventoryOwner;
-  features: Record<string, unknown>;
-  featuresUpdatedAt: Date | null;
-  schemaVersion: number | null;
-  structuredFeatures: CrmStructuredFeatureCategory[];
-  featureSummary: CrmInventoryFeatureSummary;
   /** Toutes les images : couverture + images des pièces */
   images: CrmInventoryImage[];
   rooms: CrmInventoryRoom[];
@@ -91,149 +65,10 @@ export interface CrmInventory {
 
 export interface CrmInventoryStats {
   total: number;
-  activeFeaturesCatalogTotal: number;
-  withFeatures: number;
-  fullyFilled: number;
-  noFeatures: number;
-  partiallyFilled: number;
 }
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
-}
-
-function isFeatureValueFilled(value: unknown): boolean {
-  if (value === null || value === undefined) return false;
-  if (typeof value === 'string') return value.trim() !== '';
-  return true;
-}
-
-function countMobileFilled(features: Record<string, unknown>): number {
-  return Object.values(features).filter(isFeatureValueFilled).length;
-}
-
-function isEavValueFilled(
-  pf: {
-    valueBool: boolean | null;
-    valueText: unknown;
-    valueInt: number | null;
-    valueFloat: number | null;
-    valueFeatureOptionId: number | null;
-    propertyFeature: { type: string };
-  }
-): boolean {
-  switch (pf.propertyFeature.type) {
-    case 'bool':
-      return pf.valueBool !== null;
-    case 'text':
-      return pf.valueText !== null;
-    case 'integer':
-      return pf.valueInt !== null;
-    case 'float':
-      return pf.valueFloat !== null;
-    case 'select':
-      return pf.valueFeatureOptionId !== null;
-    default:
-      return false;
-  }
-}
-
-function computeFilledCount(
-  featuresData: { features: unknown } | null,
-  propertyFeatures: Array<{
-    valueBool: boolean | null;
-    valueText: unknown;
-    valueInt: number | null;
-    valueFloat: number | null;
-    valueFeatureOptionId: number | null;
-    propertyFeature: { type: string };
-  }>
-): number {
-  const mobileFeatures =
-    featuresData?.features && typeof featuresData.features === 'object' && !Array.isArray(featuresData.features)
-      ? (featuresData.features as Record<string, unknown>)
-      : {};
-
-  const mobileFilled = countMobileFilled(mobileFeatures);
-  const eavFilled = propertyFeatures.filter(isEavValueFilled).length;
-
-  return Math.max(mobileFilled, eavFilled);
-}
-
-function computeFeatureStatus(
-  filledCount: number,
-  activeFeaturesCatalogTotal: number
-): FeatureFillStatus {
-  if (filledCount === 0) return 'no_features';
-  if (
-    activeFeaturesCatalogTotal > 0 &&
-    filledCount >= activeFeaturesCatalogTotal
-  ) {
-    return 'fully_filled';
-  }
-  return 'partial';
-}
-
-function buildStructuredFeatures(
-  propertyFeatures: Array<{
-    valueBool: boolean | null;
-    valueText: unknown;
-    valueInt: number | null;
-    valueFloat: number | null;
-    valueFeatureOption: { id: number; value: unknown } | null;
-    propertyFeature: {
-      id: number;
-      name: unknown;
-      type: string;
-      category: { id: number; name: unknown };
-    };
-  }>
-): CrmStructuredFeatureCategory[] {
-  const grouped = propertyFeatures.reduce(
-    (acc, pf) => {
-      const categoryId = pf.propertyFeature.category.id;
-      if (!acc[categoryId]) {
-        acc[categoryId] = {
-          id: categoryId,
-          name: pf.propertyFeature.category.name,
-          features: [],
-        };
-      }
-
-      let currentValue: unknown = null;
-      switch (pf.propertyFeature.type) {
-        case 'bool':
-          currentValue = pf.valueBool;
-          break;
-        case 'text':
-          currentValue = pf.valueText;
-          break;
-        case 'integer':
-          currentValue = pf.valueInt;
-          break;
-        case 'float':
-          currentValue = pf.valueFloat;
-          break;
-        case 'select':
-          currentValue = pf.valueFeatureOption
-            ? { id: pf.valueFeatureOption.id, value: pf.valueFeatureOption.value }
-            : null;
-          break;
-      }
-
-      acc[categoryId].features.push({
-        id: pf.propertyFeature.id,
-        name: pf.propertyFeature.name,
-        type: pf.propertyFeature.type,
-        currentValue,
-      });
-
-      return acc;
-    },
-    {} as Record<number, CrmStructuredFeatureCategory>
-  );
-
-  return Object.values(grouped);
 }
 
 function buildWhereClause(
@@ -307,9 +142,11 @@ type RoomRow = {
   images: RoomImageRow[];
 };
 
-function buildRoomsAndImages(
-  property: { id: number; imagePath: string | null; rooms: RoomRow[] }
-): { rooms: CrmInventoryRoom[]; images: CrmInventoryImage[] } {
+function buildRoomsAndImages(property: {
+  id: number;
+  imagePath: string | null;
+  rooms: RoomRow[];
+}): { rooms: CrmInventoryRoom[]; images: CrmInventoryImage[] } {
   const images: CrmInventoryImage[] = [];
 
   if (property.imagePath) {
@@ -321,21 +158,9 @@ function buildRoomsAndImages(
     });
   }
 
-  const rooms: CrmInventoryRoom[] = property.rooms.map((room) => {
-    const roomImages = room.images.map((img) => ({
-      id: img.id,
-      imagePath: img.imagePath,
-      description: img.description,
-      name: img.name,
-      notes: img.notes,
-      condition: img.condition,
-      sortOrder: img.sortOrder,
-      isMainImage: img.isMainImage,
-      createdAt: img.createdAt,
-    }));
-
-    for (const img of room.images) {
-      images.push({
+  const rooms = property.rooms.map((room) => {
+    const roomImages = room.images.map((img) => {
+      const mapped: CrmInventoryImage = {
         id: img.id,
         imagePath: img.imagePath,
         source: 'room',
@@ -349,8 +174,20 @@ function buildRoomsAndImages(
         sortOrder: img.sortOrder,
         isMainImage: img.isMainImage,
         createdAt: img.createdAt,
-      });
-    }
+      };
+      images.push(mapped);
+      return {
+        id: img.id,
+        imagePath: img.imagePath,
+        description: img.description,
+        name: img.name,
+        notes: img.notes,
+        condition: img.condition,
+        sortOrder: img.sortOrder,
+        isMainImage: img.isMainImage,
+        createdAt: img.createdAt,
+      };
+    });
 
     return {
       id: room.id,
@@ -383,45 +220,13 @@ type PropertyRow = {
   startedAt: Date | null;
   completedAt: Date | null;
   user: { id: number; email: string; name: string };
-  featuresData: {
-    features: unknown;
-    updatedAt: Date;
-    schemaVersion: number;
-  } | null;
-  propertyFeatures: Array<{
-    valueBool: boolean | null;
-    valueText: unknown;
-    valueInt: number | null;
-    valueFloat: number | null;
-    valueFeatureOptionId: number | null;
-    valueFeatureOption: { id: number; value: unknown } | null;
-    propertyFeature: {
-      id: number;
-      name: unknown;
-      type: string;
-      category: { id: number; name: unknown };
-    };
-  }>;
   rooms: RoomRow[];
 };
 
 function formatInventory(
   property: PropertyRow,
-  agentsByEmail: Map<string, CrmAgent>,
-  activeFeaturesCatalogTotal: number
+  agentsByEmail: Map<string, CrmAgent>
 ): CrmInventory {
-  const filledCount = computeFilledCount(
-    property.featuresData,
-    property.propertyFeatures
-  );
-
-  const mobileFeatures =
-    property.featuresData?.features &&
-    typeof property.featuresData.features === 'object' &&
-    !Array.isArray(property.featuresData.features)
-      ? (property.featuresData.features as Record<string, unknown>)
-      : {};
-
   const owner = formatOwner(property.user, agentsByEmail);
   const { rooms, images } = buildRoomsAndImages(property);
 
@@ -444,78 +249,14 @@ function formatInventory(
     startedAt: property.startedAt,
     completedAt: property.completedAt,
     owner,
-    features: mobileFeatures,
-    featuresUpdatedAt: property.featuresData?.updatedAt ?? null,
-    schemaVersion: property.featuresData?.schemaVersion ?? null,
-    structuredFeatures: buildStructuredFeatures(property.propertyFeatures),
-    featureSummary: {
-      filledCount,
-      activeFeaturesCatalogTotal,
-      status: computeFeatureStatus(filledCount, activeFeaturesCatalogTotal),
-    },
     images,
     rooms,
-  };
-}
-
-function computeStats(
-  rows: Array<{
-    featuresData: { features: unknown } | null;
-    propertyFeatures: Array<{
-      valueBool: boolean | null;
-      valueText: unknown;
-      valueInt: number | null;
-      valueFloat: number | null;
-      valueFeatureOptionId: number | null;
-      propertyFeature: { type: string };
-    }>;
-  }>,
-  activeFeaturesCatalogTotal: number
-): CrmInventoryStats {
-  let withFeatures = 0;
-  let fullyFilled = 0;
-  let noFeatures = 0;
-
-  for (const row of rows) {
-    const filledCount = computeFilledCount(row.featuresData, row.propertyFeatures);
-    const status = computeFeatureStatus(filledCount, activeFeaturesCatalogTotal);
-
-    if (status === 'no_features') noFeatures++;
-    else if (status === 'fully_filled') fullyFilled++;
-    else withFeatures++;
-  }
-
-  const total = rows.length;
-  const partiallyFilled = withFeatures;
-
-  return {
-    total,
-    activeFeaturesCatalogTotal,
-    withFeatures: withFeatures + fullyFilled,
-    fullyFilled,
-    noFeatures,
-    partiallyFilled,
   };
 }
 
 const propertyInclude = {
   user: {
     select: { id: true, email: true, name: true },
-  },
-  featuresData: {
-    select: { features: true, updatedAt: true, schemaVersion: true },
-  },
-  propertyFeatures: {
-    include: {
-      propertyFeature: {
-        include: { category: true },
-      },
-      valueFeatureOption: true,
-    },
-    orderBy: [
-      { propertyFeature: { category: { sort: 'asc' as const } } },
-      { propertyFeature: { sort: 'asc' as const } },
-    ],
   },
   rooms: {
     select: {
@@ -563,28 +304,8 @@ export async function getCrmInventoryData(params: {
   const where = buildWhereClause(scope, agents, period, startDate, endDate);
   const agentsByEmail = new Map((agents ?? []).map((a) => [a.email, a]));
 
-  const activeFeaturesCatalogTotal = await prisma.propertyFeature.count({
-    where: { isActive: true },
-  });
-
-  const [total, statsRows, properties] = await Promise.all([
+  const [total, properties] = await Promise.all([
     prisma.property.count({ where }),
-    prisma.property.findMany({
-      where,
-      select: {
-        featuresData: { select: { features: true } },
-        propertyFeatures: {
-          select: {
-            valueBool: true,
-            valueText: true,
-            valueInt: true,
-            valueFloat: true,
-            valueFeatureOptionId: true,
-            propertyFeature: { select: { type: true } },
-          },
-        },
-      },
-    }),
     prisma.property.findMany({
       where,
       include: propertyInclude,
@@ -594,13 +315,11 @@ export async function getCrmInventoryData(params: {
     }),
   ]);
 
-  const stats = computeStats(statsRows, activeFeaturesCatalogTotal);
-
   return {
     inventories: properties.map((p) =>
-      formatInventory(p as PropertyRow, agentsByEmail, activeFeaturesCatalogTotal)
+      formatInventory(p as PropertyRow, agentsByEmail)
     ),
-    stats,
+    stats: { total },
     pagination: {
       total,
       limit,

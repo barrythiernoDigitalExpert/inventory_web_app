@@ -70,51 +70,49 @@ model User {
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  properties          Property[] // Properties created by this user
-  sharedProperties    PropertyShare[] // Properties shared with this user
-  inventorySessions   InventorySession[] // Track time spent on inventories
-  canvassingVisits    CanvassingVisitUser[] // Canvassing visits by this user
-  activities          UserActivity[] // User activity tracking
-  visitComments       CanvassingVisitComment[] // Comments on canvassing visits
-  revisits            Revisit[] // Revisits performed by this user
-  updatedFeaturesData PropertyFeaturesData[] // Mobile features data updated by this user
+  properties        Property[] // Properties created by this user
+  sharedProperties  PropertyShare[] // Properties shared with this user
+  inventorySessions InventorySession[] // Track time spent on inventories
+  canvassingVisits  CanvassingVisitUser[] // Canvassing visits by this user
+  activities        UserActivity[] // User activity tracking
+  visitComments     CanvassingVisitComment[] // Comments on canvassing visits
+  revisits          Revisit[] // Revisits performed by this user
+  featureSheets     FeatureSheet[] // Named feature value sheets (independent of properties)
 
   @@map("users")
 }
 
 model Property {
-  id                Int                       @id @default(autoincrement())
-  reference         String                    @unique
+  id                Int                @id @default(autoincrement())
+  reference         String             @unique
   name              String?
   // Address fields
   street            String?
   city              String?
   state             String?
-  postalCode        String?                   @map("postal_code")
+  postalCode        String?            @map("postal_code")
   country           String?
   address           String?
   // End of address fields
-  imagePath         String?                   @map("image_path")
+  imagePath         String?            @map("image_path")
   // Summary data for performance optimization
-  roomCount         Int                       @default(0) @map("room_count")
-  imageCount        Int                       @default(0) @map("image_count")
+  roomCount         Int                @default(0) @map("room_count")
+  imageCount        Int                @default(0) @map("image_count")
   // Inventory status
-  inventoryStatus   InventoryStatus           @default(DRAFT) @map("inventory_status")
-  startedAt         DateTime?                 @map("started_at")
-  completedAt       DateTime?                 @map("completed_at")
+  inventoryStatus   InventoryStatus    @default(DRAFT) @map("inventory_status")
+  startedAt         DateTime?          @map("started_at")
+  completedAt       DateTime?          @map("completed_at")
   // Timestamps
-  createdAt         DateTime                  @default(now()) @map("created_at")
-  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
   // Relations
-  userId            Int                       @map("user_id")
-  user              User                      @relation(fields: [userId], references: [id])
+  userId            Int                @map("user_id")
+  user              User               @relation(fields: [userId], references: [id])
   rooms             Room[]
   sharedWith        PropertyShare[]
   inventorySessions InventorySession[]
   // Client information fields
-  listingPerson     String?                   @map("listing_person")
-  propertyFeatures  PropertyPropertyFeature[]
-  featuresData      PropertyFeaturesData? // Mobile flat-JSON features
+  listingPerson     String?            @map("listing_person")
 
   @@index([userId])
   @@index([inventoryStatus])
@@ -218,9 +216,8 @@ model PropertyFeature {
   updatedAt  DateTime            @updatedAt @map("updated_at")
 
   // Relations
-  category   PropertyFeatureCategory   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  options    PropertyFeatureOption[]
-  properties PropertyPropertyFeature[]
+  category PropertyFeatureCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  options  PropertyFeatureOption[]
 
   @@index([categoryId])
   @@index([type])
@@ -238,36 +235,10 @@ model PropertyFeatureOption {
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   // Relations
-  propertyFeature  PropertyFeature           @relation(fields: [propertyFeatureId], references: [id], onDelete: Cascade)
-  propertyFeatures PropertyPropertyFeature[]
+  propertyFeature PropertyFeature @relation(fields: [propertyFeatureId], references: [id], onDelete: Cascade)
 
   @@index([propertyFeatureId])
   @@map("property_feature_options")
-}
-
-// NEW: Junction table for Property and PropertyFeature with values
-model PropertyPropertyFeature {
-  id                   Int      @id @default(autoincrement())
-  propertyFeatureId    Int      @map("property_feature_id")
-  propertyId           Int      @map("property_id")
-  valueText            Json?    @map("value_text") // For text type, multilingual
-  valueBool            Boolean? @map("value_bool") // For boolean type
-  valueInt             Int?     @map("value_int") // For integer type
-  valueFloat           Float?   @map("value_float") // For float type
-  valueFeatureOptionId Int?     @map("value_feature_option_id") // For select type
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  property           Property               @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyFeature    PropertyFeature        @relation(fields: [propertyFeatureId], references: [id], onDelete: Cascade)
-  valueFeatureOption PropertyFeatureOption? @relation(fields: [valueFeatureOptionId], references: [id], onDelete: Cascade)
-
-  @@unique([propertyId, propertyFeatureId])
-  @@index([propertyFeatureId])
-  @@index([propertyId])
-  @@index([valueFeatureOptionId])
-  @@map("property_property_feature")
 }
 
 // Global application configuration (key-value store)
@@ -283,24 +254,23 @@ model SystemConfig {
   @@map("system_configs")
 }
 
-// Mobile flat-JSON features per property (one row per property).
-// Distinct from the structured PropertyPropertyFeature EAV table:
-// this record stores the raw key→value object sent by the mobile app
-// without needing the full feature-definition catalogue.
-model PropertyFeaturesData {
-  id              Int      @id @default(autoincrement())
-  propertyId      Int      @unique @map("property_id")
-  features        Json     @default("{}")
-  schemaVersion   Int      @default(1) @map("schema_version")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-  updatedByUserId Int?     @map("updated_by_user_id")
+// Named feature sheet — independent from properties (Option A).
+// `values` is a flat key→value object (catalog keys from template / catalogue).
+model FeatureSheet {
+  id            Int      @id @default(autoincrement())
+  name          String
+  values        Json     @default("{}")
+  schemaVersion Int      @default(1) @map("schema_version")
+  userId        Int      @map("user_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  updatedByUser User?    @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([propertyId])
+  @@index([userId])
   @@index([updatedAt])
-  @@map("property_features_data")
+  @@index([name])
+  @@map("feature_sheets")
 }
 
 // NEW: Canvassing Visit Model

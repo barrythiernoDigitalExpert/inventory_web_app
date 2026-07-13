@@ -220,19 +220,6 @@ exports.Prisma.PropertyFeatureOptionScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.PropertyPropertyFeatureScalarFieldEnum = {
-  id: 'id',
-  propertyFeatureId: 'propertyFeatureId',
-  propertyId: 'propertyId',
-  valueText: 'valueText',
-  valueBool: 'valueBool',
-  valueInt: 'valueInt',
-  valueFloat: 'valueFloat',
-  valueFeatureOptionId: 'valueFeatureOptionId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.SystemConfigScalarFieldEnum = {
   id: 'id',
   key: 'key',
@@ -241,13 +228,14 @@ exports.Prisma.SystemConfigScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.PropertyFeaturesDataScalarFieldEnum = {
+exports.Prisma.FeatureSheetScalarFieldEnum = {
   id: 'id',
-  propertyId: 'propertyId',
-  features: 'features',
+  name: 'name',
+  values: 'values',
   schemaVersion: 'schemaVersion',
-  updatedAt: 'updatedAt',
-  updatedByUserId: 'updatedByUserId'
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.CanvassingVisitScalarFieldEnum = {
@@ -399,11 +387,6 @@ exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
-exports.Prisma.NullableJsonNullValueInput = {
-  DbNull: Prisma.DbNull,
-  JsonNull: Prisma.JsonNull
-};
-
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -507,9 +490,8 @@ exports.Prisma.ModelName = {
   PropertyFeatureCategory: 'PropertyFeatureCategory',
   PropertyFeature: 'PropertyFeature',
   PropertyFeatureOption: 'PropertyFeatureOption',
-  PropertyPropertyFeature: 'PropertyPropertyFeature',
   SystemConfig: 'SystemConfig',
-  PropertyFeaturesData: 'PropertyFeaturesData',
+  FeatureSheet: 'FeatureSheet',
   CanvassingVisit: 'CanvassingVisit',
   InventorySession: 'InventorySession',
   SystemMetrics: 'SystemMetrics',

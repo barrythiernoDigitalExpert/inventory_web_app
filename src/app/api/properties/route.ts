@@ -27,8 +27,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Parse query parameters
-    const { searchParams } = new URL(request.url);
-    const includeFeatures = searchParams.get('include_features') === 'true';
     
     // Get user with role from session email
     user = await prisma.user.findUnique({
@@ -46,196 +44,66 @@ export async function GET(request: NextRequest) {
     // Optimize query based on user role
     const isAdmin = user.role === UserRole.ADMIN;
     
-    if (includeFeatures) {
-      // Separate query for properties with features
-      const propertiesWithFeatures = await prisma.property.findMany({
-        where: isAdmin 
-          ? undefined 
-          : {
-              OR: [
-                { userId: user.id },
-                {
-                  sharedWith: {
-                    some: {
-                      userId: user.id
-                    }
+    const properties = await prisma.property.findMany({
+      where: isAdmin 
+        ? undefined 
+        : {
+            OR: [
+              { userId: user.id },
+              {
+                sharedWith: {
+                  some: {
+                    userId: user.id
                   }
                 }
-              ]
-            },
-        include: {
-          user: isAdmin ? {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          } : false,
-          propertyFeatures: {
-            include: {
-              propertyFeature: {
-                include: {
-                  category: true
-                }
-              },
-              valueFeatureOption: true
-            },
-            orderBy: [
-              { propertyFeature: { category: { sort: 'asc' } } },
-              { propertyFeature: { sort: 'asc' } }
+              }
             ]
+          },
+      select: {
+        id: true,
+        reference: true,
+        name: true,
+        imagePath: true,
+        address: true,
+        roomCount: true,
+        imageCount: true,
+        createdAt: true,
+        listingPerson: true,
+        userId: true,
+        user: isAdmin ? {
+          select: {
+            id: true,
+            name: true,
+            email: true
           }
-        },
-        take: 100,
-        orderBy: {
-          createdAt: 'desc'
+        } : false
+      },
+      take: 100,
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    const duration = Date.now() - startTime;
+    loggingService.logActivity(user.id, ActivityType.VIEW_PROPERTY, EntityType.PROPERTY, undefined, { userRole: user.role }, context.deviceType, duration).catch(() => {});
+    return NextResponse.json(properties.map(property => ({
+      id: property.id.toString(),
+      reference: property.reference,
+      name: property.name || '',
+      image: property.imagePath || '',
+      address: property.address || '',
+      roomCount: property.roomCount,
+      listingPerson: property.listingPerson,
+      imageCount: property.imageCount,
+      createdAt: property.createdAt.toISOString(),
+      ...(isAdmin && property.user && { 
+        owner: {
+          id: property.user.id,
+          name: property.user.name,
+          email: property.user.email
         }
-      });
-
-      // Transform data for response with features
-      const duration = Date.now() - startTime;
-      loggingService.logActivity(user.id, ActivityType.VIEW_PROPERTY, EntityType.PROPERTY, undefined, { includeFeatures: true, userRole: user.role }, context.deviceType, duration).catch(() => {});
-      return NextResponse.json(propertiesWithFeatures.map(property => {
-        const baseProperty: any = {
-          id: property.id.toString(),
-          reference: property.reference,
-          name: property.name || '',
-          image: property.imagePath || '',
-          address: property.address || '',
-          roomCount: property.roomCount,
-          listingPerson: property.listingPerson,
-          imageCount: property.imageCount,
-          createdAt: property.createdAt.toISOString(),
-          // Include owner info for admin users
-          ...(isAdmin && property.user && { 
-            owner: {
-              id: property.user.id,
-              name: property.user.name,
-              email: property.user.email
-            }
-          })
-        };
-
-        // Add features
-        if (property.propertyFeatures && property.propertyFeatures.length > 0) {
-          const groupedFeatures = property.propertyFeatures.reduce((acc: Record<number, any>, pf: any) => {
-            const categoryId = pf.propertyFeature.category.id;
-            const categoryName = pf.propertyFeature.category.name;
-            
-            if (!acc[categoryId]) {
-              acc[categoryId] = {
-                id: categoryId,
-                name: categoryName,
-                features: []
-              };
-            }
-            
-            // Determine the current value based on feature type
-            let currentValue = null;
-            switch (pf.propertyFeature.type) {
-              case 'bool':
-                currentValue = pf.valueBool;
-                break;
-              case 'text':
-                currentValue = pf.valueText;
-                break;
-              case 'integer':
-                currentValue = pf.valueInt;
-                break;
-              case 'float':
-                currentValue = pf.valueFloat;
-                break;
-              case 'select':
-                currentValue = pf.valueFeatureOption ? {
-                  id: pf.valueFeatureOption.id,
-                  value: pf.valueFeatureOption.value
-                } : null;
-                break;
-            }
-            
-            acc[categoryId].features.push({
-              id: pf.propertyFeature.id,
-              name: pf.propertyFeature.name,
-              type: pf.propertyFeature.type,
-              currentValue
-            });
-            
-            return acc;
-          }, {});
-
-          baseProperty.features = Object.values(groupedFeatures);
-        } else {
-          baseProperty.features = [];
-        }
-
-        return baseProperty;
-      }));
-    } else {
-      // Original query without features
-      const properties = await prisma.property.findMany({
-        where: isAdmin 
-          ? undefined 
-          : {
-              OR: [
-                { userId: user.id },
-                {
-                  sharedWith: {
-                    some: {
-                      userId: user.id
-                    }
-                  }
-                }
-              ]
-            },
-        select: {
-          id: true,
-          reference: true,
-          name: true,
-          imagePath: true,
-          address: true,
-          roomCount: true,
-          imageCount: true,
-          createdAt: true,
-          listingPerson: true,
-          userId: true,
-          user: isAdmin ? {
-            select: {
-              id: true,
-              name: true,
-              email: true
-            }
-          } : false
-        },
-        take: 100,
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
-      
-      // Transform data for response
-      const duration = Date.now() - startTime;
-      // Fire-and-forget logging (non-blocking)
-      loggingService.logActivity(user.id, ActivityType.VIEW_PROPERTY, EntityType.PROPERTY, undefined, { includeFeatures: false, userRole: user.role }, context.deviceType, duration).catch(() => {});
-      return NextResponse.json(properties.map(property => ({
-        id: property.id.toString(),
-        reference: property.reference,
-        name: property.name || '',
-        image: property.imagePath || '',
-        address: property.address || '',
-        roomCount: property.roomCount,
-        listingPerson: property.listingPerson,
-        imageCount: property.imageCount,
-        createdAt: property.createdAt.toISOString(),
-        // Include owner info for admin users
-        ...(isAdmin && property.user && { 
-          owner: {
-            id: property.user.id,
-            name: property.user.name,
-            email: property.user.email
-          }
-        })
-      })));
-    }
+      })
+    })));
     
   } catch (error) {
     await loggingService.logError(

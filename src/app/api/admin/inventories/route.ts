@@ -9,7 +9,7 @@ import { Period } from '@/lib/utils/periodFilter';
 /**
  * GET /api/admin/inventories
  *
- * Route CRM — inventaires (properties) avec features liées et statistiques globales.
+ * Route CRM — inventaires (properties) et statistiques globales.
  *
  * Auth : Authorization: Bearer {MAILDROP_ADMIN_TOKEN}
  *

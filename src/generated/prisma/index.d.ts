@@ -54,20 +54,15 @@ export type PropertyFeature = $Result.DefaultSelection<Prisma.$PropertyFeaturePa
  */
 export type PropertyFeatureOption = $Result.DefaultSelection<Prisma.$PropertyFeatureOptionPayload>
 /**
- * Model PropertyPropertyFeature
- * 
- */
-export type PropertyPropertyFeature = $Result.DefaultSelection<Prisma.$PropertyPropertyFeaturePayload>
-/**
  * Model SystemConfig
  * 
  */
 export type SystemConfig = $Result.DefaultSelection<Prisma.$SystemConfigPayload>
 /**
- * Model PropertyFeaturesData
+ * Model FeatureSheet
  * 
  */
-export type PropertyFeaturesData = $Result.DefaultSelection<Prisma.$PropertyFeaturesDataPayload>
+export type FeatureSheet = $Result.DefaultSelection<Prisma.$FeatureSheetPayload>
 /**
  * Model CanvassingVisit
  * 
@@ -465,16 +460,6 @@ export class PrismaClient<
   get propertyFeatureOption(): Prisma.PropertyFeatureOptionDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.propertyPropertyFeature`: Exposes CRUD operations for the **PropertyPropertyFeature** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more PropertyPropertyFeatures
-    * const propertyPropertyFeatures = await prisma.propertyPropertyFeature.findMany()
-    * ```
-    */
-  get propertyPropertyFeature(): Prisma.PropertyPropertyFeatureDelegate<ExtArgs, ClientOptions>;
-
-  /**
    * `prisma.systemConfig`: Exposes CRUD operations for the **SystemConfig** model.
     * Example usage:
     * ```ts
@@ -485,14 +470,14 @@ export class PrismaClient<
   get systemConfig(): Prisma.SystemConfigDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.propertyFeaturesData`: Exposes CRUD operations for the **PropertyFeaturesData** model.
+   * `prisma.featureSheet`: Exposes CRUD operations for the **FeatureSheet** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more PropertyFeaturesData
-    * const propertyFeaturesData = await prisma.propertyFeaturesData.findMany()
+    * // Fetch zero or more FeatureSheets
+    * const featureSheets = await prisma.featureSheet.findMany()
     * ```
     */
-  get propertyFeaturesData(): Prisma.PropertyFeaturesDataDelegate<ExtArgs, ClientOptions>;
+  get featureSheet(): Prisma.FeatureSheetDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.canvassingVisit`: Exposes CRUD operations for the **CanvassingVisit** model.
@@ -1041,9 +1026,8 @@ export namespace Prisma {
     PropertyFeatureCategory: 'PropertyFeatureCategory',
     PropertyFeature: 'PropertyFeature',
     PropertyFeatureOption: 'PropertyFeatureOption',
-    PropertyPropertyFeature: 'PropertyPropertyFeature',
     SystemConfig: 'SystemConfig',
-    PropertyFeaturesData: 'PropertyFeaturesData',
+    FeatureSheet: 'FeatureSheet',
     CanvassingVisit: 'CanvassingVisit',
     InventorySession: 'InventorySession',
     SystemMetrics: 'SystemMetrics',
@@ -1072,7 +1056,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "property" | "propertyShare" | "room" | "roomImage" | "propertyFeatureCategory" | "propertyFeature" | "propertyFeatureOption" | "propertyPropertyFeature" | "systemConfig" | "propertyFeaturesData" | "canvassingVisit" | "inventorySession" | "systemMetrics" | "syncLog" | "userActivity" | "visitConfiguration" | "canvassingVisitUser" | "visitRevisit" | "canvassingVisitComment" | "revisit"
+      modelProps: "user" | "property" | "propertyShare" | "room" | "roomImage" | "propertyFeatureCategory" | "propertyFeature" | "propertyFeatureOption" | "systemConfig" | "featureSheet" | "canvassingVisit" | "inventorySession" | "systemMetrics" | "syncLog" | "userActivity" | "visitConfiguration" | "canvassingVisitUser" | "visitRevisit" | "canvassingVisitComment" | "revisit"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1668,80 +1652,6 @@ export namespace Prisma {
           }
         }
       }
-      PropertyPropertyFeature: {
-        payload: Prisma.$PropertyPropertyFeaturePayload<ExtArgs>
-        fields: Prisma.PropertyPropertyFeatureFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.PropertyPropertyFeatureFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.PropertyPropertyFeatureFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>
-          }
-          findFirst: {
-            args: Prisma.PropertyPropertyFeatureFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.PropertyPropertyFeatureFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>
-          }
-          findMany: {
-            args: Prisma.PropertyPropertyFeatureFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>[]
-          }
-          create: {
-            args: Prisma.PropertyPropertyFeatureCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>
-          }
-          createMany: {
-            args: Prisma.PropertyPropertyFeatureCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.PropertyPropertyFeatureCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>[]
-          }
-          delete: {
-            args: Prisma.PropertyPropertyFeatureDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>
-          }
-          update: {
-            args: Prisma.PropertyPropertyFeatureUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>
-          }
-          deleteMany: {
-            args: Prisma.PropertyPropertyFeatureDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.PropertyPropertyFeatureUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.PropertyPropertyFeatureUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>[]
-          }
-          upsert: {
-            args: Prisma.PropertyPropertyFeatureUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyPropertyFeaturePayload>
-          }
-          aggregate: {
-            args: Prisma.PropertyPropertyFeatureAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePropertyPropertyFeature>
-          }
-          groupBy: {
-            args: Prisma.PropertyPropertyFeatureGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PropertyPropertyFeatureGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.PropertyPropertyFeatureCountArgs<ExtArgs>
-            result: $Utils.Optional<PropertyPropertyFeatureCountAggregateOutputType> | number
-          }
-        }
-      }
       SystemConfig: {
         payload: Prisma.$SystemConfigPayload<ExtArgs>
         fields: Prisma.SystemConfigFieldRefs
@@ -1816,77 +1726,77 @@ export namespace Prisma {
           }
         }
       }
-      PropertyFeaturesData: {
-        payload: Prisma.$PropertyFeaturesDataPayload<ExtArgs>
-        fields: Prisma.PropertyFeaturesDataFieldRefs
+      FeatureSheet: {
+        payload: Prisma.$FeatureSheetPayload<ExtArgs>
+        fields: Prisma.FeatureSheetFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.PropertyFeaturesDataFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload> | null
+            args: Prisma.FeatureSheetFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.PropertyFeaturesDataFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>
+            args: Prisma.FeatureSheetFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>
           }
           findFirst: {
-            args: Prisma.PropertyFeaturesDataFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload> | null
+            args: Prisma.FeatureSheetFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.PropertyFeaturesDataFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>
+            args: Prisma.FeatureSheetFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>
           }
           findMany: {
-            args: Prisma.PropertyFeaturesDataFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>[]
+            args: Prisma.FeatureSheetFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>[]
           }
           create: {
-            args: Prisma.PropertyFeaturesDataCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>
+            args: Prisma.FeatureSheetCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>
           }
           createMany: {
-            args: Prisma.PropertyFeaturesDataCreateManyArgs<ExtArgs>
+            args: Prisma.FeatureSheetCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.PropertyFeaturesDataCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>[]
+            args: Prisma.FeatureSheetCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>[]
           }
           delete: {
-            args: Prisma.PropertyFeaturesDataDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>
+            args: Prisma.FeatureSheetDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>
           }
           update: {
-            args: Prisma.PropertyFeaturesDataUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>
+            args: Prisma.FeatureSheetUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>
           }
           deleteMany: {
-            args: Prisma.PropertyFeaturesDataDeleteManyArgs<ExtArgs>
+            args: Prisma.FeatureSheetDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.PropertyFeaturesDataUpdateManyArgs<ExtArgs>
+            args: Prisma.FeatureSheetUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.PropertyFeaturesDataUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>[]
+            args: Prisma.FeatureSheetUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>[]
           }
           upsert: {
-            args: Prisma.PropertyFeaturesDataUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PropertyFeaturesDataPayload>
+            args: Prisma.FeatureSheetUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$FeatureSheetPayload>
           }
           aggregate: {
-            args: Prisma.PropertyFeaturesDataAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePropertyFeaturesData>
+            args: Prisma.FeatureSheetAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateFeatureSheet>
           }
           groupBy: {
-            args: Prisma.PropertyFeaturesDataGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PropertyFeaturesDataGroupByOutputType>[]
+            args: Prisma.FeatureSheetGroupByArgs<ExtArgs>
+            result: $Utils.Optional<FeatureSheetGroupByOutputType>[]
           }
           count: {
-            args: Prisma.PropertyFeaturesDataCountArgs<ExtArgs>
-            result: $Utils.Optional<PropertyFeaturesDataCountAggregateOutputType> | number
+            args: Prisma.FeatureSheetCountArgs<ExtArgs>
+            result: $Utils.Optional<FeatureSheetCountAggregateOutputType> | number
           }
         }
       }
@@ -2722,9 +2632,8 @@ export namespace Prisma {
     propertyFeatureCategory?: PropertyFeatureCategoryOmit
     propertyFeature?: PropertyFeatureOmit
     propertyFeatureOption?: PropertyFeatureOptionOmit
-    propertyPropertyFeature?: PropertyPropertyFeatureOmit
     systemConfig?: SystemConfigOmit
-    propertyFeaturesData?: PropertyFeaturesDataOmit
+    featureSheet?: FeatureSheetOmit
     canvassingVisit?: CanvassingVisitOmit
     inventorySession?: InventorySessionOmit
     systemMetrics?: SystemMetricsOmit
@@ -2836,7 +2745,7 @@ export namespace Prisma {
     activities: number
     visitComments: number
     revisits: number
-    updatedFeaturesData: number
+    featureSheets: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2847,7 +2756,7 @@ export namespace Prisma {
     activities?: boolean | UserCountOutputTypeCountActivitiesArgs
     visitComments?: boolean | UserCountOutputTypeCountVisitCommentsArgs
     revisits?: boolean | UserCountOutputTypeCountRevisitsArgs
-    updatedFeaturesData?: boolean | UserCountOutputTypeCountUpdatedFeaturesDataArgs
+    featureSheets?: boolean | UserCountOutputTypeCountFeatureSheetsArgs
   }
 
   // Custom InputTypes
@@ -2913,8 +2822,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountUpdatedFeaturesDataArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PropertyFeaturesDataWhereInput
+  export type UserCountOutputTypeCountFeatureSheetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeatureSheetWhereInput
   }
 
 
@@ -2926,14 +2835,12 @@ export namespace Prisma {
     rooms: number
     sharedWith: number
     inventorySessions: number
-    propertyFeatures: number
   }
 
   export type PropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rooms?: boolean | PropertyCountOutputTypeCountRoomsArgs
     sharedWith?: boolean | PropertyCountOutputTypeCountSharedWithArgs
     inventorySessions?: boolean | PropertyCountOutputTypeCountInventorySessionsArgs
-    propertyFeatures?: boolean | PropertyCountOutputTypeCountPropertyFeaturesArgs
   }
 
   // Custom InputTypes
@@ -2966,13 +2873,6 @@ export namespace Prisma {
    */
   export type PropertyCountOutputTypeCountInventorySessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: InventorySessionWhereInput
-  }
-
-  /**
-   * PropertyCountOutputType without action
-   */
-  export type PropertyCountOutputTypeCountPropertyFeaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PropertyPropertyFeatureWhereInput
   }
 
 
@@ -3044,12 +2944,10 @@ export namespace Prisma {
 
   export type PropertyFeatureCountOutputType = {
     options: number
-    properties: number
   }
 
   export type PropertyFeatureCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     options?: boolean | PropertyFeatureCountOutputTypeCountOptionsArgs
-    properties?: boolean | PropertyFeatureCountOutputTypeCountPropertiesArgs
   }
 
   // Custom InputTypes
@@ -3068,44 +2966,6 @@ export namespace Prisma {
    */
   export type PropertyFeatureCountOutputTypeCountOptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PropertyFeatureOptionWhereInput
-  }
-
-  /**
-   * PropertyFeatureCountOutputType without action
-   */
-  export type PropertyFeatureCountOutputTypeCountPropertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PropertyPropertyFeatureWhereInput
-  }
-
-
-  /**
-   * Count Type PropertyFeatureOptionCountOutputType
-   */
-
-  export type PropertyFeatureOptionCountOutputType = {
-    propertyFeatures: number
-  }
-
-  export type PropertyFeatureOptionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    propertyFeatures?: boolean | PropertyFeatureOptionCountOutputTypeCountPropertyFeaturesArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * PropertyFeatureOptionCountOutputType without action
-   */
-  export type PropertyFeatureOptionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyFeatureOptionCountOutputType
-     */
-    select?: PropertyFeatureOptionCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * PropertyFeatureOptionCountOutputType without action
-   */
-  export type PropertyFeatureOptionCountOutputTypeCountPropertyFeaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PropertyPropertyFeatureWhereInput
   }
 
 
@@ -3433,7 +3293,7 @@ export namespace Prisma {
     activities?: boolean | User$activitiesArgs<ExtArgs>
     visitComments?: boolean | User$visitCommentsArgs<ExtArgs>
     revisits?: boolean | User$revisitsArgs<ExtArgs>
-    updatedFeaturesData?: boolean | User$updatedFeaturesDataArgs<ExtArgs>
+    featureSheets?: boolean | User$featureSheetsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3488,7 +3348,7 @@ export namespace Prisma {
     activities?: boolean | User$activitiesArgs<ExtArgs>
     visitComments?: boolean | User$visitCommentsArgs<ExtArgs>
     revisits?: boolean | User$revisitsArgs<ExtArgs>
-    updatedFeaturesData?: boolean | User$updatedFeaturesDataArgs<ExtArgs>
+    featureSheets?: boolean | User$featureSheetsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3504,7 +3364,7 @@ export namespace Prisma {
       activities: Prisma.$UserActivityPayload<ExtArgs>[]
       visitComments: Prisma.$CanvassingVisitCommentPayload<ExtArgs>[]
       revisits: Prisma.$RevisitPayload<ExtArgs>[]
-      updatedFeaturesData: Prisma.$PropertyFeaturesDataPayload<ExtArgs>[]
+      featureSheets: Prisma.$FeatureSheetPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -3919,7 +3779,7 @@ export namespace Prisma {
     activities<T extends User$activitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$activitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserActivityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     visitComments<T extends User$visitCommentsArgs<ExtArgs> = {}>(args?: Subset<T, User$visitCommentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CanvassingVisitCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     revisits<T extends User$revisitsArgs<ExtArgs> = {}>(args?: Subset<T, User$revisitsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RevisitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    updatedFeaturesData<T extends User$updatedFeaturesDataArgs<ExtArgs> = {}>(args?: Subset<T, User$updatedFeaturesDataArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    featureSheets<T extends User$featureSheetsArgs<ExtArgs> = {}>(args?: Subset<T, User$featureSheetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4516,27 +4376,27 @@ export namespace Prisma {
   }
 
   /**
-   * User.updatedFeaturesData
+   * User.featureSheets
    */
-  export type User$updatedFeaturesDataArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$featureSheetsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
-    where?: PropertyFeaturesDataWhereInput
-    orderBy?: PropertyFeaturesDataOrderByWithRelationInput | PropertyFeaturesDataOrderByWithRelationInput[]
-    cursor?: PropertyFeaturesDataWhereUniqueInput
+    include?: FeatureSheetInclude<ExtArgs> | null
+    where?: FeatureSheetWhereInput
+    orderBy?: FeatureSheetOrderByWithRelationInput | FeatureSheetOrderByWithRelationInput[]
+    cursor?: FeatureSheetWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: PropertyFeaturesDataScalarFieldEnum | PropertyFeaturesDataScalarFieldEnum[]
+    distinct?: FeatureSheetScalarFieldEnum | FeatureSheetScalarFieldEnum[]
   }
 
   /**
@@ -4884,8 +4744,6 @@ export namespace Prisma {
     rooms?: boolean | Property$roomsArgs<ExtArgs>
     sharedWith?: boolean | Property$sharedWithArgs<ExtArgs>
     inventorySessions?: boolean | Property$inventorySessionsArgs<ExtArgs>
-    propertyFeatures?: boolean | Property$propertyFeaturesArgs<ExtArgs>
-    featuresData?: boolean | Property$featuresDataArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["property"]>
 
@@ -4963,8 +4821,6 @@ export namespace Prisma {
     rooms?: boolean | Property$roomsArgs<ExtArgs>
     sharedWith?: boolean | Property$sharedWithArgs<ExtArgs>
     inventorySessions?: boolean | Property$inventorySessionsArgs<ExtArgs>
-    propertyFeatures?: boolean | Property$propertyFeaturesArgs<ExtArgs>
-    featuresData?: boolean | Property$featuresDataArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4981,8 +4837,6 @@ export namespace Prisma {
       rooms: Prisma.$RoomPayload<ExtArgs>[]
       sharedWith: Prisma.$PropertySharePayload<ExtArgs>[]
       inventorySessions: Prisma.$InventorySessionPayload<ExtArgs>[]
-      propertyFeatures: Prisma.$PropertyPropertyFeaturePayload<ExtArgs>[]
-      featuresData: Prisma.$PropertyFeaturesDataPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -5402,8 +5256,6 @@ export namespace Prisma {
     rooms<T extends Property$roomsArgs<ExtArgs> = {}>(args?: Subset<T, Property$roomsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sharedWith<T extends Property$sharedWithArgs<ExtArgs> = {}>(args?: Subset<T, Property$sharedWithArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertySharePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     inventorySessions<T extends Property$inventorySessionsArgs<ExtArgs> = {}>(args?: Subset<T, Property$inventorySessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InventorySessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    propertyFeatures<T extends Property$propertyFeaturesArgs<ExtArgs> = {}>(args?: Subset<T, Property$propertyFeaturesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    featuresData<T extends Property$featuresDataArgs<ExtArgs> = {}>(args?: Subset<T, Property$featuresDataArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5917,49 +5769,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: InventorySessionScalarFieldEnum | InventorySessionScalarFieldEnum[]
-  }
-
-  /**
-   * Property.propertyFeatures
-   */
-  export type Property$propertyFeaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    where?: PropertyPropertyFeatureWhereInput
-    orderBy?: PropertyPropertyFeatureOrderByWithRelationInput | PropertyPropertyFeatureOrderByWithRelationInput[]
-    cursor?: PropertyPropertyFeatureWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PropertyPropertyFeatureScalarFieldEnum | PropertyPropertyFeatureScalarFieldEnum[]
-  }
-
-  /**
-   * Property.featuresData
-   */
-  export type Property$featuresDataArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyFeaturesData
-     */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyFeaturesData
-     */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
-    where?: PropertyFeaturesDataWhereInput
   }
 
   /**
@@ -10867,7 +10676,6 @@ export namespace Prisma {
     updatedAt?: boolean
     category?: boolean | PropertyFeatureCategoryDefaultArgs<ExtArgs>
     options?: boolean | PropertyFeature$optionsArgs<ExtArgs>
-    properties?: boolean | PropertyFeature$propertiesArgs<ExtArgs>
     _count?: boolean | PropertyFeatureCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["propertyFeature"]>
 
@@ -10910,7 +10718,6 @@ export namespace Prisma {
   export type PropertyFeatureInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | PropertyFeatureCategoryDefaultArgs<ExtArgs>
     options?: boolean | PropertyFeature$optionsArgs<ExtArgs>
-    properties?: boolean | PropertyFeature$propertiesArgs<ExtArgs>
     _count?: boolean | PropertyFeatureCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PropertyFeatureIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10925,7 +10732,6 @@ export namespace Prisma {
     objects: {
       category: Prisma.$PropertyFeatureCategoryPayload<ExtArgs>
       options: Prisma.$PropertyFeatureOptionPayload<ExtArgs>[]
-      properties: Prisma.$PropertyPropertyFeaturePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -11332,7 +11138,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     category<T extends PropertyFeatureCategoryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyFeatureCategoryDefaultArgs<ExtArgs>>): Prisma__PropertyFeatureCategoryClient<$Result.GetResult<Prisma.$PropertyFeatureCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     options<T extends PropertyFeature$optionsArgs<ExtArgs> = {}>(args?: Subset<T, PropertyFeature$optionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyFeatureOptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    properties<T extends PropertyFeature$propertiesArgs<ExtArgs> = {}>(args?: Subset<T, PropertyFeature$propertiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11790,30 +11595,6 @@ export namespace Prisma {
   }
 
   /**
-   * PropertyFeature.properties
-   */
-  export type PropertyFeature$propertiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    where?: PropertyPropertyFeatureWhereInput
-    orderBy?: PropertyPropertyFeatureOrderByWithRelationInput | PropertyPropertyFeatureOrderByWithRelationInput[]
-    cursor?: PropertyPropertyFeatureWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PropertyPropertyFeatureScalarFieldEnum | PropertyPropertyFeatureScalarFieldEnum[]
-  }
-
-  /**
    * PropertyFeature without action
    */
   export type PropertyFeatureDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12031,8 +11812,6 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    propertyFeatures?: boolean | PropertyFeatureOption$propertyFeaturesArgs<ExtArgs>
-    _count?: boolean | PropertyFeatureOptionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["propertyFeatureOption"]>
 
   export type PropertyFeatureOptionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12064,8 +11843,6 @@ export namespace Prisma {
   export type PropertyFeatureOptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "propertyFeatureId" | "value" | "createdAt" | "updatedAt", ExtArgs["result"]["propertyFeatureOption"]>
   export type PropertyFeatureOptionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    propertyFeatures?: boolean | PropertyFeatureOption$propertyFeaturesArgs<ExtArgs>
-    _count?: boolean | PropertyFeatureOptionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PropertyFeatureOptionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
@@ -12078,7 +11855,6 @@ export namespace Prisma {
     name: "PropertyFeatureOption"
     objects: {
       propertyFeature: Prisma.$PropertyFeaturePayload<ExtArgs>
-      propertyFeatures: Prisma.$PropertyPropertyFeaturePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -12481,7 +12257,6 @@ export namespace Prisma {
   export interface Prisma__PropertyFeatureOptionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     propertyFeature<T extends PropertyFeatureDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyFeatureDefaultArgs<ExtArgs>>): Prisma__PropertyFeatureClient<$Result.GetResult<Prisma.$PropertyFeaturePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    propertyFeatures<T extends PropertyFeatureOption$propertyFeaturesArgs<ExtArgs> = {}>(args?: Subset<T, PropertyFeatureOption$propertyFeaturesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12912,30 +12687,6 @@ export namespace Prisma {
   }
 
   /**
-   * PropertyFeatureOption.propertyFeatures
-   */
-  export type PropertyFeatureOption$propertyFeaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    where?: PropertyPropertyFeatureWhereInput
-    orderBy?: PropertyPropertyFeatureOrderByWithRelationInput | PropertyPropertyFeatureOrderByWithRelationInput[]
-    cursor?: PropertyPropertyFeatureWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PropertyPropertyFeatureScalarFieldEnum | PropertyPropertyFeatureScalarFieldEnum[]
-  }
-
-  /**
    * PropertyFeatureOption without action
    */
   export type PropertyFeatureOptionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12951,1214 +12702,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PropertyFeatureOptionInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model PropertyPropertyFeature
-   */
-
-  export type AggregatePropertyPropertyFeature = {
-    _count: PropertyPropertyFeatureCountAggregateOutputType | null
-    _avg: PropertyPropertyFeatureAvgAggregateOutputType | null
-    _sum: PropertyPropertyFeatureSumAggregateOutputType | null
-    _min: PropertyPropertyFeatureMinAggregateOutputType | null
-    _max: PropertyPropertyFeatureMaxAggregateOutputType | null
-  }
-
-  export type PropertyPropertyFeatureAvgAggregateOutputType = {
-    id: number | null
-    propertyFeatureId: number | null
-    propertyId: number | null
-    valueInt: number | null
-    valueFloat: number | null
-    valueFeatureOptionId: number | null
-  }
-
-  export type PropertyPropertyFeatureSumAggregateOutputType = {
-    id: number | null
-    propertyFeatureId: number | null
-    propertyId: number | null
-    valueInt: number | null
-    valueFloat: number | null
-    valueFeatureOptionId: number | null
-  }
-
-  export type PropertyPropertyFeatureMinAggregateOutputType = {
-    id: number | null
-    propertyFeatureId: number | null
-    propertyId: number | null
-    valueBool: boolean | null
-    valueInt: number | null
-    valueFloat: number | null
-    valueFeatureOptionId: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PropertyPropertyFeatureMaxAggregateOutputType = {
-    id: number | null
-    propertyFeatureId: number | null
-    propertyId: number | null
-    valueBool: boolean | null
-    valueInt: number | null
-    valueFloat: number | null
-    valueFeatureOptionId: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PropertyPropertyFeatureCountAggregateOutputType = {
-    id: number
-    propertyFeatureId: number
-    propertyId: number
-    valueText: number
-    valueBool: number
-    valueInt: number
-    valueFloat: number
-    valueFeatureOptionId: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type PropertyPropertyFeatureAvgAggregateInputType = {
-    id?: true
-    propertyFeatureId?: true
-    propertyId?: true
-    valueInt?: true
-    valueFloat?: true
-    valueFeatureOptionId?: true
-  }
-
-  export type PropertyPropertyFeatureSumAggregateInputType = {
-    id?: true
-    propertyFeatureId?: true
-    propertyId?: true
-    valueInt?: true
-    valueFloat?: true
-    valueFeatureOptionId?: true
-  }
-
-  export type PropertyPropertyFeatureMinAggregateInputType = {
-    id?: true
-    propertyFeatureId?: true
-    propertyId?: true
-    valueBool?: true
-    valueInt?: true
-    valueFloat?: true
-    valueFeatureOptionId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PropertyPropertyFeatureMaxAggregateInputType = {
-    id?: true
-    propertyFeatureId?: true
-    propertyId?: true
-    valueBool?: true
-    valueInt?: true
-    valueFloat?: true
-    valueFeatureOptionId?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PropertyPropertyFeatureCountAggregateInputType = {
-    id?: true
-    propertyFeatureId?: true
-    propertyId?: true
-    valueText?: true
-    valueBool?: true
-    valueInt?: true
-    valueFloat?: true
-    valueFeatureOptionId?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type PropertyPropertyFeatureAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PropertyPropertyFeature to aggregate.
-     */
-    where?: PropertyPropertyFeatureWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PropertyPropertyFeatures to fetch.
-     */
-    orderBy?: PropertyPropertyFeatureOrderByWithRelationInput | PropertyPropertyFeatureOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: PropertyPropertyFeatureWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PropertyPropertyFeatures from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PropertyPropertyFeatures.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned PropertyPropertyFeatures
-    **/
-    _count?: true | PropertyPropertyFeatureCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: PropertyPropertyFeatureAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: PropertyPropertyFeatureSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: PropertyPropertyFeatureMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: PropertyPropertyFeatureMaxAggregateInputType
-  }
-
-  export type GetPropertyPropertyFeatureAggregateType<T extends PropertyPropertyFeatureAggregateArgs> = {
-        [P in keyof T & keyof AggregatePropertyPropertyFeature]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregatePropertyPropertyFeature[P]>
-      : GetScalarType<T[P], AggregatePropertyPropertyFeature[P]>
-  }
-
-
-
-
-  export type PropertyPropertyFeatureGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PropertyPropertyFeatureWhereInput
-    orderBy?: PropertyPropertyFeatureOrderByWithAggregationInput | PropertyPropertyFeatureOrderByWithAggregationInput[]
-    by: PropertyPropertyFeatureScalarFieldEnum[] | PropertyPropertyFeatureScalarFieldEnum
-    having?: PropertyPropertyFeatureScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: PropertyPropertyFeatureCountAggregateInputType | true
-    _avg?: PropertyPropertyFeatureAvgAggregateInputType
-    _sum?: PropertyPropertyFeatureSumAggregateInputType
-    _min?: PropertyPropertyFeatureMinAggregateInputType
-    _max?: PropertyPropertyFeatureMaxAggregateInputType
-  }
-
-  export type PropertyPropertyFeatureGroupByOutputType = {
-    id: number
-    propertyFeatureId: number
-    propertyId: number
-    valueText: JsonValue | null
-    valueBool: boolean | null
-    valueInt: number | null
-    valueFloat: number | null
-    valueFeatureOptionId: number | null
-    createdAt: Date
-    updatedAt: Date
-    _count: PropertyPropertyFeatureCountAggregateOutputType | null
-    _avg: PropertyPropertyFeatureAvgAggregateOutputType | null
-    _sum: PropertyPropertyFeatureSumAggregateOutputType | null
-    _min: PropertyPropertyFeatureMinAggregateOutputType | null
-    _max: PropertyPropertyFeatureMaxAggregateOutputType | null
-  }
-
-  type GetPropertyPropertyFeatureGroupByPayload<T extends PropertyPropertyFeatureGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<PropertyPropertyFeatureGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof PropertyPropertyFeatureGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], PropertyPropertyFeatureGroupByOutputType[P]>
-            : GetScalarType<T[P], PropertyPropertyFeatureGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type PropertyPropertyFeatureSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    propertyFeatureId?: boolean
-    propertyId?: boolean
-    valueText?: boolean
-    valueBool?: boolean
-    valueInt?: boolean
-    valueFloat?: boolean
-    valueFeatureOptionId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    valueFeatureOption?: boolean | PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs>
-  }, ExtArgs["result"]["propertyPropertyFeature"]>
-
-  export type PropertyPropertyFeatureSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    propertyFeatureId?: boolean
-    propertyId?: boolean
-    valueText?: boolean
-    valueBool?: boolean
-    valueInt?: boolean
-    valueFloat?: boolean
-    valueFeatureOptionId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    valueFeatureOption?: boolean | PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs>
-  }, ExtArgs["result"]["propertyPropertyFeature"]>
-
-  export type PropertyPropertyFeatureSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    propertyFeatureId?: boolean
-    propertyId?: boolean
-    valueText?: boolean
-    valueBool?: boolean
-    valueInt?: boolean
-    valueFloat?: boolean
-    valueFeatureOptionId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    valueFeatureOption?: boolean | PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs>
-  }, ExtArgs["result"]["propertyPropertyFeature"]>
-
-  export type PropertyPropertyFeatureSelectScalar = {
-    id?: boolean
-    propertyFeatureId?: boolean
-    propertyId?: boolean
-    valueText?: boolean
-    valueBool?: boolean
-    valueInt?: boolean
-    valueFloat?: boolean
-    valueFeatureOptionId?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type PropertyPropertyFeatureOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "propertyFeatureId" | "propertyId" | "valueText" | "valueBool" | "valueInt" | "valueFloat" | "valueFeatureOptionId" | "createdAt" | "updatedAt", ExtArgs["result"]["propertyPropertyFeature"]>
-  export type PropertyPropertyFeatureInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    valueFeatureOption?: boolean | PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs>
-  }
-  export type PropertyPropertyFeatureIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    valueFeatureOption?: boolean | PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs>
-  }
-  export type PropertyPropertyFeatureIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    propertyFeature?: boolean | PropertyFeatureDefaultArgs<ExtArgs>
-    valueFeatureOption?: boolean | PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs>
-  }
-
-  export type $PropertyPropertyFeaturePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PropertyPropertyFeature"
-    objects: {
-      property: Prisma.$PropertyPayload<ExtArgs>
-      propertyFeature: Prisma.$PropertyFeaturePayload<ExtArgs>
-      valueFeatureOption: Prisma.$PropertyFeatureOptionPayload<ExtArgs> | null
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: number
-      propertyFeatureId: number
-      propertyId: number
-      valueText: Prisma.JsonValue | null
-      valueBool: boolean | null
-      valueInt: number | null
-      valueFloat: number | null
-      valueFeatureOptionId: number | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["propertyPropertyFeature"]>
-    composites: {}
-  }
-
-  type PropertyPropertyFeatureGetPayload<S extends boolean | null | undefined | PropertyPropertyFeatureDefaultArgs> = $Result.GetResult<Prisma.$PropertyPropertyFeaturePayload, S>
-
-  type PropertyPropertyFeatureCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PropertyPropertyFeatureFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: PropertyPropertyFeatureCountAggregateInputType | true
-    }
-
-  export interface PropertyPropertyFeatureDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PropertyPropertyFeature'], meta: { name: 'PropertyPropertyFeature' } }
-    /**
-     * Find zero or one PropertyPropertyFeature that matches the filter.
-     * @param {PropertyPropertyFeatureFindUniqueArgs} args - Arguments to find a PropertyPropertyFeature
-     * @example
-     * // Get one PropertyPropertyFeature
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends PropertyPropertyFeatureFindUniqueArgs>(args: SelectSubset<T, PropertyPropertyFeatureFindUniqueArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one PropertyPropertyFeature that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {PropertyPropertyFeatureFindUniqueOrThrowArgs} args - Arguments to find a PropertyPropertyFeature
-     * @example
-     * // Get one PropertyPropertyFeature
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends PropertyPropertyFeatureFindUniqueOrThrowArgs>(args: SelectSubset<T, PropertyPropertyFeatureFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PropertyPropertyFeature that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyPropertyFeatureFindFirstArgs} args - Arguments to find a PropertyPropertyFeature
-     * @example
-     * // Get one PropertyPropertyFeature
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends PropertyPropertyFeatureFindFirstArgs>(args?: SelectSubset<T, PropertyPropertyFeatureFindFirstArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PropertyPropertyFeature that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyPropertyFeatureFindFirstOrThrowArgs} args - Arguments to find a PropertyPropertyFeature
-     * @example
-     * // Get one PropertyPropertyFeature
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends PropertyPropertyFeatureFindFirstOrThrowArgs>(args?: SelectSubset<T, PropertyPropertyFeatureFindFirstOrThrowArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more PropertyPropertyFeatures that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyPropertyFeatureFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all PropertyPropertyFeatures
-     * const propertyPropertyFeatures = await prisma.propertyPropertyFeature.findMany()
-     * 
-     * // Get first 10 PropertyPropertyFeatures
-     * const propertyPropertyFeatures = await prisma.propertyPropertyFeature.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const propertyPropertyFeatureWithIdOnly = await prisma.propertyPropertyFeature.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends PropertyPropertyFeatureFindManyArgs>(args?: SelectSubset<T, PropertyPropertyFeatureFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a PropertyPropertyFeature.
-     * @param {PropertyPropertyFeatureCreateArgs} args - Arguments to create a PropertyPropertyFeature.
-     * @example
-     * // Create one PropertyPropertyFeature
-     * const PropertyPropertyFeature = await prisma.propertyPropertyFeature.create({
-     *   data: {
-     *     // ... data to create a PropertyPropertyFeature
-     *   }
-     * })
-     * 
-     */
-    create<T extends PropertyPropertyFeatureCreateArgs>(args: SelectSubset<T, PropertyPropertyFeatureCreateArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many PropertyPropertyFeatures.
-     * @param {PropertyPropertyFeatureCreateManyArgs} args - Arguments to create many PropertyPropertyFeatures.
-     * @example
-     * // Create many PropertyPropertyFeatures
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends PropertyPropertyFeatureCreateManyArgs>(args?: SelectSubset<T, PropertyPropertyFeatureCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many PropertyPropertyFeatures and returns the data saved in the database.
-     * @param {PropertyPropertyFeatureCreateManyAndReturnArgs} args - Arguments to create many PropertyPropertyFeatures.
-     * @example
-     * // Create many PropertyPropertyFeatures
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many PropertyPropertyFeatures and only return the `id`
-     * const propertyPropertyFeatureWithIdOnly = await prisma.propertyPropertyFeature.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends PropertyPropertyFeatureCreateManyAndReturnArgs>(args?: SelectSubset<T, PropertyPropertyFeatureCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a PropertyPropertyFeature.
-     * @param {PropertyPropertyFeatureDeleteArgs} args - Arguments to delete one PropertyPropertyFeature.
-     * @example
-     * // Delete one PropertyPropertyFeature
-     * const PropertyPropertyFeature = await prisma.propertyPropertyFeature.delete({
-     *   where: {
-     *     // ... filter to delete one PropertyPropertyFeature
-     *   }
-     * })
-     * 
-     */
-    delete<T extends PropertyPropertyFeatureDeleteArgs>(args: SelectSubset<T, PropertyPropertyFeatureDeleteArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one PropertyPropertyFeature.
-     * @param {PropertyPropertyFeatureUpdateArgs} args - Arguments to update one PropertyPropertyFeature.
-     * @example
-     * // Update one PropertyPropertyFeature
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends PropertyPropertyFeatureUpdateArgs>(args: SelectSubset<T, PropertyPropertyFeatureUpdateArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more PropertyPropertyFeatures.
-     * @param {PropertyPropertyFeatureDeleteManyArgs} args - Arguments to filter PropertyPropertyFeatures to delete.
-     * @example
-     * // Delete a few PropertyPropertyFeatures
-     * const { count } = await prisma.propertyPropertyFeature.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends PropertyPropertyFeatureDeleteManyArgs>(args?: SelectSubset<T, PropertyPropertyFeatureDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PropertyPropertyFeatures.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyPropertyFeatureUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many PropertyPropertyFeatures
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends PropertyPropertyFeatureUpdateManyArgs>(args: SelectSubset<T, PropertyPropertyFeatureUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PropertyPropertyFeatures and returns the data updated in the database.
-     * @param {PropertyPropertyFeatureUpdateManyAndReturnArgs} args - Arguments to update many PropertyPropertyFeatures.
-     * @example
-     * // Update many PropertyPropertyFeatures
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more PropertyPropertyFeatures and only return the `id`
-     * const propertyPropertyFeatureWithIdOnly = await prisma.propertyPropertyFeature.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends PropertyPropertyFeatureUpdateManyAndReturnArgs>(args: SelectSubset<T, PropertyPropertyFeatureUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one PropertyPropertyFeature.
-     * @param {PropertyPropertyFeatureUpsertArgs} args - Arguments to update or create a PropertyPropertyFeature.
-     * @example
-     * // Update or create a PropertyPropertyFeature
-     * const propertyPropertyFeature = await prisma.propertyPropertyFeature.upsert({
-     *   create: {
-     *     // ... data to create a PropertyPropertyFeature
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the PropertyPropertyFeature we want to update
-     *   }
-     * })
-     */
-    upsert<T extends PropertyPropertyFeatureUpsertArgs>(args: SelectSubset<T, PropertyPropertyFeatureUpsertArgs<ExtArgs>>): Prisma__PropertyPropertyFeatureClient<$Result.GetResult<Prisma.$PropertyPropertyFeaturePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of PropertyPropertyFeatures.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyPropertyFeatureCountArgs} args - Arguments to filter PropertyPropertyFeatures to count.
-     * @example
-     * // Count the number of PropertyPropertyFeatures
-     * const count = await prisma.propertyPropertyFeature.count({
-     *   where: {
-     *     // ... the filter for the PropertyPropertyFeatures we want to count
-     *   }
-     * })
-    **/
-    count<T extends PropertyPropertyFeatureCountArgs>(
-      args?: Subset<T, PropertyPropertyFeatureCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], PropertyPropertyFeatureCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a PropertyPropertyFeature.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyPropertyFeatureAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends PropertyPropertyFeatureAggregateArgs>(args: Subset<T, PropertyPropertyFeatureAggregateArgs>): Prisma.PrismaPromise<GetPropertyPropertyFeatureAggregateType<T>>
-
-    /**
-     * Group by PropertyPropertyFeature.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyPropertyFeatureGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends PropertyPropertyFeatureGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PropertyPropertyFeatureGroupByArgs['orderBy'] }
-        : { orderBy?: PropertyPropertyFeatureGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, PropertyPropertyFeatureGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPropertyPropertyFeatureGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the PropertyPropertyFeature model
-   */
-  readonly fields: PropertyPropertyFeatureFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for PropertyPropertyFeature.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__PropertyPropertyFeatureClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    propertyFeature<T extends PropertyFeatureDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyFeatureDefaultArgs<ExtArgs>>): Prisma__PropertyFeatureClient<$Result.GetResult<Prisma.$PropertyFeaturePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    valueFeatureOption<T extends PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs> = {}>(args?: Subset<T, PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs>>): Prisma__PropertyFeatureOptionClient<$Result.GetResult<Prisma.$PropertyFeatureOptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the PropertyPropertyFeature model
-   */
-  interface PropertyPropertyFeatureFieldRefs {
-    readonly id: FieldRef<"PropertyPropertyFeature", 'Int'>
-    readonly propertyFeatureId: FieldRef<"PropertyPropertyFeature", 'Int'>
-    readonly propertyId: FieldRef<"PropertyPropertyFeature", 'Int'>
-    readonly valueText: FieldRef<"PropertyPropertyFeature", 'Json'>
-    readonly valueBool: FieldRef<"PropertyPropertyFeature", 'Boolean'>
-    readonly valueInt: FieldRef<"PropertyPropertyFeature", 'Int'>
-    readonly valueFloat: FieldRef<"PropertyPropertyFeature", 'Float'>
-    readonly valueFeatureOptionId: FieldRef<"PropertyPropertyFeature", 'Int'>
-    readonly createdAt: FieldRef<"PropertyPropertyFeature", 'DateTime'>
-    readonly updatedAt: FieldRef<"PropertyPropertyFeature", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * PropertyPropertyFeature findUnique
-   */
-  export type PropertyPropertyFeatureFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * Filter, which PropertyPropertyFeature to fetch.
-     */
-    where: PropertyPropertyFeatureWhereUniqueInput
-  }
-
-  /**
-   * PropertyPropertyFeature findUniqueOrThrow
-   */
-  export type PropertyPropertyFeatureFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * Filter, which PropertyPropertyFeature to fetch.
-     */
-    where: PropertyPropertyFeatureWhereUniqueInput
-  }
-
-  /**
-   * PropertyPropertyFeature findFirst
-   */
-  export type PropertyPropertyFeatureFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * Filter, which PropertyPropertyFeature to fetch.
-     */
-    where?: PropertyPropertyFeatureWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PropertyPropertyFeatures to fetch.
-     */
-    orderBy?: PropertyPropertyFeatureOrderByWithRelationInput | PropertyPropertyFeatureOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PropertyPropertyFeatures.
-     */
-    cursor?: PropertyPropertyFeatureWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PropertyPropertyFeatures from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PropertyPropertyFeatures.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PropertyPropertyFeatures.
-     */
-    distinct?: PropertyPropertyFeatureScalarFieldEnum | PropertyPropertyFeatureScalarFieldEnum[]
-  }
-
-  /**
-   * PropertyPropertyFeature findFirstOrThrow
-   */
-  export type PropertyPropertyFeatureFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * Filter, which PropertyPropertyFeature to fetch.
-     */
-    where?: PropertyPropertyFeatureWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PropertyPropertyFeatures to fetch.
-     */
-    orderBy?: PropertyPropertyFeatureOrderByWithRelationInput | PropertyPropertyFeatureOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PropertyPropertyFeatures.
-     */
-    cursor?: PropertyPropertyFeatureWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PropertyPropertyFeatures from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PropertyPropertyFeatures.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PropertyPropertyFeatures.
-     */
-    distinct?: PropertyPropertyFeatureScalarFieldEnum | PropertyPropertyFeatureScalarFieldEnum[]
-  }
-
-  /**
-   * PropertyPropertyFeature findMany
-   */
-  export type PropertyPropertyFeatureFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * Filter, which PropertyPropertyFeatures to fetch.
-     */
-    where?: PropertyPropertyFeatureWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PropertyPropertyFeatures to fetch.
-     */
-    orderBy?: PropertyPropertyFeatureOrderByWithRelationInput | PropertyPropertyFeatureOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing PropertyPropertyFeatures.
-     */
-    cursor?: PropertyPropertyFeatureWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PropertyPropertyFeatures from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PropertyPropertyFeatures.
-     */
-    skip?: number
-    distinct?: PropertyPropertyFeatureScalarFieldEnum | PropertyPropertyFeatureScalarFieldEnum[]
-  }
-
-  /**
-   * PropertyPropertyFeature create
-   */
-  export type PropertyPropertyFeatureCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * The data needed to create a PropertyPropertyFeature.
-     */
-    data: XOR<PropertyPropertyFeatureCreateInput, PropertyPropertyFeatureUncheckedCreateInput>
-  }
-
-  /**
-   * PropertyPropertyFeature createMany
-   */
-  export type PropertyPropertyFeatureCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many PropertyPropertyFeatures.
-     */
-    data: PropertyPropertyFeatureCreateManyInput | PropertyPropertyFeatureCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * PropertyPropertyFeature createManyAndReturn
-   */
-  export type PropertyPropertyFeatureCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * The data used to create many PropertyPropertyFeatures.
-     */
-    data: PropertyPropertyFeatureCreateManyInput | PropertyPropertyFeatureCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * PropertyPropertyFeature update
-   */
-  export type PropertyPropertyFeatureUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * The data needed to update a PropertyPropertyFeature.
-     */
-    data: XOR<PropertyPropertyFeatureUpdateInput, PropertyPropertyFeatureUncheckedUpdateInput>
-    /**
-     * Choose, which PropertyPropertyFeature to update.
-     */
-    where: PropertyPropertyFeatureWhereUniqueInput
-  }
-
-  /**
-   * PropertyPropertyFeature updateMany
-   */
-  export type PropertyPropertyFeatureUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update PropertyPropertyFeatures.
-     */
-    data: XOR<PropertyPropertyFeatureUpdateManyMutationInput, PropertyPropertyFeatureUncheckedUpdateManyInput>
-    /**
-     * Filter which PropertyPropertyFeatures to update
-     */
-    where?: PropertyPropertyFeatureWhereInput
-    /**
-     * Limit how many PropertyPropertyFeatures to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * PropertyPropertyFeature updateManyAndReturn
-   */
-  export type PropertyPropertyFeatureUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * The data used to update PropertyPropertyFeatures.
-     */
-    data: XOR<PropertyPropertyFeatureUpdateManyMutationInput, PropertyPropertyFeatureUncheckedUpdateManyInput>
-    /**
-     * Filter which PropertyPropertyFeatures to update
-     */
-    where?: PropertyPropertyFeatureWhereInput
-    /**
-     * Limit how many PropertyPropertyFeatures to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * PropertyPropertyFeature upsert
-   */
-  export type PropertyPropertyFeatureUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * The filter to search for the PropertyPropertyFeature to update in case it exists.
-     */
-    where: PropertyPropertyFeatureWhereUniqueInput
-    /**
-     * In case the PropertyPropertyFeature found by the `where` argument doesn't exist, create a new PropertyPropertyFeature with this data.
-     */
-    create: XOR<PropertyPropertyFeatureCreateInput, PropertyPropertyFeatureUncheckedCreateInput>
-    /**
-     * In case the PropertyPropertyFeature was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<PropertyPropertyFeatureUpdateInput, PropertyPropertyFeatureUncheckedUpdateInput>
-  }
-
-  /**
-   * PropertyPropertyFeature delete
-   */
-  export type PropertyPropertyFeatureDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
-    /**
-     * Filter which PropertyPropertyFeature to delete.
-     */
-    where: PropertyPropertyFeatureWhereUniqueInput
-  }
-
-  /**
-   * PropertyPropertyFeature deleteMany
-   */
-  export type PropertyPropertyFeatureDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PropertyPropertyFeatures to delete
-     */
-    where?: PropertyPropertyFeatureWhereInput
-    /**
-     * Limit how many PropertyPropertyFeatures to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * PropertyPropertyFeature.valueFeatureOption
-   */
-  export type PropertyPropertyFeature$valueFeatureOptionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyFeatureOption
-     */
-    select?: PropertyFeatureOptionSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyFeatureOption
-     */
-    omit?: PropertyFeatureOptionOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyFeatureOptionInclude<ExtArgs> | null
-    where?: PropertyFeatureOptionWhereInput
-  }
-
-  /**
-   * PropertyPropertyFeature without action
-   */
-  export type PropertyPropertyFeatureDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyPropertyFeature
-     */
-    select?: PropertyPropertyFeatureSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyPropertyFeature
-     */
-    omit?: PropertyPropertyFeatureOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyPropertyFeatureInclude<ExtArgs> | null
   }
 
 
@@ -15192,411 +13735,412 @@ export namespace Prisma {
 
 
   /**
-   * Model PropertyFeaturesData
+   * Model FeatureSheet
    */
 
-  export type AggregatePropertyFeaturesData = {
-    _count: PropertyFeaturesDataCountAggregateOutputType | null
-    _avg: PropertyFeaturesDataAvgAggregateOutputType | null
-    _sum: PropertyFeaturesDataSumAggregateOutputType | null
-    _min: PropertyFeaturesDataMinAggregateOutputType | null
-    _max: PropertyFeaturesDataMaxAggregateOutputType | null
+  export type AggregateFeatureSheet = {
+    _count: FeatureSheetCountAggregateOutputType | null
+    _avg: FeatureSheetAvgAggregateOutputType | null
+    _sum: FeatureSheetSumAggregateOutputType | null
+    _min: FeatureSheetMinAggregateOutputType | null
+    _max: FeatureSheetMaxAggregateOutputType | null
   }
 
-  export type PropertyFeaturesDataAvgAggregateOutputType = {
+  export type FeatureSheetAvgAggregateOutputType = {
     id: number | null
-    propertyId: number | null
     schemaVersion: number | null
-    updatedByUserId: number | null
+    userId: number | null
   }
 
-  export type PropertyFeaturesDataSumAggregateOutputType = {
+  export type FeatureSheetSumAggregateOutputType = {
     id: number | null
-    propertyId: number | null
     schemaVersion: number | null
-    updatedByUserId: number | null
+    userId: number | null
   }
 
-  export type PropertyFeaturesDataMinAggregateOutputType = {
+  export type FeatureSheetMinAggregateOutputType = {
     id: number | null
-    propertyId: number | null
+    name: string | null
     schemaVersion: number | null
+    userId: number | null
+    createdAt: Date | null
     updatedAt: Date | null
-    updatedByUserId: number | null
   }
 
-  export type PropertyFeaturesDataMaxAggregateOutputType = {
+  export type FeatureSheetMaxAggregateOutputType = {
     id: number | null
-    propertyId: number | null
+    name: string | null
     schemaVersion: number | null
+    userId: number | null
+    createdAt: Date | null
     updatedAt: Date | null
-    updatedByUserId: number | null
   }
 
-  export type PropertyFeaturesDataCountAggregateOutputType = {
+  export type FeatureSheetCountAggregateOutputType = {
     id: number
-    propertyId: number
-    features: number
+    name: number
+    values: number
     schemaVersion: number
+    userId: number
+    createdAt: number
     updatedAt: number
-    updatedByUserId: number
     _all: number
   }
 
 
-  export type PropertyFeaturesDataAvgAggregateInputType = {
+  export type FeatureSheetAvgAggregateInputType = {
     id?: true
-    propertyId?: true
     schemaVersion?: true
-    updatedByUserId?: true
+    userId?: true
   }
 
-  export type PropertyFeaturesDataSumAggregateInputType = {
+  export type FeatureSheetSumAggregateInputType = {
     id?: true
-    propertyId?: true
     schemaVersion?: true
-    updatedByUserId?: true
+    userId?: true
   }
 
-  export type PropertyFeaturesDataMinAggregateInputType = {
+  export type FeatureSheetMinAggregateInputType = {
     id?: true
-    propertyId?: true
+    name?: true
     schemaVersion?: true
+    userId?: true
+    createdAt?: true
     updatedAt?: true
-    updatedByUserId?: true
   }
 
-  export type PropertyFeaturesDataMaxAggregateInputType = {
+  export type FeatureSheetMaxAggregateInputType = {
     id?: true
-    propertyId?: true
+    name?: true
     schemaVersion?: true
+    userId?: true
+    createdAt?: true
     updatedAt?: true
-    updatedByUserId?: true
   }
 
-  export type PropertyFeaturesDataCountAggregateInputType = {
+  export type FeatureSheetCountAggregateInputType = {
     id?: true
-    propertyId?: true
-    features?: true
+    name?: true
+    values?: true
     schemaVersion?: true
+    userId?: true
+    createdAt?: true
     updatedAt?: true
-    updatedByUserId?: true
     _all?: true
   }
 
-  export type PropertyFeaturesDataAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which PropertyFeaturesData to aggregate.
+     * Filter which FeatureSheet to aggregate.
      */
-    where?: PropertyFeaturesDataWhereInput
+    where?: FeatureSheetWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PropertyFeaturesData to fetch.
+     * Determine the order of FeatureSheets to fetch.
      */
-    orderBy?: PropertyFeaturesDataOrderByWithRelationInput | PropertyFeaturesDataOrderByWithRelationInput[]
+    orderBy?: FeatureSheetOrderByWithRelationInput | FeatureSheetOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: PropertyFeaturesDataWhereUniqueInput
+    cursor?: FeatureSheetWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PropertyFeaturesData from the position of the cursor.
+     * Take `±n` FeatureSheets from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PropertyFeaturesData.
+     * Skip the first `n` FeatureSheets.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned PropertyFeaturesData
+     * Count returned FeatureSheets
     **/
-    _count?: true | PropertyFeaturesDataCountAggregateInputType
+    _count?: true | FeatureSheetCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to average
     **/
-    _avg?: PropertyFeaturesDataAvgAggregateInputType
+    _avg?: FeatureSheetAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to sum
     **/
-    _sum?: PropertyFeaturesDataSumAggregateInputType
+    _sum?: FeatureSheetSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: PropertyFeaturesDataMinAggregateInputType
+    _min?: FeatureSheetMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: PropertyFeaturesDataMaxAggregateInputType
+    _max?: FeatureSheetMaxAggregateInputType
   }
 
-  export type GetPropertyFeaturesDataAggregateType<T extends PropertyFeaturesDataAggregateArgs> = {
-        [P in keyof T & keyof AggregatePropertyFeaturesData]: P extends '_count' | 'count'
+  export type GetFeatureSheetAggregateType<T extends FeatureSheetAggregateArgs> = {
+        [P in keyof T & keyof AggregateFeatureSheet]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregatePropertyFeaturesData[P]>
-      : GetScalarType<T[P], AggregatePropertyFeaturesData[P]>
+        : GetScalarType<T[P], AggregateFeatureSheet[P]>
+      : GetScalarType<T[P], AggregateFeatureSheet[P]>
   }
 
 
 
 
-  export type PropertyFeaturesDataGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PropertyFeaturesDataWhereInput
-    orderBy?: PropertyFeaturesDataOrderByWithAggregationInput | PropertyFeaturesDataOrderByWithAggregationInput[]
-    by: PropertyFeaturesDataScalarFieldEnum[] | PropertyFeaturesDataScalarFieldEnum
-    having?: PropertyFeaturesDataScalarWhereWithAggregatesInput
+  export type FeatureSheetGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeatureSheetWhereInput
+    orderBy?: FeatureSheetOrderByWithAggregationInput | FeatureSheetOrderByWithAggregationInput[]
+    by: FeatureSheetScalarFieldEnum[] | FeatureSheetScalarFieldEnum
+    having?: FeatureSheetScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: PropertyFeaturesDataCountAggregateInputType | true
-    _avg?: PropertyFeaturesDataAvgAggregateInputType
-    _sum?: PropertyFeaturesDataSumAggregateInputType
-    _min?: PropertyFeaturesDataMinAggregateInputType
-    _max?: PropertyFeaturesDataMaxAggregateInputType
+    _count?: FeatureSheetCountAggregateInputType | true
+    _avg?: FeatureSheetAvgAggregateInputType
+    _sum?: FeatureSheetSumAggregateInputType
+    _min?: FeatureSheetMinAggregateInputType
+    _max?: FeatureSheetMaxAggregateInputType
   }
 
-  export type PropertyFeaturesDataGroupByOutputType = {
+  export type FeatureSheetGroupByOutputType = {
     id: number
-    propertyId: number
-    features: JsonValue
+    name: string
+    values: JsonValue
     schemaVersion: number
+    userId: number
+    createdAt: Date
     updatedAt: Date
-    updatedByUserId: number | null
-    _count: PropertyFeaturesDataCountAggregateOutputType | null
-    _avg: PropertyFeaturesDataAvgAggregateOutputType | null
-    _sum: PropertyFeaturesDataSumAggregateOutputType | null
-    _min: PropertyFeaturesDataMinAggregateOutputType | null
-    _max: PropertyFeaturesDataMaxAggregateOutputType | null
+    _count: FeatureSheetCountAggregateOutputType | null
+    _avg: FeatureSheetAvgAggregateOutputType | null
+    _sum: FeatureSheetSumAggregateOutputType | null
+    _min: FeatureSheetMinAggregateOutputType | null
+    _max: FeatureSheetMaxAggregateOutputType | null
   }
 
-  type GetPropertyFeaturesDataGroupByPayload<T extends PropertyFeaturesDataGroupByArgs> = Prisma.PrismaPromise<
+  type GetFeatureSheetGroupByPayload<T extends FeatureSheetGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<PropertyFeaturesDataGroupByOutputType, T['by']> &
+      PickEnumerable<FeatureSheetGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof PropertyFeaturesDataGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof FeatureSheetGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], PropertyFeaturesDataGroupByOutputType[P]>
-            : GetScalarType<T[P], PropertyFeaturesDataGroupByOutputType[P]>
+              : GetScalarType<T[P], FeatureSheetGroupByOutputType[P]>
+            : GetScalarType<T[P], FeatureSheetGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type PropertyFeaturesDataSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type FeatureSheetSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    propertyId?: boolean
-    features?: boolean
+    name?: boolean
+    values?: boolean
     schemaVersion?: boolean
+    userId?: boolean
+    createdAt?: boolean
     updatedAt?: boolean
-    updatedByUserId?: boolean
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    updatedByUser?: boolean | PropertyFeaturesData$updatedByUserArgs<ExtArgs>
-  }, ExtArgs["result"]["propertyFeaturesData"]>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["featureSheet"]>
 
-  export type PropertyFeaturesDataSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type FeatureSheetSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    propertyId?: boolean
-    features?: boolean
+    name?: boolean
+    values?: boolean
     schemaVersion?: boolean
+    userId?: boolean
+    createdAt?: boolean
     updatedAt?: boolean
-    updatedByUserId?: boolean
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    updatedByUser?: boolean | PropertyFeaturesData$updatedByUserArgs<ExtArgs>
-  }, ExtArgs["result"]["propertyFeaturesData"]>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["featureSheet"]>
 
-  export type PropertyFeaturesDataSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type FeatureSheetSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    propertyId?: boolean
-    features?: boolean
+    name?: boolean
+    values?: boolean
     schemaVersion?: boolean
+    userId?: boolean
+    createdAt?: boolean
     updatedAt?: boolean
-    updatedByUserId?: boolean
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    updatedByUser?: boolean | PropertyFeaturesData$updatedByUserArgs<ExtArgs>
-  }, ExtArgs["result"]["propertyFeaturesData"]>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["featureSheet"]>
 
-  export type PropertyFeaturesDataSelectScalar = {
+  export type FeatureSheetSelectScalar = {
     id?: boolean
-    propertyId?: boolean
-    features?: boolean
+    name?: boolean
+    values?: boolean
     schemaVersion?: boolean
+    userId?: boolean
+    createdAt?: boolean
     updatedAt?: boolean
-    updatedByUserId?: boolean
   }
 
-  export type PropertyFeaturesDataOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "propertyId" | "features" | "schemaVersion" | "updatedAt" | "updatedByUserId", ExtArgs["result"]["propertyFeaturesData"]>
-  export type PropertyFeaturesDataInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    updatedByUser?: boolean | PropertyFeaturesData$updatedByUserArgs<ExtArgs>
+  export type FeatureSheetOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "values" | "schemaVersion" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["featureSheet"]>
+  export type FeatureSheetInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
-  export type PropertyFeaturesDataIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    updatedByUser?: boolean | PropertyFeaturesData$updatedByUserArgs<ExtArgs>
+  export type FeatureSheetIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
-  export type PropertyFeaturesDataIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    property?: boolean | PropertyDefaultArgs<ExtArgs>
-    updatedByUser?: boolean | PropertyFeaturesData$updatedByUserArgs<ExtArgs>
+  export type FeatureSheetIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
   }
 
-  export type $PropertyFeaturesDataPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PropertyFeaturesData"
+  export type $FeatureSheetPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "FeatureSheet"
     objects: {
-      property: Prisma.$PropertyPayload<ExtArgs>
-      updatedByUser: Prisma.$UserPayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      propertyId: number
-      features: Prisma.JsonValue
+      name: string
+      values: Prisma.JsonValue
       schemaVersion: number
+      userId: number
+      createdAt: Date
       updatedAt: Date
-      updatedByUserId: number | null
-    }, ExtArgs["result"]["propertyFeaturesData"]>
+    }, ExtArgs["result"]["featureSheet"]>
     composites: {}
   }
 
-  type PropertyFeaturesDataGetPayload<S extends boolean | null | undefined | PropertyFeaturesDataDefaultArgs> = $Result.GetResult<Prisma.$PropertyFeaturesDataPayload, S>
+  type FeatureSheetGetPayload<S extends boolean | null | undefined | FeatureSheetDefaultArgs> = $Result.GetResult<Prisma.$FeatureSheetPayload, S>
 
-  type PropertyFeaturesDataCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PropertyFeaturesDataFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: PropertyFeaturesDataCountAggregateInputType | true
+  type FeatureSheetCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<FeatureSheetFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: FeatureSheetCountAggregateInputType | true
     }
 
-  export interface PropertyFeaturesDataDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PropertyFeaturesData'], meta: { name: 'PropertyFeaturesData' } }
+  export interface FeatureSheetDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['FeatureSheet'], meta: { name: 'FeatureSheet' } }
     /**
-     * Find zero or one PropertyFeaturesData that matches the filter.
-     * @param {PropertyFeaturesDataFindUniqueArgs} args - Arguments to find a PropertyFeaturesData
+     * Find zero or one FeatureSheet that matches the filter.
+     * @param {FeatureSheetFindUniqueArgs} args - Arguments to find a FeatureSheet
      * @example
-     * // Get one PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.findUnique({
+     * // Get one FeatureSheet
+     * const featureSheet = await prisma.featureSheet.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends PropertyFeaturesDataFindUniqueArgs>(args: SelectSubset<T, PropertyFeaturesDataFindUniqueArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends FeatureSheetFindUniqueArgs>(args: SelectSubset<T, FeatureSheetFindUniqueArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one PropertyFeaturesData that matches the filter or throw an error with `error.code='P2025'`
+     * Find one FeatureSheet that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {PropertyFeaturesDataFindUniqueOrThrowArgs} args - Arguments to find a PropertyFeaturesData
+     * @param {FeatureSheetFindUniqueOrThrowArgs} args - Arguments to find a FeatureSheet
      * @example
-     * // Get one PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.findUniqueOrThrow({
+     * // Get one FeatureSheet
+     * const featureSheet = await prisma.featureSheet.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends PropertyFeaturesDataFindUniqueOrThrowArgs>(args: SelectSubset<T, PropertyFeaturesDataFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends FeatureSheetFindUniqueOrThrowArgs>(args: SelectSubset<T, FeatureSheetFindUniqueOrThrowArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first PropertyFeaturesData that matches the filter.
+     * Find the first FeatureSheet that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyFeaturesDataFindFirstArgs} args - Arguments to find a PropertyFeaturesData
+     * @param {FeatureSheetFindFirstArgs} args - Arguments to find a FeatureSheet
      * @example
-     * // Get one PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.findFirst({
+     * // Get one FeatureSheet
+     * const featureSheet = await prisma.featureSheet.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends PropertyFeaturesDataFindFirstArgs>(args?: SelectSubset<T, PropertyFeaturesDataFindFirstArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends FeatureSheetFindFirstArgs>(args?: SelectSubset<T, FeatureSheetFindFirstArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first PropertyFeaturesData that matches the filter or
+     * Find the first FeatureSheet that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyFeaturesDataFindFirstOrThrowArgs} args - Arguments to find a PropertyFeaturesData
+     * @param {FeatureSheetFindFirstOrThrowArgs} args - Arguments to find a FeatureSheet
      * @example
-     * // Get one PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.findFirstOrThrow({
+     * // Get one FeatureSheet
+     * const featureSheet = await prisma.featureSheet.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends PropertyFeaturesDataFindFirstOrThrowArgs>(args?: SelectSubset<T, PropertyFeaturesDataFindFirstOrThrowArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends FeatureSheetFindFirstOrThrowArgs>(args?: SelectSubset<T, FeatureSheetFindFirstOrThrowArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more PropertyFeaturesData that matches the filter.
+     * Find zero or more FeatureSheets that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyFeaturesDataFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {FeatureSheetFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.findMany()
+     * // Get all FeatureSheets
+     * const featureSheets = await prisma.featureSheet.findMany()
      * 
-     * // Get first 10 PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.findMany({ take: 10 })
+     * // Get first 10 FeatureSheets
+     * const featureSheets = await prisma.featureSheet.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const propertyFeaturesDataWithIdOnly = await prisma.propertyFeaturesData.findMany({ select: { id: true } })
+     * const featureSheetWithIdOnly = await prisma.featureSheet.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends PropertyFeaturesDataFindManyArgs>(args?: SelectSubset<T, PropertyFeaturesDataFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends FeatureSheetFindManyArgs>(args?: SelectSubset<T, FeatureSheetFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a PropertyFeaturesData.
-     * @param {PropertyFeaturesDataCreateArgs} args - Arguments to create a PropertyFeaturesData.
+     * Create a FeatureSheet.
+     * @param {FeatureSheetCreateArgs} args - Arguments to create a FeatureSheet.
      * @example
-     * // Create one PropertyFeaturesData
-     * const PropertyFeaturesData = await prisma.propertyFeaturesData.create({
+     * // Create one FeatureSheet
+     * const FeatureSheet = await prisma.featureSheet.create({
      *   data: {
-     *     // ... data to create a PropertyFeaturesData
+     *     // ... data to create a FeatureSheet
      *   }
      * })
      * 
      */
-    create<T extends PropertyFeaturesDataCreateArgs>(args: SelectSubset<T, PropertyFeaturesDataCreateArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends FeatureSheetCreateArgs>(args: SelectSubset<T, FeatureSheetCreateArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many PropertyFeaturesData.
-     * @param {PropertyFeaturesDataCreateManyArgs} args - Arguments to create many PropertyFeaturesData.
+     * Create many FeatureSheets.
+     * @param {FeatureSheetCreateManyArgs} args - Arguments to create many FeatureSheets.
      * @example
-     * // Create many PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.createMany({
+     * // Create many FeatureSheets
+     * const featureSheet = await prisma.featureSheet.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends PropertyFeaturesDataCreateManyArgs>(args?: SelectSubset<T, PropertyFeaturesDataCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends FeatureSheetCreateManyArgs>(args?: SelectSubset<T, FeatureSheetCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many PropertyFeaturesData and returns the data saved in the database.
-     * @param {PropertyFeaturesDataCreateManyAndReturnArgs} args - Arguments to create many PropertyFeaturesData.
+     * Create many FeatureSheets and returns the data saved in the database.
+     * @param {FeatureSheetCreateManyAndReturnArgs} args - Arguments to create many FeatureSheets.
      * @example
-     * // Create many PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.createManyAndReturn({
+     * // Create many FeatureSheets
+     * const featureSheet = await prisma.featureSheet.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      * 
-     * // Create many PropertyFeaturesData and only return the `id`
-     * const propertyFeaturesDataWithIdOnly = await prisma.propertyFeaturesData.createManyAndReturn({
+     * // Create many FeatureSheets and only return the `id`
+     * const featureSheetWithIdOnly = await prisma.featureSheet.createManyAndReturn({
      *   select: { id: true },
      *   data: [
      *     // ... provide data here
@@ -15606,28 +14150,28 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    createManyAndReturn<T extends PropertyFeaturesDataCreateManyAndReturnArgs>(args?: SelectSubset<T, PropertyFeaturesDataCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+    createManyAndReturn<T extends FeatureSheetCreateManyAndReturnArgs>(args?: SelectSubset<T, FeatureSheetCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a PropertyFeaturesData.
-     * @param {PropertyFeaturesDataDeleteArgs} args - Arguments to delete one PropertyFeaturesData.
+     * Delete a FeatureSheet.
+     * @param {FeatureSheetDeleteArgs} args - Arguments to delete one FeatureSheet.
      * @example
-     * // Delete one PropertyFeaturesData
-     * const PropertyFeaturesData = await prisma.propertyFeaturesData.delete({
+     * // Delete one FeatureSheet
+     * const FeatureSheet = await prisma.featureSheet.delete({
      *   where: {
-     *     // ... filter to delete one PropertyFeaturesData
+     *     // ... filter to delete one FeatureSheet
      *   }
      * })
      * 
      */
-    delete<T extends PropertyFeaturesDataDeleteArgs>(args: SelectSubset<T, PropertyFeaturesDataDeleteArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends FeatureSheetDeleteArgs>(args: SelectSubset<T, FeatureSheetDeleteArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one PropertyFeaturesData.
-     * @param {PropertyFeaturesDataUpdateArgs} args - Arguments to update one PropertyFeaturesData.
+     * Update one FeatureSheet.
+     * @param {FeatureSheetUpdateArgs} args - Arguments to update one FeatureSheet.
      * @example
-     * // Update one PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.update({
+     * // Update one FeatureSheet
+     * const featureSheet = await prisma.featureSheet.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -15637,30 +14181,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends PropertyFeaturesDataUpdateArgs>(args: SelectSubset<T, PropertyFeaturesDataUpdateArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends FeatureSheetUpdateArgs>(args: SelectSubset<T, FeatureSheetUpdateArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more PropertyFeaturesData.
-     * @param {PropertyFeaturesDataDeleteManyArgs} args - Arguments to filter PropertyFeaturesData to delete.
+     * Delete zero or more FeatureSheets.
+     * @param {FeatureSheetDeleteManyArgs} args - Arguments to filter FeatureSheets to delete.
      * @example
-     * // Delete a few PropertyFeaturesData
-     * const { count } = await prisma.propertyFeaturesData.deleteMany({
+     * // Delete a few FeatureSheets
+     * const { count } = await prisma.featureSheet.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends PropertyFeaturesDataDeleteManyArgs>(args?: SelectSubset<T, PropertyFeaturesDataDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends FeatureSheetDeleteManyArgs>(args?: SelectSubset<T, FeatureSheetDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more PropertyFeaturesData.
+     * Update zero or more FeatureSheets.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyFeaturesDataUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {FeatureSheetUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.updateMany({
+     * // Update many FeatureSheets
+     * const featureSheet = await prisma.featureSheet.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -15670,14 +14214,14 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends PropertyFeaturesDataUpdateManyArgs>(args: SelectSubset<T, PropertyFeaturesDataUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends FeatureSheetUpdateManyArgs>(args: SelectSubset<T, FeatureSheetUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more PropertyFeaturesData and returns the data updated in the database.
-     * @param {PropertyFeaturesDataUpdateManyAndReturnArgs} args - Arguments to update many PropertyFeaturesData.
+     * Update zero or more FeatureSheets and returns the data updated in the database.
+     * @param {FeatureSheetUpdateManyAndReturnArgs} args - Arguments to update many FeatureSheets.
      * @example
-     * // Update many PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.updateManyAndReturn({
+     * // Update many FeatureSheets
+     * const featureSheet = await prisma.featureSheet.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -15686,8 +14230,8 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more PropertyFeaturesData and only return the `id`
-     * const propertyFeaturesDataWithIdOnly = await prisma.propertyFeaturesData.updateManyAndReturn({
+     * // Update zero or more FeatureSheets and only return the `id`
+     * const featureSheetWithIdOnly = await prisma.featureSheet.updateManyAndReturn({
      *   select: { id: true },
      *   where: {
      *     // ... provide filter here
@@ -15700,56 +14244,56 @@ export namespace Prisma {
      * Read more here: https://pris.ly/d/null-undefined
      * 
      */
-    updateManyAndReturn<T extends PropertyFeaturesDataUpdateManyAndReturnArgs>(args: SelectSubset<T, PropertyFeaturesDataUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+    updateManyAndReturn<T extends FeatureSheetUpdateManyAndReturnArgs>(args: SelectSubset<T, FeatureSheetUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one PropertyFeaturesData.
-     * @param {PropertyFeaturesDataUpsertArgs} args - Arguments to update or create a PropertyFeaturesData.
+     * Create or update one FeatureSheet.
+     * @param {FeatureSheetUpsertArgs} args - Arguments to update or create a FeatureSheet.
      * @example
-     * // Update or create a PropertyFeaturesData
-     * const propertyFeaturesData = await prisma.propertyFeaturesData.upsert({
+     * // Update or create a FeatureSheet
+     * const featureSheet = await prisma.featureSheet.upsert({
      *   create: {
-     *     // ... data to create a PropertyFeaturesData
+     *     // ... data to create a FeatureSheet
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the PropertyFeaturesData we want to update
+     *     // ... the filter for the FeatureSheet we want to update
      *   }
      * })
      */
-    upsert<T extends PropertyFeaturesDataUpsertArgs>(args: SelectSubset<T, PropertyFeaturesDataUpsertArgs<ExtArgs>>): Prisma__PropertyFeaturesDataClient<$Result.GetResult<Prisma.$PropertyFeaturesDataPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends FeatureSheetUpsertArgs>(args: SelectSubset<T, FeatureSheetUpsertArgs<ExtArgs>>): Prisma__FeatureSheetClient<$Result.GetResult<Prisma.$FeatureSheetPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
 
     /**
-     * Count the number of PropertyFeaturesData.
+     * Count the number of FeatureSheets.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyFeaturesDataCountArgs} args - Arguments to filter PropertyFeaturesData to count.
+     * @param {FeatureSheetCountArgs} args - Arguments to filter FeatureSheets to count.
      * @example
-     * // Count the number of PropertyFeaturesData
-     * const count = await prisma.propertyFeaturesData.count({
+     * // Count the number of FeatureSheets
+     * const count = await prisma.featureSheet.count({
      *   where: {
-     *     // ... the filter for the PropertyFeaturesData we want to count
+     *     // ... the filter for the FeatureSheets we want to count
      *   }
      * })
     **/
-    count<T extends PropertyFeaturesDataCountArgs>(
-      args?: Subset<T, PropertyFeaturesDataCountArgs>,
+    count<T extends FeatureSheetCountArgs>(
+      args?: Subset<T, FeatureSheetCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], PropertyFeaturesDataCountAggregateOutputType>
+          : GetScalarType<T['select'], FeatureSheetCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a PropertyFeaturesData.
+     * Allows you to perform aggregations operations on a FeatureSheet.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyFeaturesDataAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {FeatureSheetAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -15769,13 +14313,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends PropertyFeaturesDataAggregateArgs>(args: Subset<T, PropertyFeaturesDataAggregateArgs>): Prisma.PrismaPromise<GetPropertyFeaturesDataAggregateType<T>>
+    aggregate<T extends FeatureSheetAggregateArgs>(args: Subset<T, FeatureSheetAggregateArgs>): Prisma.PrismaPromise<GetFeatureSheetAggregateType<T>>
 
     /**
-     * Group by PropertyFeaturesData.
+     * Group by FeatureSheet.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {PropertyFeaturesDataGroupByArgs} args - Group by arguments.
+     * @param {FeatureSheetGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -15790,14 +14334,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends PropertyFeaturesDataGroupByArgs,
+      T extends FeatureSheetGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PropertyFeaturesDataGroupByArgs['orderBy'] }
-        : { orderBy?: PropertyFeaturesDataGroupByArgs['orderBy'] },
+        ? { orderBy: FeatureSheetGroupByArgs['orderBy'] }
+        : { orderBy?: FeatureSheetGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -15846,23 +14390,22 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, PropertyFeaturesDataGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPropertyFeaturesDataGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, FeatureSheetGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetFeatureSheetGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the PropertyFeaturesData model
+   * Fields of the FeatureSheet model
    */
-  readonly fields: PropertyFeaturesDataFieldRefs;
+  readonly fields: FeatureSheetFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for PropertyFeaturesData.
+   * The delegate class that acts as a "Promise-like" for FeatureSheet.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__PropertyFeaturesDataClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__FeatureSheetClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    property<T extends PropertyDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyDefaultArgs<ExtArgs>>): Prisma__PropertyClient<$Result.GetResult<Prisma.$PropertyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    updatedByUser<T extends PropertyFeaturesData$updatedByUserArgs<ExtArgs> = {}>(args?: Subset<T, PropertyFeaturesData$updatedByUserArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15889,445 +14432,427 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the PropertyFeaturesData model
+   * Fields of the FeatureSheet model
    */
-  interface PropertyFeaturesDataFieldRefs {
-    readonly id: FieldRef<"PropertyFeaturesData", 'Int'>
-    readonly propertyId: FieldRef<"PropertyFeaturesData", 'Int'>
-    readonly features: FieldRef<"PropertyFeaturesData", 'Json'>
-    readonly schemaVersion: FieldRef<"PropertyFeaturesData", 'Int'>
-    readonly updatedAt: FieldRef<"PropertyFeaturesData", 'DateTime'>
-    readonly updatedByUserId: FieldRef<"PropertyFeaturesData", 'Int'>
+  interface FeatureSheetFieldRefs {
+    readonly id: FieldRef<"FeatureSheet", 'Int'>
+    readonly name: FieldRef<"FeatureSheet", 'String'>
+    readonly values: FieldRef<"FeatureSheet", 'Json'>
+    readonly schemaVersion: FieldRef<"FeatureSheet", 'Int'>
+    readonly userId: FieldRef<"FeatureSheet", 'Int'>
+    readonly createdAt: FieldRef<"FeatureSheet", 'DateTime'>
+    readonly updatedAt: FieldRef<"FeatureSheet", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * PropertyFeaturesData findUnique
+   * FeatureSheet findUnique
    */
-  export type PropertyFeaturesDataFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * Filter, which PropertyFeaturesData to fetch.
+     * Filter, which FeatureSheet to fetch.
      */
-    where: PropertyFeaturesDataWhereUniqueInput
+    where: FeatureSheetWhereUniqueInput
   }
 
   /**
-   * PropertyFeaturesData findUniqueOrThrow
+   * FeatureSheet findUniqueOrThrow
    */
-  export type PropertyFeaturesDataFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * Filter, which PropertyFeaturesData to fetch.
+     * Filter, which FeatureSheet to fetch.
      */
-    where: PropertyFeaturesDataWhereUniqueInput
+    where: FeatureSheetWhereUniqueInput
   }
 
   /**
-   * PropertyFeaturesData findFirst
+   * FeatureSheet findFirst
    */
-  export type PropertyFeaturesDataFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * Filter, which PropertyFeaturesData to fetch.
+     * Filter, which FeatureSheet to fetch.
      */
-    where?: PropertyFeaturesDataWhereInput
+    where?: FeatureSheetWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PropertyFeaturesData to fetch.
+     * Determine the order of FeatureSheets to fetch.
      */
-    orderBy?: PropertyFeaturesDataOrderByWithRelationInput | PropertyFeaturesDataOrderByWithRelationInput[]
+    orderBy?: FeatureSheetOrderByWithRelationInput | FeatureSheetOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for PropertyFeaturesData.
+     * Sets the position for searching for FeatureSheets.
      */
-    cursor?: PropertyFeaturesDataWhereUniqueInput
+    cursor?: FeatureSheetWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PropertyFeaturesData from the position of the cursor.
+     * Take `±n` FeatureSheets from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PropertyFeaturesData.
+     * Skip the first `n` FeatureSheets.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of PropertyFeaturesData.
+     * Filter by unique combinations of FeatureSheets.
      */
-    distinct?: PropertyFeaturesDataScalarFieldEnum | PropertyFeaturesDataScalarFieldEnum[]
+    distinct?: FeatureSheetScalarFieldEnum | FeatureSheetScalarFieldEnum[]
   }
 
   /**
-   * PropertyFeaturesData findFirstOrThrow
+   * FeatureSheet findFirstOrThrow
    */
-  export type PropertyFeaturesDataFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * Filter, which PropertyFeaturesData to fetch.
+     * Filter, which FeatureSheet to fetch.
      */
-    where?: PropertyFeaturesDataWhereInput
+    where?: FeatureSheetWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PropertyFeaturesData to fetch.
+     * Determine the order of FeatureSheets to fetch.
      */
-    orderBy?: PropertyFeaturesDataOrderByWithRelationInput | PropertyFeaturesDataOrderByWithRelationInput[]
+    orderBy?: FeatureSheetOrderByWithRelationInput | FeatureSheetOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for PropertyFeaturesData.
+     * Sets the position for searching for FeatureSheets.
      */
-    cursor?: PropertyFeaturesDataWhereUniqueInput
+    cursor?: FeatureSheetWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PropertyFeaturesData from the position of the cursor.
+     * Take `±n` FeatureSheets from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PropertyFeaturesData.
+     * Skip the first `n` FeatureSheets.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of PropertyFeaturesData.
+     * Filter by unique combinations of FeatureSheets.
      */
-    distinct?: PropertyFeaturesDataScalarFieldEnum | PropertyFeaturesDataScalarFieldEnum[]
+    distinct?: FeatureSheetScalarFieldEnum | FeatureSheetScalarFieldEnum[]
   }
 
   /**
-   * PropertyFeaturesData findMany
+   * FeatureSheet findMany
    */
-  export type PropertyFeaturesDataFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * Filter, which PropertyFeaturesData to fetch.
+     * Filter, which FeatureSheets to fetch.
      */
-    where?: PropertyFeaturesDataWhereInput
+    where?: FeatureSheetWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of PropertyFeaturesData to fetch.
+     * Determine the order of FeatureSheets to fetch.
      */
-    orderBy?: PropertyFeaturesDataOrderByWithRelationInput | PropertyFeaturesDataOrderByWithRelationInput[]
+    orderBy?: FeatureSheetOrderByWithRelationInput | FeatureSheetOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing PropertyFeaturesData.
+     * Sets the position for listing FeatureSheets.
      */
-    cursor?: PropertyFeaturesDataWhereUniqueInput
+    cursor?: FeatureSheetWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` PropertyFeaturesData from the position of the cursor.
+     * Take `±n` FeatureSheets from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` PropertyFeaturesData.
+     * Skip the first `n` FeatureSheets.
      */
     skip?: number
-    distinct?: PropertyFeaturesDataScalarFieldEnum | PropertyFeaturesDataScalarFieldEnum[]
+    distinct?: FeatureSheetScalarFieldEnum | FeatureSheetScalarFieldEnum[]
   }
 
   /**
-   * PropertyFeaturesData create
+   * FeatureSheet create
    */
-  export type PropertyFeaturesDataCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * The data needed to create a PropertyFeaturesData.
+     * The data needed to create a FeatureSheet.
      */
-    data: XOR<PropertyFeaturesDataCreateInput, PropertyFeaturesDataUncheckedCreateInput>
+    data: XOR<FeatureSheetCreateInput, FeatureSheetUncheckedCreateInput>
   }
 
   /**
-   * PropertyFeaturesData createMany
+   * FeatureSheet createMany
    */
-  export type PropertyFeaturesDataCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many PropertyFeaturesData.
+     * The data used to create many FeatureSheets.
      */
-    data: PropertyFeaturesDataCreateManyInput | PropertyFeaturesDataCreateManyInput[]
+    data: FeatureSheetCreateManyInput | FeatureSheetCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * PropertyFeaturesData createManyAndReturn
+   * FeatureSheet createManyAndReturn
    */
-  export type PropertyFeaturesDataCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelectCreateManyAndReturn<ExtArgs> | null
+    select?: FeatureSheetSelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
-     * The data used to create many PropertyFeaturesData.
+     * The data used to create many FeatureSheets.
      */
-    data: PropertyFeaturesDataCreateManyInput | PropertyFeaturesDataCreateManyInput[]
+    data: FeatureSheetCreateManyInput | FeatureSheetCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: FeatureSheetIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * PropertyFeaturesData update
+   * FeatureSheet update
    */
-  export type PropertyFeaturesDataUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * The data needed to update a PropertyFeaturesData.
+     * The data needed to update a FeatureSheet.
      */
-    data: XOR<PropertyFeaturesDataUpdateInput, PropertyFeaturesDataUncheckedUpdateInput>
+    data: XOR<FeatureSheetUpdateInput, FeatureSheetUncheckedUpdateInput>
     /**
-     * Choose, which PropertyFeaturesData to update.
+     * Choose, which FeatureSheet to update.
      */
-    where: PropertyFeaturesDataWhereUniqueInput
+    where: FeatureSheetWhereUniqueInput
   }
 
   /**
-   * PropertyFeaturesData updateMany
+   * FeatureSheet updateMany
    */
-  export type PropertyFeaturesDataUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update PropertyFeaturesData.
+     * The data used to update FeatureSheets.
      */
-    data: XOR<PropertyFeaturesDataUpdateManyMutationInput, PropertyFeaturesDataUncheckedUpdateManyInput>
+    data: XOR<FeatureSheetUpdateManyMutationInput, FeatureSheetUncheckedUpdateManyInput>
     /**
-     * Filter which PropertyFeaturesData to update
+     * Filter which FeatureSheets to update
      */
-    where?: PropertyFeaturesDataWhereInput
+    where?: FeatureSheetWhereInput
     /**
-     * Limit how many PropertyFeaturesData to update.
+     * Limit how many FeatureSheets to update.
      */
     limit?: number
   }
 
   /**
-   * PropertyFeaturesData updateManyAndReturn
+   * FeatureSheet updateManyAndReturn
    */
-  export type PropertyFeaturesDataUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: FeatureSheetSelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
-     * The data used to update PropertyFeaturesData.
+     * The data used to update FeatureSheets.
      */
-    data: XOR<PropertyFeaturesDataUpdateManyMutationInput, PropertyFeaturesDataUncheckedUpdateManyInput>
+    data: XOR<FeatureSheetUpdateManyMutationInput, FeatureSheetUncheckedUpdateManyInput>
     /**
-     * Filter which PropertyFeaturesData to update
+     * Filter which FeatureSheets to update
      */
-    where?: PropertyFeaturesDataWhereInput
+    where?: FeatureSheetWhereInput
     /**
-     * Limit how many PropertyFeaturesData to update.
+     * Limit how many FeatureSheets to update.
      */
     limit?: number
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataIncludeUpdateManyAndReturn<ExtArgs> | null
+    include?: FeatureSheetIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * PropertyFeaturesData upsert
+   * FeatureSheet upsert
    */
-  export type PropertyFeaturesDataUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * The filter to search for the PropertyFeaturesData to update in case it exists.
+     * The filter to search for the FeatureSheet to update in case it exists.
      */
-    where: PropertyFeaturesDataWhereUniqueInput
+    where: FeatureSheetWhereUniqueInput
     /**
-     * In case the PropertyFeaturesData found by the `where` argument doesn't exist, create a new PropertyFeaturesData with this data.
+     * In case the FeatureSheet found by the `where` argument doesn't exist, create a new FeatureSheet with this data.
      */
-    create: XOR<PropertyFeaturesDataCreateInput, PropertyFeaturesDataUncheckedCreateInput>
+    create: XOR<FeatureSheetCreateInput, FeatureSheetUncheckedCreateInput>
     /**
-     * In case the PropertyFeaturesData was found with the provided `where` argument, update it with this data.
+     * In case the FeatureSheet was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<PropertyFeaturesDataUpdateInput, PropertyFeaturesDataUncheckedUpdateInput>
+    update: XOR<FeatureSheetUpdateInput, FeatureSheetUncheckedUpdateInput>
   }
 
   /**
-   * PropertyFeaturesData delete
+   * FeatureSheet delete
    */
-  export type PropertyFeaturesDataDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the PropertyFeaturesData
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the PropertyFeaturesData
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
     /**
-     * Filter which PropertyFeaturesData to delete.
+     * Filter which FeatureSheet to delete.
      */
-    where: PropertyFeaturesDataWhereUniqueInput
+    where: FeatureSheetWhereUniqueInput
   }
 
   /**
-   * PropertyFeaturesData deleteMany
+   * FeatureSheet deleteMany
    */
-  export type PropertyFeaturesDataDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which PropertyFeaturesData to delete
+     * Filter which FeatureSheets to delete
      */
-    where?: PropertyFeaturesDataWhereInput
+    where?: FeatureSheetWhereInput
     /**
-     * Limit how many PropertyFeaturesData to delete.
+     * Limit how many FeatureSheets to delete.
      */
     limit?: number
   }
 
   /**
-   * PropertyFeaturesData.updatedByUser
+   * FeatureSheet without action
    */
-  export type PropertyFeaturesData$updatedByUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type FeatureSheetDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the User
+     * Select specific fields to fetch from the FeatureSheet
      */
-    select?: UserSelect<ExtArgs> | null
+    select?: FeatureSheetSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the User
+     * Omit specific fields from the FeatureSheet
      */
-    omit?: UserOmit<ExtArgs> | null
+    omit?: FeatureSheetOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
-  }
-
-  /**
-   * PropertyFeaturesData without action
-   */
-  export type PropertyFeaturesDataDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyFeaturesData
-     */
-    select?: PropertyFeaturesDataSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyFeaturesData
-     */
-    omit?: PropertyFeaturesDataOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyFeaturesDataInclude<ExtArgs> | null
+    include?: FeatureSheetInclude<ExtArgs> | null
   }
 
 
@@ -28225,22 +26750,6 @@ export namespace Prisma {
   export type PropertyFeatureOptionScalarFieldEnum = (typeof PropertyFeatureOptionScalarFieldEnum)[keyof typeof PropertyFeatureOptionScalarFieldEnum]
 
 
-  export const PropertyPropertyFeatureScalarFieldEnum: {
-    id: 'id',
-    propertyFeatureId: 'propertyFeatureId',
-    propertyId: 'propertyId',
-    valueText: 'valueText',
-    valueBool: 'valueBool',
-    valueInt: 'valueInt',
-    valueFloat: 'valueFloat',
-    valueFeatureOptionId: 'valueFeatureOptionId',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type PropertyPropertyFeatureScalarFieldEnum = (typeof PropertyPropertyFeatureScalarFieldEnum)[keyof typeof PropertyPropertyFeatureScalarFieldEnum]
-
-
   export const SystemConfigScalarFieldEnum: {
     id: 'id',
     key: 'key',
@@ -28252,16 +26761,17 @@ export namespace Prisma {
   export type SystemConfigScalarFieldEnum = (typeof SystemConfigScalarFieldEnum)[keyof typeof SystemConfigScalarFieldEnum]
 
 
-  export const PropertyFeaturesDataScalarFieldEnum: {
+  export const FeatureSheetScalarFieldEnum: {
     id: 'id',
-    propertyId: 'propertyId',
-    features: 'features',
+    name: 'name',
+    values: 'values',
     schemaVersion: 'schemaVersion',
-    updatedAt: 'updatedAt',
-    updatedByUserId: 'updatedByUserId'
+    userId: 'userId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
-  export type PropertyFeaturesDataScalarFieldEnum = (typeof PropertyFeaturesDataScalarFieldEnum)[keyof typeof PropertyFeaturesDataScalarFieldEnum]
+  export type FeatureSheetScalarFieldEnum = (typeof FeatureSheetScalarFieldEnum)[keyof typeof FeatureSheetScalarFieldEnum]
 
 
   export const CanvassingVisitScalarFieldEnum: {
@@ -28447,14 +26957,6 @@ export namespace Prisma {
   };
 
   export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
-
-
-  export const NullableJsonNullValueInput: {
-    DbNull: typeof DbNull,
-    JsonNull: typeof JsonNull
-  };
-
-  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const QueryMode: {
@@ -28701,7 +27203,7 @@ export namespace Prisma {
     activities?: UserActivityListRelationFilter
     visitComments?: CanvassingVisitCommentListRelationFilter
     revisits?: RevisitListRelationFilter
-    updatedFeaturesData?: PropertyFeaturesDataListRelationFilter
+    featureSheets?: FeatureSheetListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -28723,7 +27225,7 @@ export namespace Prisma {
     activities?: UserActivityOrderByRelationAggregateInput
     visitComments?: CanvassingVisitCommentOrderByRelationAggregateInput
     revisits?: RevisitOrderByRelationAggregateInput
-    updatedFeaturesData?: PropertyFeaturesDataOrderByRelationAggregateInput
+    featureSheets?: FeatureSheetOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -28748,7 +27250,7 @@ export namespace Prisma {
     activities?: UserActivityListRelationFilter
     visitComments?: CanvassingVisitCommentListRelationFilter
     revisits?: RevisitListRelationFilter
-    updatedFeaturesData?: PropertyFeaturesDataListRelationFilter
+    featureSheets?: FeatureSheetListRelationFilter
   }, "id" | "email" | "googleId">
 
   export type UserOrderByWithAggregationInput = {
@@ -28814,8 +27316,6 @@ export namespace Prisma {
     rooms?: RoomListRelationFilter
     sharedWith?: PropertyShareListRelationFilter
     inventorySessions?: InventorySessionListRelationFilter
-    propertyFeatures?: PropertyPropertyFeatureListRelationFilter
-    featuresData?: XOR<PropertyFeaturesDataNullableScalarRelationFilter, PropertyFeaturesDataWhereInput> | null
   }
 
   export type PropertyOrderByWithRelationInput = {
@@ -28842,8 +27342,6 @@ export namespace Prisma {
     rooms?: RoomOrderByRelationAggregateInput
     sharedWith?: PropertyShareOrderByRelationAggregateInput
     inventorySessions?: InventorySessionOrderByRelationAggregateInput
-    propertyFeatures?: PropertyPropertyFeatureOrderByRelationAggregateInput
-    featuresData?: PropertyFeaturesDataOrderByWithRelationInput
   }
 
   export type PropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -28873,8 +27371,6 @@ export namespace Prisma {
     rooms?: RoomListRelationFilter
     sharedWith?: PropertyShareListRelationFilter
     inventorySessions?: InventorySessionListRelationFilter
-    propertyFeatures?: PropertyPropertyFeatureListRelationFilter
-    featuresData?: XOR<PropertyFeaturesDataNullableScalarRelationFilter, PropertyFeaturesDataWhereInput> | null
   }, "id" | "reference">
 
   export type PropertyOrderByWithAggregationInput = {
@@ -29258,7 +27754,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"PropertyFeature"> | Date | string
     category?: XOR<PropertyFeatureCategoryScalarRelationFilter, PropertyFeatureCategoryWhereInput>
     options?: PropertyFeatureOptionListRelationFilter
-    properties?: PropertyPropertyFeatureListRelationFilter
   }
 
   export type PropertyFeatureOrderByWithRelationInput = {
@@ -29272,7 +27767,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
     category?: PropertyFeatureCategoryOrderByWithRelationInput
     options?: PropertyFeatureOptionOrderByRelationAggregateInput
-    properties?: PropertyPropertyFeatureOrderByRelationAggregateInput
   }
 
   export type PropertyFeatureWhereUniqueInput = Prisma.AtLeast<{
@@ -29289,7 +27783,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"PropertyFeature"> | Date | string
     category?: XOR<PropertyFeatureCategoryScalarRelationFilter, PropertyFeatureCategoryWhereInput>
     options?: PropertyFeatureOptionListRelationFilter
-    properties?: PropertyPropertyFeatureListRelationFilter
   }, "id">
 
   export type PropertyFeatureOrderByWithAggregationInput = {
@@ -29332,7 +27825,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"PropertyFeatureOption"> | Date | string
     updatedAt?: DateTimeFilter<"PropertyFeatureOption"> | Date | string
     propertyFeature?: XOR<PropertyFeatureScalarRelationFilter, PropertyFeatureWhereInput>
-    propertyFeatures?: PropertyPropertyFeatureListRelationFilter
   }
 
   export type PropertyFeatureOptionOrderByWithRelationInput = {
@@ -29342,7 +27834,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     propertyFeature?: PropertyFeatureOrderByWithRelationInput
-    propertyFeatures?: PropertyPropertyFeatureOrderByRelationAggregateInput
   }
 
   export type PropertyFeatureOptionWhereUniqueInput = Prisma.AtLeast<{
@@ -29355,7 +27846,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"PropertyFeatureOption"> | Date | string
     updatedAt?: DateTimeFilter<"PropertyFeatureOption"> | Date | string
     propertyFeature?: XOR<PropertyFeatureScalarRelationFilter, PropertyFeatureWhereInput>
-    propertyFeatures?: PropertyPropertyFeatureListRelationFilter
   }, "id">
 
   export type PropertyFeatureOptionOrderByWithAggregationInput = {
@@ -29380,95 +27870,6 @@ export namespace Prisma {
     value?: JsonWithAggregatesFilter<"PropertyFeatureOption">
     createdAt?: DateTimeWithAggregatesFilter<"PropertyFeatureOption"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PropertyFeatureOption"> | Date | string
-  }
-
-  export type PropertyPropertyFeatureWhereInput = {
-    AND?: PropertyPropertyFeatureWhereInput | PropertyPropertyFeatureWhereInput[]
-    OR?: PropertyPropertyFeatureWhereInput[]
-    NOT?: PropertyPropertyFeatureWhereInput | PropertyPropertyFeatureWhereInput[]
-    id?: IntFilter<"PropertyPropertyFeature"> | number
-    propertyFeatureId?: IntFilter<"PropertyPropertyFeature"> | number
-    propertyId?: IntFilter<"PropertyPropertyFeature"> | number
-    valueText?: JsonNullableFilter<"PropertyPropertyFeature">
-    valueBool?: BoolNullableFilter<"PropertyPropertyFeature"> | boolean | null
-    valueInt?: IntNullableFilter<"PropertyPropertyFeature"> | number | null
-    valueFloat?: FloatNullableFilter<"PropertyPropertyFeature"> | number | null
-    valueFeatureOptionId?: IntNullableFilter<"PropertyPropertyFeature"> | number | null
-    createdAt?: DateTimeFilter<"PropertyPropertyFeature"> | Date | string
-    updatedAt?: DateTimeFilter<"PropertyPropertyFeature"> | Date | string
-    property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-    propertyFeature?: XOR<PropertyFeatureScalarRelationFilter, PropertyFeatureWhereInput>
-    valueFeatureOption?: XOR<PropertyFeatureOptionNullableScalarRelationFilter, PropertyFeatureOptionWhereInput> | null
-  }
-
-  export type PropertyPropertyFeatureOrderByWithRelationInput = {
-    id?: SortOrder
-    propertyFeatureId?: SortOrder
-    propertyId?: SortOrder
-    valueText?: SortOrderInput | SortOrder
-    valueBool?: SortOrderInput | SortOrder
-    valueInt?: SortOrderInput | SortOrder
-    valueFloat?: SortOrderInput | SortOrder
-    valueFeatureOptionId?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    property?: PropertyOrderByWithRelationInput
-    propertyFeature?: PropertyFeatureOrderByWithRelationInput
-    valueFeatureOption?: PropertyFeatureOptionOrderByWithRelationInput
-  }
-
-  export type PropertyPropertyFeatureWhereUniqueInput = Prisma.AtLeast<{
-    id?: number
-    propertyId_propertyFeatureId?: PropertyPropertyFeaturePropertyIdPropertyFeatureIdCompoundUniqueInput
-    AND?: PropertyPropertyFeatureWhereInput | PropertyPropertyFeatureWhereInput[]
-    OR?: PropertyPropertyFeatureWhereInput[]
-    NOT?: PropertyPropertyFeatureWhereInput | PropertyPropertyFeatureWhereInput[]
-    propertyFeatureId?: IntFilter<"PropertyPropertyFeature"> | number
-    propertyId?: IntFilter<"PropertyPropertyFeature"> | number
-    valueText?: JsonNullableFilter<"PropertyPropertyFeature">
-    valueBool?: BoolNullableFilter<"PropertyPropertyFeature"> | boolean | null
-    valueInt?: IntNullableFilter<"PropertyPropertyFeature"> | number | null
-    valueFloat?: FloatNullableFilter<"PropertyPropertyFeature"> | number | null
-    valueFeatureOptionId?: IntNullableFilter<"PropertyPropertyFeature"> | number | null
-    createdAt?: DateTimeFilter<"PropertyPropertyFeature"> | Date | string
-    updatedAt?: DateTimeFilter<"PropertyPropertyFeature"> | Date | string
-    property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-    propertyFeature?: XOR<PropertyFeatureScalarRelationFilter, PropertyFeatureWhereInput>
-    valueFeatureOption?: XOR<PropertyFeatureOptionNullableScalarRelationFilter, PropertyFeatureOptionWhereInput> | null
-  }, "id" | "propertyId_propertyFeatureId">
-
-  export type PropertyPropertyFeatureOrderByWithAggregationInput = {
-    id?: SortOrder
-    propertyFeatureId?: SortOrder
-    propertyId?: SortOrder
-    valueText?: SortOrderInput | SortOrder
-    valueBool?: SortOrderInput | SortOrder
-    valueInt?: SortOrderInput | SortOrder
-    valueFloat?: SortOrderInput | SortOrder
-    valueFeatureOptionId?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: PropertyPropertyFeatureCountOrderByAggregateInput
-    _avg?: PropertyPropertyFeatureAvgOrderByAggregateInput
-    _max?: PropertyPropertyFeatureMaxOrderByAggregateInput
-    _min?: PropertyPropertyFeatureMinOrderByAggregateInput
-    _sum?: PropertyPropertyFeatureSumOrderByAggregateInput
-  }
-
-  export type PropertyPropertyFeatureScalarWhereWithAggregatesInput = {
-    AND?: PropertyPropertyFeatureScalarWhereWithAggregatesInput | PropertyPropertyFeatureScalarWhereWithAggregatesInput[]
-    OR?: PropertyPropertyFeatureScalarWhereWithAggregatesInput[]
-    NOT?: PropertyPropertyFeatureScalarWhereWithAggregatesInput | PropertyPropertyFeatureScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"PropertyPropertyFeature"> | number
-    propertyFeatureId?: IntWithAggregatesFilter<"PropertyPropertyFeature"> | number
-    propertyId?: IntWithAggregatesFilter<"PropertyPropertyFeature"> | number
-    valueText?: JsonNullableWithAggregatesFilter<"PropertyPropertyFeature">
-    valueBool?: BoolNullableWithAggregatesFilter<"PropertyPropertyFeature"> | boolean | null
-    valueInt?: IntNullableWithAggregatesFilter<"PropertyPropertyFeature"> | number | null
-    valueFloat?: FloatNullableWithAggregatesFilter<"PropertyPropertyFeature"> | number | null
-    valueFeatureOptionId?: IntNullableWithAggregatesFilter<"PropertyPropertyFeature"> | number | null
-    createdAt?: DateTimeWithAggregatesFilter<"PropertyPropertyFeature"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"PropertyPropertyFeature"> | Date | string
   }
 
   export type SystemConfigWhereInput = {
@@ -29525,69 +27926,71 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"SystemConfig"> | Date | string
   }
 
-  export type PropertyFeaturesDataWhereInput = {
-    AND?: PropertyFeaturesDataWhereInput | PropertyFeaturesDataWhereInput[]
-    OR?: PropertyFeaturesDataWhereInput[]
-    NOT?: PropertyFeaturesDataWhereInput | PropertyFeaturesDataWhereInput[]
-    id?: IntFilter<"PropertyFeaturesData"> | number
-    propertyId?: IntFilter<"PropertyFeaturesData"> | number
-    features?: JsonFilter<"PropertyFeaturesData">
-    schemaVersion?: IntFilter<"PropertyFeaturesData"> | number
-    updatedAt?: DateTimeFilter<"PropertyFeaturesData"> | Date | string
-    updatedByUserId?: IntNullableFilter<"PropertyFeaturesData"> | number | null
-    property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-    updatedByUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  export type FeatureSheetWhereInput = {
+    AND?: FeatureSheetWhereInput | FeatureSheetWhereInput[]
+    OR?: FeatureSheetWhereInput[]
+    NOT?: FeatureSheetWhereInput | FeatureSheetWhereInput[]
+    id?: IntFilter<"FeatureSheet"> | number
+    name?: StringFilter<"FeatureSheet"> | string
+    values?: JsonFilter<"FeatureSheet">
+    schemaVersion?: IntFilter<"FeatureSheet"> | number
+    userId?: IntFilter<"FeatureSheet"> | number
+    createdAt?: DateTimeFilter<"FeatureSheet"> | Date | string
+    updatedAt?: DateTimeFilter<"FeatureSheet"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
-  export type PropertyFeaturesDataOrderByWithRelationInput = {
+  export type FeatureSheetOrderByWithRelationInput = {
     id?: SortOrder
-    propertyId?: SortOrder
-    features?: SortOrder
+    name?: SortOrder
+    values?: SortOrder
     schemaVersion?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
-    updatedByUserId?: SortOrderInput | SortOrder
-    property?: PropertyOrderByWithRelationInput
-    updatedByUser?: UserOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
   }
 
-  export type PropertyFeaturesDataWhereUniqueInput = Prisma.AtLeast<{
+  export type FeatureSheetWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    propertyId?: number
-    AND?: PropertyFeaturesDataWhereInput | PropertyFeaturesDataWhereInput[]
-    OR?: PropertyFeaturesDataWhereInput[]
-    NOT?: PropertyFeaturesDataWhereInput | PropertyFeaturesDataWhereInput[]
-    features?: JsonFilter<"PropertyFeaturesData">
-    schemaVersion?: IntFilter<"PropertyFeaturesData"> | number
-    updatedAt?: DateTimeFilter<"PropertyFeaturesData"> | Date | string
-    updatedByUserId?: IntNullableFilter<"PropertyFeaturesData"> | number | null
-    property?: XOR<PropertyScalarRelationFilter, PropertyWhereInput>
-    updatedByUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
-  }, "id" | "propertyId">
+    AND?: FeatureSheetWhereInput | FeatureSheetWhereInput[]
+    OR?: FeatureSheetWhereInput[]
+    NOT?: FeatureSheetWhereInput | FeatureSheetWhereInput[]
+    name?: StringFilter<"FeatureSheet"> | string
+    values?: JsonFilter<"FeatureSheet">
+    schemaVersion?: IntFilter<"FeatureSheet"> | number
+    userId?: IntFilter<"FeatureSheet"> | number
+    createdAt?: DateTimeFilter<"FeatureSheet"> | Date | string
+    updatedAt?: DateTimeFilter<"FeatureSheet"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
 
-  export type PropertyFeaturesDataOrderByWithAggregationInput = {
+  export type FeatureSheetOrderByWithAggregationInput = {
     id?: SortOrder
-    propertyId?: SortOrder
-    features?: SortOrder
+    name?: SortOrder
+    values?: SortOrder
     schemaVersion?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
-    updatedByUserId?: SortOrderInput | SortOrder
-    _count?: PropertyFeaturesDataCountOrderByAggregateInput
-    _avg?: PropertyFeaturesDataAvgOrderByAggregateInput
-    _max?: PropertyFeaturesDataMaxOrderByAggregateInput
-    _min?: PropertyFeaturesDataMinOrderByAggregateInput
-    _sum?: PropertyFeaturesDataSumOrderByAggregateInput
+    _count?: FeatureSheetCountOrderByAggregateInput
+    _avg?: FeatureSheetAvgOrderByAggregateInput
+    _max?: FeatureSheetMaxOrderByAggregateInput
+    _min?: FeatureSheetMinOrderByAggregateInput
+    _sum?: FeatureSheetSumOrderByAggregateInput
   }
 
-  export type PropertyFeaturesDataScalarWhereWithAggregatesInput = {
-    AND?: PropertyFeaturesDataScalarWhereWithAggregatesInput | PropertyFeaturesDataScalarWhereWithAggregatesInput[]
-    OR?: PropertyFeaturesDataScalarWhereWithAggregatesInput[]
-    NOT?: PropertyFeaturesDataScalarWhereWithAggregatesInput | PropertyFeaturesDataScalarWhereWithAggregatesInput[]
-    id?: IntWithAggregatesFilter<"PropertyFeaturesData"> | number
-    propertyId?: IntWithAggregatesFilter<"PropertyFeaturesData"> | number
-    features?: JsonWithAggregatesFilter<"PropertyFeaturesData">
-    schemaVersion?: IntWithAggregatesFilter<"PropertyFeaturesData"> | number
-    updatedAt?: DateTimeWithAggregatesFilter<"PropertyFeaturesData"> | Date | string
-    updatedByUserId?: IntNullableWithAggregatesFilter<"PropertyFeaturesData"> | number | null
+  export type FeatureSheetScalarWhereWithAggregatesInput = {
+    AND?: FeatureSheetScalarWhereWithAggregatesInput | FeatureSheetScalarWhereWithAggregatesInput[]
+    OR?: FeatureSheetScalarWhereWithAggregatesInput[]
+    NOT?: FeatureSheetScalarWhereWithAggregatesInput | FeatureSheetScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"FeatureSheet"> | number
+    name?: StringWithAggregatesFilter<"FeatureSheet"> | string
+    values?: JsonWithAggregatesFilter<"FeatureSheet">
+    schemaVersion?: IntWithAggregatesFilter<"FeatureSheet"> | number
+    userId?: IntWithAggregatesFilter<"FeatureSheet"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"FeatureSheet"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"FeatureSheet"> | Date | string
   }
 
   export type CanvassingVisitWhereInput = {
@@ -30495,7 +28898,7 @@ export namespace Prisma {
     activities?: UserActivityCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentCreateNestedManyWithoutUserInput
     revisits?: RevisitCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -30517,7 +28920,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentUncheckedCreateNestedManyWithoutUserInput
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -30538,7 +28941,7 @@ export namespace Prisma {
     activities?: UserActivityUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUpdateManyWithoutUserNestedInput
     revisits?: RevisitUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -30560,7 +28963,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUncheckedUpdateManyWithoutUserNestedInput
     revisits?: RevisitUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -30626,8 +29029,6 @@ export namespace Prisma {
     rooms?: RoomCreateNestedManyWithoutPropertyInput
     sharedWith?: PropertyShareCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateInput = {
@@ -30653,8 +29054,6 @@ export namespace Prisma {
     rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
     sharedWith?: PropertyShareUncheckedCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionUncheckedCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataUncheckedCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyUpdateInput = {
@@ -30679,8 +29078,6 @@ export namespace Prisma {
     rooms?: RoomUpdateManyWithoutPropertyNestedInput
     sharedWith?: PropertyShareUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUpdateOneWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateInput = {
@@ -30706,8 +29103,6 @@ export namespace Prisma {
     rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
     sharedWith?: PropertyShareUncheckedUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUncheckedUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUncheckedUpdateOneWithoutPropertyNestedInput
   }
 
   export type PropertyCreateManyInput = {
@@ -31111,7 +29506,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     category: PropertyFeatureCategoryCreateNestedOneWithoutFeaturesInput
     options?: PropertyFeatureOptionCreateNestedManyWithoutPropertyFeatureInput
-    properties?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyFeatureInput
   }
 
   export type PropertyFeatureUncheckedCreateInput = {
@@ -31124,7 +29518,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     options?: PropertyFeatureOptionUncheckedCreateNestedManyWithoutPropertyFeatureInput
-    properties?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyFeatureInput
   }
 
   export type PropertyFeatureUpdateInput = {
@@ -31136,7 +29529,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: PropertyFeatureCategoryUpdateOneRequiredWithoutFeaturesNestedInput
     options?: PropertyFeatureOptionUpdateManyWithoutPropertyFeatureNestedInput
-    properties?: PropertyPropertyFeatureUpdateManyWithoutPropertyFeatureNestedInput
   }
 
   export type PropertyFeatureUncheckedUpdateInput = {
@@ -31149,7 +29541,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     options?: PropertyFeatureOptionUncheckedUpdateManyWithoutPropertyFeatureNestedInput
-    properties?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyFeatureNestedInput
   }
 
   export type PropertyFeatureCreateManyInput = {
@@ -31188,7 +29579,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     propertyFeature: PropertyFeatureCreateNestedOneWithoutOptionsInput
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutValueFeatureOptionInput
   }
 
   export type PropertyFeatureOptionUncheckedCreateInput = {
@@ -31197,7 +29587,6 @@ export namespace Prisma {
     value: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutValueFeatureOptionInput
   }
 
   export type PropertyFeatureOptionUpdateInput = {
@@ -31205,7 +29594,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     propertyFeature?: PropertyFeatureUpdateOneRequiredWithoutOptionsNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutValueFeatureOptionNestedInput
   }
 
   export type PropertyFeatureOptionUncheckedUpdateInput = {
@@ -31214,7 +29602,6 @@ export namespace Prisma {
     value?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutValueFeatureOptionNestedInput
   }
 
   export type PropertyFeatureOptionCreateManyInput = {
@@ -31235,91 +29622,6 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     propertyFeatureId?: IntFieldUpdateOperationsInput | number
     value?: JsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureCreateInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    property: PropertyCreateNestedOneWithoutPropertyFeaturesInput
-    propertyFeature: PropertyFeatureCreateNestedOneWithoutPropertiesInput
-    valueFeatureOption?: PropertyFeatureOptionCreateNestedOneWithoutPropertyFeaturesInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedCreateInput = {
-    id?: number
-    propertyFeatureId: number
-    propertyId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    valueFeatureOptionId?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PropertyPropertyFeatureUpdateInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    property?: PropertyUpdateOneRequiredWithoutPropertyFeaturesNestedInput
-    propertyFeature?: PropertyFeatureUpdateOneRequiredWithoutPropertiesNestedInput
-    valueFeatureOption?: PropertyFeatureOptionUpdateOneWithoutPropertyFeaturesNestedInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyFeatureId?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    valueFeatureOptionId?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureCreateManyInput = {
-    id?: number
-    propertyFeatureId: number
-    propertyId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    valueFeatureOptionId?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PropertyPropertyFeatureUpdateManyMutationInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateManyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyFeatureId?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    valueFeatureOptionId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31377,62 +29679,70 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PropertyFeaturesDataCreateInput = {
-    features?: JsonNullValueInput | InputJsonValue
+  export type FeatureSheetCreateInput = {
+    name: string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: number
+    createdAt?: Date | string
     updatedAt?: Date | string
-    property: PropertyCreateNestedOneWithoutFeaturesDataInput
-    updatedByUser?: UserCreateNestedOneWithoutUpdatedFeaturesDataInput
+    user: UserCreateNestedOneWithoutFeatureSheetsInput
   }
 
-  export type PropertyFeaturesDataUncheckedCreateInput = {
+  export type FeatureSheetUncheckedCreateInput = {
     id?: number
-    propertyId: number
-    features?: JsonNullValueInput | InputJsonValue
+    name: string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: number
+    userId: number
+    createdAt?: Date | string
     updatedAt?: Date | string
-    updatedByUserId?: number | null
   }
 
-  export type PropertyFeaturesDataUpdateInput = {
-    features?: JsonNullValueInput | InputJsonValue
+  export type FeatureSheetUpdateInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    property?: PropertyUpdateOneRequiredWithoutFeaturesDataNestedInput
-    updatedByUser?: UserUpdateOneWithoutUpdatedFeaturesDataNestedInput
+    user?: UserUpdateOneRequiredWithoutFeatureSheetsNestedInput
   }
 
-  export type PropertyFeaturesDataUncheckedUpdateInput = {
+  export type FeatureSheetUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    features?: JsonNullValueInput | InputJsonValue
+    name?: StringFieldUpdateOperationsInput | string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: IntFieldUpdateOperationsInput | number
+    userId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedByUserId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
-  export type PropertyFeaturesDataCreateManyInput = {
+  export type FeatureSheetCreateManyInput = {
     id?: number
-    propertyId: number
-    features?: JsonNullValueInput | InputJsonValue
+    name: string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: number
+    userId: number
+    createdAt?: Date | string
     updatedAt?: Date | string
-    updatedByUserId?: number | null
   }
 
-  export type PropertyFeaturesDataUpdateManyMutationInput = {
-    features?: JsonNullValueInput | InputJsonValue
+  export type FeatureSheetUpdateManyMutationInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PropertyFeaturesDataUncheckedUpdateManyInput = {
+  export type FeatureSheetUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    features?: JsonNullValueInput | InputJsonValue
+    name?: StringFieldUpdateOperationsInput | string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: IntFieldUpdateOperationsInput | number
+    userId?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedByUserId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type CanvassingVisitCreateInput = {
@@ -32530,10 +30840,10 @@ export namespace Prisma {
     none?: RevisitWhereInput
   }
 
-  export type PropertyFeaturesDataListRelationFilter = {
-    every?: PropertyFeaturesDataWhereInput
-    some?: PropertyFeaturesDataWhereInput
-    none?: PropertyFeaturesDataWhereInput
+  export type FeatureSheetListRelationFilter = {
+    every?: FeatureSheetWhereInput
+    some?: FeatureSheetWhereInput
+    none?: FeatureSheetWhereInput
   }
 
   export type SortOrderInput = {
@@ -32569,7 +30879,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type PropertyFeaturesDataOrderByRelationAggregateInput = {
+  export type FeatureSheetOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -32749,22 +31059,7 @@ export namespace Prisma {
     none?: RoomWhereInput
   }
 
-  export type PropertyPropertyFeatureListRelationFilter = {
-    every?: PropertyPropertyFeatureWhereInput
-    some?: PropertyPropertyFeatureWhereInput
-    none?: PropertyPropertyFeatureWhereInput
-  }
-
-  export type PropertyFeaturesDataNullableScalarRelationFilter = {
-    is?: PropertyFeaturesDataWhereInput | null
-    isNot?: PropertyFeaturesDataWhereInput | null
-  }
-
   export type RoomOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type PropertyPropertyFeatureOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -33272,160 +31567,6 @@ export namespace Prisma {
     id?: SortOrder
     propertyFeatureId?: SortOrder
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type BoolNullableFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
-    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
-  }
-
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type PropertyFeatureOptionNullableScalarRelationFilter = {
-    is?: PropertyFeatureOptionWhereInput | null
-    isNot?: PropertyFeatureOptionWhereInput | null
-  }
-
-  export type PropertyPropertyFeaturePropertyIdPropertyFeatureIdCompoundUniqueInput = {
-    propertyId: number
-    propertyFeatureId: number
-  }
-
-  export type PropertyPropertyFeatureCountOrderByAggregateInput = {
-    id?: SortOrder
-    propertyFeatureId?: SortOrder
-    propertyId?: SortOrder
-    valueText?: SortOrder
-    valueBool?: SortOrder
-    valueInt?: SortOrder
-    valueFloat?: SortOrder
-    valueFeatureOptionId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PropertyPropertyFeatureAvgOrderByAggregateInput = {
-    id?: SortOrder
-    propertyFeatureId?: SortOrder
-    propertyId?: SortOrder
-    valueInt?: SortOrder
-    valueFloat?: SortOrder
-    valueFeatureOptionId?: SortOrder
-  }
-
-  export type PropertyPropertyFeatureMaxOrderByAggregateInput = {
-    id?: SortOrder
-    propertyFeatureId?: SortOrder
-    propertyId?: SortOrder
-    valueBool?: SortOrder
-    valueInt?: SortOrder
-    valueFloat?: SortOrder
-    valueFeatureOptionId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PropertyPropertyFeatureMinOrderByAggregateInput = {
-    id?: SortOrder
-    propertyFeatureId?: SortOrder
-    propertyId?: SortOrder
-    valueBool?: SortOrder
-    valueInt?: SortOrder
-    valueFloat?: SortOrder
-    valueFeatureOptionId?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PropertyPropertyFeatureSumOrderByAggregateInput = {
-    id?: SortOrder
-    propertyFeatureId?: SortOrder
-    propertyId?: SortOrder
-    valueInt?: SortOrder
-    valueFloat?: SortOrder
-    valueFeatureOptionId?: SortOrder
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
-  }
-
-  export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
-    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedBoolNullableFilter<$PrismaModel>
-    _max?: NestedBoolNullableFilter<$PrismaModel>
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
 
   export type SystemConfigCountOrderByAggregateInput = {
     id?: SortOrder
@@ -33459,48 +31600,44 @@ export namespace Prisma {
     id?: SortOrder
   }
 
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
-  }
-
-  export type PropertyFeaturesDataCountOrderByAggregateInput = {
+  export type FeatureSheetCountOrderByAggregateInput = {
     id?: SortOrder
-    propertyId?: SortOrder
-    features?: SortOrder
+    name?: SortOrder
+    values?: SortOrder
     schemaVersion?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
-    updatedByUserId?: SortOrder
   }
 
-  export type PropertyFeaturesDataAvgOrderByAggregateInput = {
+  export type FeatureSheetAvgOrderByAggregateInput = {
     id?: SortOrder
-    propertyId?: SortOrder
     schemaVersion?: SortOrder
-    updatedByUserId?: SortOrder
+    userId?: SortOrder
   }
 
-  export type PropertyFeaturesDataMaxOrderByAggregateInput = {
+  export type FeatureSheetMaxOrderByAggregateInput = {
     id?: SortOrder
-    propertyId?: SortOrder
+    name?: SortOrder
     schemaVersion?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
-    updatedByUserId?: SortOrder
   }
 
-  export type PropertyFeaturesDataMinOrderByAggregateInput = {
+  export type FeatureSheetMinOrderByAggregateInput = {
     id?: SortOrder
-    propertyId?: SortOrder
+    name?: SortOrder
     schemaVersion?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
-    updatedByUserId?: SortOrder
   }
 
-  export type PropertyFeaturesDataSumOrderByAggregateInput = {
+  export type FeatureSheetSumOrderByAggregateInput = {
     id?: SortOrder
-    propertyId?: SortOrder
     schemaVersion?: SortOrder
-    updatedByUserId?: SortOrder
+    userId?: SortOrder
   }
 
   export type FloatFilter<$PrismaModel = never> = {
@@ -33676,6 +31813,17 @@ export namespace Prisma {
     _max?: NestedEnumResponseTypeNullableFilter<$PrismaModel>
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type InventorySessionCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -33718,6 +31866,22 @@ export namespace Prisma {
     userId?: SortOrder
     propertyId?: SortOrder
     duration?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type SystemMetricsCountOrderByAggregateInput = {
@@ -34232,11 +32396,11 @@ export namespace Prisma {
     connect?: RevisitWhereUniqueInput | RevisitWhereUniqueInput[]
   }
 
-  export type PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput> | PropertyFeaturesDataCreateWithoutUpdatedByUserInput[] | PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput[]
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput | PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput[]
-    createMany?: PropertyFeaturesDataCreateManyUpdatedByUserInputEnvelope
-    connect?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
+  export type FeatureSheetCreateNestedManyWithoutUserInput = {
+    create?: XOR<FeatureSheetCreateWithoutUserInput, FeatureSheetUncheckedCreateWithoutUserInput> | FeatureSheetCreateWithoutUserInput[] | FeatureSheetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeatureSheetCreateOrConnectWithoutUserInput | FeatureSheetCreateOrConnectWithoutUserInput[]
+    createMany?: FeatureSheetCreateManyUserInputEnvelope
+    connect?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
   }
 
   export type PropertyUncheckedCreateNestedManyWithoutUserInput = {
@@ -34288,11 +32452,11 @@ export namespace Prisma {
     connect?: RevisitWhereUniqueInput | RevisitWhereUniqueInput[]
   }
 
-  export type PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput> | PropertyFeaturesDataCreateWithoutUpdatedByUserInput[] | PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput[]
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput | PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput[]
-    createMany?: PropertyFeaturesDataCreateManyUpdatedByUserInputEnvelope
-    connect?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
+  export type FeatureSheetUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<FeatureSheetCreateWithoutUserInput, FeatureSheetUncheckedCreateWithoutUserInput> | FeatureSheetCreateWithoutUserInput[] | FeatureSheetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeatureSheetCreateOrConnectWithoutUserInput | FeatureSheetCreateOrConnectWithoutUserInput[]
+    createMany?: FeatureSheetCreateManyUserInputEnvelope
+    connect?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -34421,18 +32585,18 @@ export namespace Prisma {
     deleteMany?: RevisitScalarWhereInput | RevisitScalarWhereInput[]
   }
 
-  export type PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput> | PropertyFeaturesDataCreateWithoutUpdatedByUserInput[] | PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput[]
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput | PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput[]
-    upsert?: PropertyFeaturesDataUpsertWithWhereUniqueWithoutUpdatedByUserInput | PropertyFeaturesDataUpsertWithWhereUniqueWithoutUpdatedByUserInput[]
-    createMany?: PropertyFeaturesDataCreateManyUpdatedByUserInputEnvelope
-    set?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    disconnect?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    delete?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    connect?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    update?: PropertyFeaturesDataUpdateWithWhereUniqueWithoutUpdatedByUserInput | PropertyFeaturesDataUpdateWithWhereUniqueWithoutUpdatedByUserInput[]
-    updateMany?: PropertyFeaturesDataUpdateManyWithWhereWithoutUpdatedByUserInput | PropertyFeaturesDataUpdateManyWithWhereWithoutUpdatedByUserInput[]
-    deleteMany?: PropertyFeaturesDataScalarWhereInput | PropertyFeaturesDataScalarWhereInput[]
+  export type FeatureSheetUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FeatureSheetCreateWithoutUserInput, FeatureSheetUncheckedCreateWithoutUserInput> | FeatureSheetCreateWithoutUserInput[] | FeatureSheetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeatureSheetCreateOrConnectWithoutUserInput | FeatureSheetCreateOrConnectWithoutUserInput[]
+    upsert?: FeatureSheetUpsertWithWhereUniqueWithoutUserInput | FeatureSheetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FeatureSheetCreateManyUserInputEnvelope
+    set?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    disconnect?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    delete?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    connect?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    update?: FeatureSheetUpdateWithWhereUniqueWithoutUserInput | FeatureSheetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FeatureSheetUpdateManyWithWhereWithoutUserInput | FeatureSheetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FeatureSheetScalarWhereInput | FeatureSheetScalarWhereInput[]
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -34541,18 +32705,18 @@ export namespace Prisma {
     deleteMany?: RevisitScalarWhereInput | RevisitScalarWhereInput[]
   }
 
-  export type PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput> | PropertyFeaturesDataCreateWithoutUpdatedByUserInput[] | PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput[]
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput | PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput[]
-    upsert?: PropertyFeaturesDataUpsertWithWhereUniqueWithoutUpdatedByUserInput | PropertyFeaturesDataUpsertWithWhereUniqueWithoutUpdatedByUserInput[]
-    createMany?: PropertyFeaturesDataCreateManyUpdatedByUserInputEnvelope
-    set?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    disconnect?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    delete?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    connect?: PropertyFeaturesDataWhereUniqueInput | PropertyFeaturesDataWhereUniqueInput[]
-    update?: PropertyFeaturesDataUpdateWithWhereUniqueWithoutUpdatedByUserInput | PropertyFeaturesDataUpdateWithWhereUniqueWithoutUpdatedByUserInput[]
-    updateMany?: PropertyFeaturesDataUpdateManyWithWhereWithoutUpdatedByUserInput | PropertyFeaturesDataUpdateManyWithWhereWithoutUpdatedByUserInput[]
-    deleteMany?: PropertyFeaturesDataScalarWhereInput | PropertyFeaturesDataScalarWhereInput[]
+  export type FeatureSheetUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FeatureSheetCreateWithoutUserInput, FeatureSheetUncheckedCreateWithoutUserInput> | FeatureSheetCreateWithoutUserInput[] | FeatureSheetUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeatureSheetCreateOrConnectWithoutUserInput | FeatureSheetCreateOrConnectWithoutUserInput[]
+    upsert?: FeatureSheetUpsertWithWhereUniqueWithoutUserInput | FeatureSheetUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FeatureSheetCreateManyUserInputEnvelope
+    set?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    disconnect?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    delete?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    connect?: FeatureSheetWhereUniqueInput | FeatureSheetWhereUniqueInput[]
+    update?: FeatureSheetUpdateWithWhereUniqueWithoutUserInput | FeatureSheetUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FeatureSheetUpdateManyWithWhereWithoutUserInput | FeatureSheetUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FeatureSheetScalarWhereInput | FeatureSheetScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutPropertiesInput = {
@@ -34582,19 +32746,6 @@ export namespace Prisma {
     connect?: InventorySessionWhereUniqueInput | InventorySessionWhereUniqueInput[]
   }
 
-  export type PropertyPropertyFeatureCreateNestedManyWithoutPropertyInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput> | PropertyPropertyFeatureCreateWithoutPropertyInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyInputEnvelope
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-  }
-
-  export type PropertyFeaturesDataCreateNestedOneWithoutPropertyInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutPropertyInput, PropertyFeaturesDataUncheckedCreateWithoutPropertyInput>
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutPropertyInput
-    connect?: PropertyFeaturesDataWhereUniqueInput
-  }
-
   export type RoomUncheckedCreateNestedManyWithoutPropertyInput = {
     create?: XOR<RoomCreateWithoutPropertyInput, RoomUncheckedCreateWithoutPropertyInput> | RoomCreateWithoutPropertyInput[] | RoomUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: RoomCreateOrConnectWithoutPropertyInput | RoomCreateOrConnectWithoutPropertyInput[]
@@ -34614,19 +32765,6 @@ export namespace Prisma {
     connectOrCreate?: InventorySessionCreateOrConnectWithoutPropertyInput | InventorySessionCreateOrConnectWithoutPropertyInput[]
     createMany?: InventorySessionCreateManyPropertyInputEnvelope
     connect?: InventorySessionWhereUniqueInput | InventorySessionWhereUniqueInput[]
-  }
-
-  export type PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput> | PropertyPropertyFeatureCreateWithoutPropertyInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyInputEnvelope
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-  }
-
-  export type PropertyFeaturesDataUncheckedCreateNestedOneWithoutPropertyInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutPropertyInput, PropertyFeaturesDataUncheckedCreateWithoutPropertyInput>
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutPropertyInput
-    connect?: PropertyFeaturesDataWhereUniqueInput
   }
 
   export type EnumInventoryStatusFieldUpdateOperationsInput = {
@@ -34683,30 +32821,6 @@ export namespace Prisma {
     deleteMany?: InventorySessionScalarWhereInput | InventorySessionScalarWhereInput[]
   }
 
-  export type PropertyPropertyFeatureUpdateManyWithoutPropertyNestedInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput> | PropertyPropertyFeatureCreateWithoutPropertyInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput[]
-    upsert?: PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyInput | PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyInputEnvelope
-    set?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    disconnect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    delete?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    update?: PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyInput | PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyInput[]
-    updateMany?: PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyInput | PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyInput[]
-    deleteMany?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-  }
-
-  export type PropertyFeaturesDataUpdateOneWithoutPropertyNestedInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutPropertyInput, PropertyFeaturesDataUncheckedCreateWithoutPropertyInput>
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutPropertyInput
-    upsert?: PropertyFeaturesDataUpsertWithoutPropertyInput
-    disconnect?: PropertyFeaturesDataWhereInput | boolean
-    delete?: PropertyFeaturesDataWhereInput | boolean
-    connect?: PropertyFeaturesDataWhereUniqueInput
-    update?: XOR<XOR<PropertyFeaturesDataUpdateToOneWithWhereWithoutPropertyInput, PropertyFeaturesDataUpdateWithoutPropertyInput>, PropertyFeaturesDataUncheckedUpdateWithoutPropertyInput>
-  }
-
   export type RoomUncheckedUpdateManyWithoutPropertyNestedInput = {
     create?: XOR<RoomCreateWithoutPropertyInput, RoomUncheckedCreateWithoutPropertyInput> | RoomCreateWithoutPropertyInput[] | RoomUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: RoomCreateOrConnectWithoutPropertyInput | RoomCreateOrConnectWithoutPropertyInput[]
@@ -34747,30 +32861,6 @@ export namespace Prisma {
     update?: InventorySessionUpdateWithWhereUniqueWithoutPropertyInput | InventorySessionUpdateWithWhereUniqueWithoutPropertyInput[]
     updateMany?: InventorySessionUpdateManyWithWhereWithoutPropertyInput | InventorySessionUpdateManyWithWhereWithoutPropertyInput[]
     deleteMany?: InventorySessionScalarWhereInput | InventorySessionScalarWhereInput[]
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyNestedInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput> | PropertyPropertyFeatureCreateWithoutPropertyInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput[]
-    upsert?: PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyInput | PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyInputEnvelope
-    set?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    disconnect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    delete?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    update?: PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyInput | PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyInput[]
-    updateMany?: PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyInput | PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyInput[]
-    deleteMany?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-  }
-
-  export type PropertyFeaturesDataUncheckedUpdateOneWithoutPropertyNestedInput = {
-    create?: XOR<PropertyFeaturesDataCreateWithoutPropertyInput, PropertyFeaturesDataUncheckedCreateWithoutPropertyInput>
-    connectOrCreate?: PropertyFeaturesDataCreateOrConnectWithoutPropertyInput
-    upsert?: PropertyFeaturesDataUpsertWithoutPropertyInput
-    disconnect?: PropertyFeaturesDataWhereInput | boolean
-    delete?: PropertyFeaturesDataWhereInput | boolean
-    connect?: PropertyFeaturesDataWhereUniqueInput
-    update?: XOR<XOR<PropertyFeaturesDataUpdateToOneWithWhereWithoutPropertyInput, PropertyFeaturesDataUpdateWithoutPropertyInput>, PropertyFeaturesDataUncheckedUpdateWithoutPropertyInput>
   }
 
   export type PropertyCreateNestedOneWithoutSharedWithInput = {
@@ -34934,25 +33024,11 @@ export namespace Prisma {
     connect?: PropertyFeatureOptionWhereUniqueInput | PropertyFeatureOptionWhereUniqueInput[]
   }
 
-  export type PropertyPropertyFeatureCreateNestedManyWithoutPropertyFeatureInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput> | PropertyPropertyFeatureCreateWithoutPropertyFeatureInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyFeatureInputEnvelope
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-  }
-
   export type PropertyFeatureOptionUncheckedCreateNestedManyWithoutPropertyFeatureInput = {
     create?: XOR<PropertyFeatureOptionCreateWithoutPropertyFeatureInput, PropertyFeatureOptionUncheckedCreateWithoutPropertyFeatureInput> | PropertyFeatureOptionCreateWithoutPropertyFeatureInput[] | PropertyFeatureOptionUncheckedCreateWithoutPropertyFeatureInput[]
     connectOrCreate?: PropertyFeatureOptionCreateOrConnectWithoutPropertyFeatureInput | PropertyFeatureOptionCreateOrConnectWithoutPropertyFeatureInput[]
     createMany?: PropertyFeatureOptionCreateManyPropertyFeatureInputEnvelope
     connect?: PropertyFeatureOptionWhereUniqueInput | PropertyFeatureOptionWhereUniqueInput[]
-  }
-
-  export type PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyFeatureInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput> | PropertyPropertyFeatureCreateWithoutPropertyFeatureInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyFeatureInputEnvelope
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
   }
 
   export type EnumPropertyFeatureTypeFieldUpdateOperationsInput = {
@@ -34981,20 +33057,6 @@ export namespace Prisma {
     deleteMany?: PropertyFeatureOptionScalarWhereInput | PropertyFeatureOptionScalarWhereInput[]
   }
 
-  export type PropertyPropertyFeatureUpdateManyWithoutPropertyFeatureNestedInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput> | PropertyPropertyFeatureCreateWithoutPropertyFeatureInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput[]
-    upsert?: PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyFeatureInput | PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyFeatureInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyFeatureInputEnvelope
-    set?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    disconnect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    delete?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    update?: PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyFeatureInput | PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyFeatureInput[]
-    updateMany?: PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyFeatureInput | PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyFeatureInput[]
-    deleteMany?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-  }
-
   export type PropertyFeatureOptionUncheckedUpdateManyWithoutPropertyFeatureNestedInput = {
     create?: XOR<PropertyFeatureOptionCreateWithoutPropertyFeatureInput, PropertyFeatureOptionUncheckedCreateWithoutPropertyFeatureInput> | PropertyFeatureOptionCreateWithoutPropertyFeatureInput[] | PropertyFeatureOptionUncheckedCreateWithoutPropertyFeatureInput[]
     connectOrCreate?: PropertyFeatureOptionCreateOrConnectWithoutPropertyFeatureInput | PropertyFeatureOptionCreateOrConnectWithoutPropertyFeatureInput[]
@@ -35009,38 +33071,10 @@ export namespace Prisma {
     deleteMany?: PropertyFeatureOptionScalarWhereInput | PropertyFeatureOptionScalarWhereInput[]
   }
 
-  export type PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyFeatureNestedInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput> | PropertyPropertyFeatureCreateWithoutPropertyFeatureInput[] | PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput | PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput[]
-    upsert?: PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyFeatureInput | PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyFeatureInput[]
-    createMany?: PropertyPropertyFeatureCreateManyPropertyFeatureInputEnvelope
-    set?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    disconnect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    delete?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    update?: PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyFeatureInput | PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyFeatureInput[]
-    updateMany?: PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyFeatureInput | PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyFeatureInput[]
-    deleteMany?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-  }
-
   export type PropertyFeatureCreateNestedOneWithoutOptionsInput = {
     create?: XOR<PropertyFeatureCreateWithoutOptionsInput, PropertyFeatureUncheckedCreateWithoutOptionsInput>
     connectOrCreate?: PropertyFeatureCreateOrConnectWithoutOptionsInput
     connect?: PropertyFeatureWhereUniqueInput
-  }
-
-  export type PropertyPropertyFeatureCreateNestedManyWithoutValueFeatureOptionInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput> | PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput[] | PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput | PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput[]
-    createMany?: PropertyPropertyFeatureCreateManyValueFeatureOptionInputEnvelope
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-  }
-
-  export type PropertyPropertyFeatureUncheckedCreateNestedManyWithoutValueFeatureOptionInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput> | PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput[] | PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput | PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput[]
-    createMany?: PropertyPropertyFeatureCreateManyValueFeatureOptionInputEnvelope
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
   }
 
   export type PropertyFeatureUpdateOneRequiredWithoutOptionsNestedInput = {
@@ -35051,118 +33085,18 @@ export namespace Prisma {
     update?: XOR<XOR<PropertyFeatureUpdateToOneWithWhereWithoutOptionsInput, PropertyFeatureUpdateWithoutOptionsInput>, PropertyFeatureUncheckedUpdateWithoutOptionsInput>
   }
 
-  export type PropertyPropertyFeatureUpdateManyWithoutValueFeatureOptionNestedInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput> | PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput[] | PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput | PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput[]
-    upsert?: PropertyPropertyFeatureUpsertWithWhereUniqueWithoutValueFeatureOptionInput | PropertyPropertyFeatureUpsertWithWhereUniqueWithoutValueFeatureOptionInput[]
-    createMany?: PropertyPropertyFeatureCreateManyValueFeatureOptionInputEnvelope
-    set?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    disconnect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    delete?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    update?: PropertyPropertyFeatureUpdateWithWhereUniqueWithoutValueFeatureOptionInput | PropertyPropertyFeatureUpdateWithWhereUniqueWithoutValueFeatureOptionInput[]
-    updateMany?: PropertyPropertyFeatureUpdateManyWithWhereWithoutValueFeatureOptionInput | PropertyPropertyFeatureUpdateManyWithWhereWithoutValueFeatureOptionInput[]
-    deleteMany?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateManyWithoutValueFeatureOptionNestedInput = {
-    create?: XOR<PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput> | PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput[] | PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput[]
-    connectOrCreate?: PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput | PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput[]
-    upsert?: PropertyPropertyFeatureUpsertWithWhereUniqueWithoutValueFeatureOptionInput | PropertyPropertyFeatureUpsertWithWhereUniqueWithoutValueFeatureOptionInput[]
-    createMany?: PropertyPropertyFeatureCreateManyValueFeatureOptionInputEnvelope
-    set?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    disconnect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    delete?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    connect?: PropertyPropertyFeatureWhereUniqueInput | PropertyPropertyFeatureWhereUniqueInput[]
-    update?: PropertyPropertyFeatureUpdateWithWhereUniqueWithoutValueFeatureOptionInput | PropertyPropertyFeatureUpdateWithWhereUniqueWithoutValueFeatureOptionInput[]
-    updateMany?: PropertyPropertyFeatureUpdateManyWithWhereWithoutValueFeatureOptionInput | PropertyPropertyFeatureUpdateManyWithWhereWithoutValueFeatureOptionInput[]
-    deleteMany?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-  }
-
-  export type PropertyCreateNestedOneWithoutPropertyFeaturesInput = {
-    create?: XOR<PropertyCreateWithoutPropertyFeaturesInput, PropertyUncheckedCreateWithoutPropertyFeaturesInput>
-    connectOrCreate?: PropertyCreateOrConnectWithoutPropertyFeaturesInput
-    connect?: PropertyWhereUniqueInput
-  }
-
-  export type PropertyFeatureCreateNestedOneWithoutPropertiesInput = {
-    create?: XOR<PropertyFeatureCreateWithoutPropertiesInput, PropertyFeatureUncheckedCreateWithoutPropertiesInput>
-    connectOrCreate?: PropertyFeatureCreateOrConnectWithoutPropertiesInput
-    connect?: PropertyFeatureWhereUniqueInput
-  }
-
-  export type PropertyFeatureOptionCreateNestedOneWithoutPropertyFeaturesInput = {
-    create?: XOR<PropertyFeatureOptionCreateWithoutPropertyFeaturesInput, PropertyFeatureOptionUncheckedCreateWithoutPropertyFeaturesInput>
-    connectOrCreate?: PropertyFeatureOptionCreateOrConnectWithoutPropertyFeaturesInput
-    connect?: PropertyFeatureOptionWhereUniqueInput
-  }
-
-  export type NullableBoolFieldUpdateOperationsInput = {
-    set?: boolean | null
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
-  export type PropertyUpdateOneRequiredWithoutPropertyFeaturesNestedInput = {
-    create?: XOR<PropertyCreateWithoutPropertyFeaturesInput, PropertyUncheckedCreateWithoutPropertyFeaturesInput>
-    connectOrCreate?: PropertyCreateOrConnectWithoutPropertyFeaturesInput
-    upsert?: PropertyUpsertWithoutPropertyFeaturesInput
-    connect?: PropertyWhereUniqueInput
-    update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutPropertyFeaturesInput, PropertyUpdateWithoutPropertyFeaturesInput>, PropertyUncheckedUpdateWithoutPropertyFeaturesInput>
-  }
-
-  export type PropertyFeatureUpdateOneRequiredWithoutPropertiesNestedInput = {
-    create?: XOR<PropertyFeatureCreateWithoutPropertiesInput, PropertyFeatureUncheckedCreateWithoutPropertiesInput>
-    connectOrCreate?: PropertyFeatureCreateOrConnectWithoutPropertiesInput
-    upsert?: PropertyFeatureUpsertWithoutPropertiesInput
-    connect?: PropertyFeatureWhereUniqueInput
-    update?: XOR<XOR<PropertyFeatureUpdateToOneWithWhereWithoutPropertiesInput, PropertyFeatureUpdateWithoutPropertiesInput>, PropertyFeatureUncheckedUpdateWithoutPropertiesInput>
-  }
-
-  export type PropertyFeatureOptionUpdateOneWithoutPropertyFeaturesNestedInput = {
-    create?: XOR<PropertyFeatureOptionCreateWithoutPropertyFeaturesInput, PropertyFeatureOptionUncheckedCreateWithoutPropertyFeaturesInput>
-    connectOrCreate?: PropertyFeatureOptionCreateOrConnectWithoutPropertyFeaturesInput
-    upsert?: PropertyFeatureOptionUpsertWithoutPropertyFeaturesInput
-    disconnect?: PropertyFeatureOptionWhereInput | boolean
-    delete?: PropertyFeatureOptionWhereInput | boolean
-    connect?: PropertyFeatureOptionWhereUniqueInput
-    update?: XOR<XOR<PropertyFeatureOptionUpdateToOneWithWhereWithoutPropertyFeaturesInput, PropertyFeatureOptionUpdateWithoutPropertyFeaturesInput>, PropertyFeatureOptionUncheckedUpdateWithoutPropertyFeaturesInput>
-  }
-
-  export type PropertyCreateNestedOneWithoutFeaturesDataInput = {
-    create?: XOR<PropertyCreateWithoutFeaturesDataInput, PropertyUncheckedCreateWithoutFeaturesDataInput>
-    connectOrCreate?: PropertyCreateOrConnectWithoutFeaturesDataInput
-    connect?: PropertyWhereUniqueInput
-  }
-
-  export type UserCreateNestedOneWithoutUpdatedFeaturesDataInput = {
-    create?: XOR<UserCreateWithoutUpdatedFeaturesDataInput, UserUncheckedCreateWithoutUpdatedFeaturesDataInput>
-    connectOrCreate?: UserCreateOrConnectWithoutUpdatedFeaturesDataInput
+  export type UserCreateNestedOneWithoutFeatureSheetsInput = {
+    create?: XOR<UserCreateWithoutFeatureSheetsInput, UserUncheckedCreateWithoutFeatureSheetsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFeatureSheetsInput
     connect?: UserWhereUniqueInput
   }
 
-  export type PropertyUpdateOneRequiredWithoutFeaturesDataNestedInput = {
-    create?: XOR<PropertyCreateWithoutFeaturesDataInput, PropertyUncheckedCreateWithoutFeaturesDataInput>
-    connectOrCreate?: PropertyCreateOrConnectWithoutFeaturesDataInput
-    upsert?: PropertyUpsertWithoutFeaturesDataInput
-    connect?: PropertyWhereUniqueInput
-    update?: XOR<XOR<PropertyUpdateToOneWithWhereWithoutFeaturesDataInput, PropertyUpdateWithoutFeaturesDataInput>, PropertyUncheckedUpdateWithoutFeaturesDataInput>
-  }
-
-  export type UserUpdateOneWithoutUpdatedFeaturesDataNestedInput = {
-    create?: XOR<UserCreateWithoutUpdatedFeaturesDataInput, UserUncheckedCreateWithoutUpdatedFeaturesDataInput>
-    connectOrCreate?: UserCreateOrConnectWithoutUpdatedFeaturesDataInput
-    upsert?: UserUpsertWithoutUpdatedFeaturesDataInput
-    disconnect?: UserWhereInput | boolean
-    delete?: UserWhereInput | boolean
+  export type UserUpdateOneRequiredWithoutFeatureSheetsNestedInput = {
+    create?: XOR<UserCreateWithoutFeatureSheetsInput, UserUncheckedCreateWithoutFeatureSheetsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutFeatureSheetsInput
+    upsert?: UserUpsertWithoutFeatureSheetsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUpdatedFeaturesDataInput, UserUpdateWithoutUpdatedFeaturesDataInput>, UserUncheckedUpdateWithoutUpdatedFeaturesDataInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFeatureSheetsInput, UserUpdateWithoutFeatureSheetsInput>, UserUncheckedUpdateWithoutFeatureSheetsInput>
   }
 
   export type CanvassingVisitUserCreateNestedManyWithoutVisitInput = {
@@ -35405,6 +33339,14 @@ export namespace Prisma {
     create?: XOR<PropertyCreateWithoutInventorySessionsInput, PropertyUncheckedCreateWithoutInventorySessionsInput>
     connectOrCreate?: PropertyCreateOrConnectWithoutInventorySessionsInput
     connect?: PropertyWhereUniqueInput
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type UserUpdateOneRequiredWithoutInventorySessionsNestedInput = {
@@ -35849,58 +33791,6 @@ export namespace Prisma {
     _max?: NestedEnumPropertyFeatureTypeFilter<$PrismaModel>
   }
 
-  export type NestedBoolNullableFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
-    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
-  }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string[]
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
-
-  export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
-    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedBoolNullableFilter<$PrismaModel>
-    _max?: NestedBoolNullableFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
   export type NestedEnumContactMethodFilter<$PrismaModel = never> = {
     equals?: $Enums.ContactMethod | EnumContactMethodFieldRefInput<$PrismaModel>
     in?: $Enums.ContactMethod[] | ListEnumContactMethodFieldRefInput<$PrismaModel>
@@ -35968,6 +33858,22 @@ export namespace Prisma {
     _max?: NestedEnumResponseTypeNullableFilter<$PrismaModel>
   }
 
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
   export type NestedEnumActivityTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.ActivityType | EnumActivityTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ActivityType[] | ListEnumActivityTypeFieldRefInput<$PrismaModel>
@@ -36023,8 +33929,6 @@ export namespace Prisma {
     rooms?: RoomCreateNestedManyWithoutPropertyInput
     sharedWith?: PropertyShareCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutUserInput = {
@@ -36049,8 +33953,6 @@ export namespace Prisma {
     rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
     sharedWith?: PropertyShareUncheckedCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionUncheckedCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataUncheckedCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutUserInput = {
@@ -36259,28 +34161,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type PropertyFeaturesDataCreateWithoutUpdatedByUserInput = {
-    features?: JsonNullValueInput | InputJsonValue
+  export type FeatureSheetCreateWithoutUserInput = {
+    name: string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: number
+    createdAt?: Date | string
     updatedAt?: Date | string
-    property: PropertyCreateNestedOneWithoutFeaturesDataInput
   }
 
-  export type PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput = {
+  export type FeatureSheetUncheckedCreateWithoutUserInput = {
     id?: number
-    propertyId: number
-    features?: JsonNullValueInput | InputJsonValue
+    name: string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
-  export type PropertyFeaturesDataCreateOrConnectWithoutUpdatedByUserInput = {
-    where: PropertyFeaturesDataWhereUniqueInput
-    create: XOR<PropertyFeaturesDataCreateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput>
+  export type FeatureSheetCreateOrConnectWithoutUserInput = {
+    where: FeatureSheetWhereUniqueInput
+    create: XOR<FeatureSheetCreateWithoutUserInput, FeatureSheetUncheckedCreateWithoutUserInput>
   }
 
-  export type PropertyFeaturesDataCreateManyUpdatedByUserInputEnvelope = {
-    data: PropertyFeaturesDataCreateManyUpdatedByUserInput | PropertyFeaturesDataCreateManyUpdatedByUserInput[]
+  export type FeatureSheetCreateManyUserInputEnvelope = {
+    data: FeatureSheetCreateManyUserInput | FeatureSheetCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -36515,32 +34419,33 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Revisit"> | Date | string
   }
 
-  export type PropertyFeaturesDataUpsertWithWhereUniqueWithoutUpdatedByUserInput = {
-    where: PropertyFeaturesDataWhereUniqueInput
-    update: XOR<PropertyFeaturesDataUpdateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedUpdateWithoutUpdatedByUserInput>
-    create: XOR<PropertyFeaturesDataCreateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedCreateWithoutUpdatedByUserInput>
+  export type FeatureSheetUpsertWithWhereUniqueWithoutUserInput = {
+    where: FeatureSheetWhereUniqueInput
+    update: XOR<FeatureSheetUpdateWithoutUserInput, FeatureSheetUncheckedUpdateWithoutUserInput>
+    create: XOR<FeatureSheetCreateWithoutUserInput, FeatureSheetUncheckedCreateWithoutUserInput>
   }
 
-  export type PropertyFeaturesDataUpdateWithWhereUniqueWithoutUpdatedByUserInput = {
-    where: PropertyFeaturesDataWhereUniqueInput
-    data: XOR<PropertyFeaturesDataUpdateWithoutUpdatedByUserInput, PropertyFeaturesDataUncheckedUpdateWithoutUpdatedByUserInput>
+  export type FeatureSheetUpdateWithWhereUniqueWithoutUserInput = {
+    where: FeatureSheetWhereUniqueInput
+    data: XOR<FeatureSheetUpdateWithoutUserInput, FeatureSheetUncheckedUpdateWithoutUserInput>
   }
 
-  export type PropertyFeaturesDataUpdateManyWithWhereWithoutUpdatedByUserInput = {
-    where: PropertyFeaturesDataScalarWhereInput
-    data: XOR<PropertyFeaturesDataUpdateManyMutationInput, PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserInput>
+  export type FeatureSheetUpdateManyWithWhereWithoutUserInput = {
+    where: FeatureSheetScalarWhereInput
+    data: XOR<FeatureSheetUpdateManyMutationInput, FeatureSheetUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type PropertyFeaturesDataScalarWhereInput = {
-    AND?: PropertyFeaturesDataScalarWhereInput | PropertyFeaturesDataScalarWhereInput[]
-    OR?: PropertyFeaturesDataScalarWhereInput[]
-    NOT?: PropertyFeaturesDataScalarWhereInput | PropertyFeaturesDataScalarWhereInput[]
-    id?: IntFilter<"PropertyFeaturesData"> | number
-    propertyId?: IntFilter<"PropertyFeaturesData"> | number
-    features?: JsonFilter<"PropertyFeaturesData">
-    schemaVersion?: IntFilter<"PropertyFeaturesData"> | number
-    updatedAt?: DateTimeFilter<"PropertyFeaturesData"> | Date | string
-    updatedByUserId?: IntNullableFilter<"PropertyFeaturesData"> | number | null
+  export type FeatureSheetScalarWhereInput = {
+    AND?: FeatureSheetScalarWhereInput | FeatureSheetScalarWhereInput[]
+    OR?: FeatureSheetScalarWhereInput[]
+    NOT?: FeatureSheetScalarWhereInput | FeatureSheetScalarWhereInput[]
+    id?: IntFilter<"FeatureSheet"> | number
+    name?: StringFilter<"FeatureSheet"> | string
+    values?: JsonFilter<"FeatureSheet">
+    schemaVersion?: IntFilter<"FeatureSheet"> | number
+    userId?: IntFilter<"FeatureSheet"> | number
+    createdAt?: DateTimeFilter<"FeatureSheet"> | Date | string
+    updatedAt?: DateTimeFilter<"FeatureSheet"> | Date | string
   }
 
   export type UserCreateWithoutPropertiesInput = {
@@ -36560,7 +34465,7 @@ export namespace Prisma {
     activities?: UserActivityCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentCreateNestedManyWithoutUserInput
     revisits?: RevisitCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPropertiesInput = {
@@ -36581,7 +34486,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentUncheckedCreateNestedManyWithoutUserInput
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPropertiesInput = {
@@ -36674,59 +34579,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type PropertyPropertyFeatureCreateWithoutPropertyInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    propertyFeature: PropertyFeatureCreateNestedOneWithoutPropertiesInput
-    valueFeatureOption?: PropertyFeatureOptionCreateNestedOneWithoutPropertyFeaturesInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput = {
-    id?: number
-    propertyFeatureId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    valueFeatureOptionId?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PropertyPropertyFeatureCreateOrConnectWithoutPropertyInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    create: XOR<PropertyPropertyFeatureCreateWithoutPropertyInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput>
-  }
-
-  export type PropertyPropertyFeatureCreateManyPropertyInputEnvelope = {
-    data: PropertyPropertyFeatureCreateManyPropertyInput | PropertyPropertyFeatureCreateManyPropertyInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type PropertyFeaturesDataCreateWithoutPropertyInput = {
-    features?: JsonNullValueInput | InputJsonValue
-    schemaVersion?: number
-    updatedAt?: Date | string
-    updatedByUser?: UserCreateNestedOneWithoutUpdatedFeaturesDataInput
-  }
-
-  export type PropertyFeaturesDataUncheckedCreateWithoutPropertyInput = {
-    id?: number
-    features?: JsonNullValueInput | InputJsonValue
-    schemaVersion?: number
-    updatedAt?: Date | string
-    updatedByUserId?: number | null
-  }
-
-  export type PropertyFeaturesDataCreateOrConnectWithoutPropertyInput = {
-    where: PropertyFeaturesDataWhereUniqueInput
-    create: XOR<PropertyFeaturesDataCreateWithoutPropertyInput, PropertyFeaturesDataUncheckedCreateWithoutPropertyInput>
-  }
-
   export type UserUpsertWithoutPropertiesInput = {
     update: XOR<UserUpdateWithoutPropertiesInput, UserUncheckedUpdateWithoutPropertiesInput>
     create: XOR<UserCreateWithoutPropertiesInput, UserUncheckedCreateWithoutPropertiesInput>
@@ -36755,7 +34607,7 @@ export namespace Prisma {
     activities?: UserActivityUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUpdateManyWithoutUserNestedInput
     revisits?: RevisitUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPropertiesInput = {
@@ -36776,7 +34628,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUncheckedUpdateManyWithoutUserNestedInput
     revisits?: RevisitUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type RoomUpsertWithWhereUniqueWithoutPropertyInput = {
@@ -36842,64 +34694,6 @@ export namespace Prisma {
     data: XOR<InventorySessionUpdateManyMutationInput, InventorySessionUncheckedUpdateManyWithoutPropertyInput>
   }
 
-  export type PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    update: XOR<PropertyPropertyFeatureUpdateWithoutPropertyInput, PropertyPropertyFeatureUncheckedUpdateWithoutPropertyInput>
-    create: XOR<PropertyPropertyFeatureCreateWithoutPropertyInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyInput>
-  }
-
-  export type PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    data: XOR<PropertyPropertyFeatureUpdateWithoutPropertyInput, PropertyPropertyFeatureUncheckedUpdateWithoutPropertyInput>
-  }
-
-  export type PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyInput = {
-    where: PropertyPropertyFeatureScalarWhereInput
-    data: XOR<PropertyPropertyFeatureUpdateManyMutationInput, PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyInput>
-  }
-
-  export type PropertyPropertyFeatureScalarWhereInput = {
-    AND?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-    OR?: PropertyPropertyFeatureScalarWhereInput[]
-    NOT?: PropertyPropertyFeatureScalarWhereInput | PropertyPropertyFeatureScalarWhereInput[]
-    id?: IntFilter<"PropertyPropertyFeature"> | number
-    propertyFeatureId?: IntFilter<"PropertyPropertyFeature"> | number
-    propertyId?: IntFilter<"PropertyPropertyFeature"> | number
-    valueText?: JsonNullableFilter<"PropertyPropertyFeature">
-    valueBool?: BoolNullableFilter<"PropertyPropertyFeature"> | boolean | null
-    valueInt?: IntNullableFilter<"PropertyPropertyFeature"> | number | null
-    valueFloat?: FloatNullableFilter<"PropertyPropertyFeature"> | number | null
-    valueFeatureOptionId?: IntNullableFilter<"PropertyPropertyFeature"> | number | null
-    createdAt?: DateTimeFilter<"PropertyPropertyFeature"> | Date | string
-    updatedAt?: DateTimeFilter<"PropertyPropertyFeature"> | Date | string
-  }
-
-  export type PropertyFeaturesDataUpsertWithoutPropertyInput = {
-    update: XOR<PropertyFeaturesDataUpdateWithoutPropertyInput, PropertyFeaturesDataUncheckedUpdateWithoutPropertyInput>
-    create: XOR<PropertyFeaturesDataCreateWithoutPropertyInput, PropertyFeaturesDataUncheckedCreateWithoutPropertyInput>
-    where?: PropertyFeaturesDataWhereInput
-  }
-
-  export type PropertyFeaturesDataUpdateToOneWithWhereWithoutPropertyInput = {
-    where?: PropertyFeaturesDataWhereInput
-    data: XOR<PropertyFeaturesDataUpdateWithoutPropertyInput, PropertyFeaturesDataUncheckedUpdateWithoutPropertyInput>
-  }
-
-  export type PropertyFeaturesDataUpdateWithoutPropertyInput = {
-    features?: JsonNullValueInput | InputJsonValue
-    schemaVersion?: IntFieldUpdateOperationsInput | number
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedByUser?: UserUpdateOneWithoutUpdatedFeaturesDataNestedInput
-  }
-
-  export type PropertyFeaturesDataUncheckedUpdateWithoutPropertyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    features?: JsonNullValueInput | InputJsonValue
-    schemaVersion?: IntFieldUpdateOperationsInput | number
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedByUserId?: NullableIntFieldUpdateOperationsInput | number | null
-  }
-
   export type PropertyCreateWithoutSharedWithInput = {
     reference: string
     name?: string | null
@@ -36921,8 +34715,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutPropertiesInput
     rooms?: RoomCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutSharedWithInput = {
@@ -36947,8 +34739,6 @@ export namespace Prisma {
     listingPerson?: string | null
     rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionUncheckedCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataUncheckedCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutSharedWithInput = {
@@ -36973,7 +34763,7 @@ export namespace Prisma {
     activities?: UserActivityCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentCreateNestedManyWithoutUserInput
     revisits?: RevisitCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSharedPropertiesInput = {
@@ -36994,7 +34784,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentUncheckedCreateNestedManyWithoutUserInput
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSharedPropertiesInput = {
@@ -37034,8 +34824,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutPropertiesNestedInput
     rooms?: RoomUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUpdateOneWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutSharedWithInput = {
@@ -37060,8 +34848,6 @@ export namespace Prisma {
     listingPerson?: NullableStringFieldUpdateOperationsInput | string | null
     rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUncheckedUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUncheckedUpdateOneWithoutPropertyNestedInput
   }
 
   export type UserUpsertWithoutSharedPropertiesInput = {
@@ -37092,7 +34878,7 @@ export namespace Prisma {
     activities?: UserActivityUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUpdateManyWithoutUserNestedInput
     revisits?: RevisitUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSharedPropertiesInput = {
@@ -37113,7 +34899,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUncheckedUpdateManyWithoutUserNestedInput
     revisits?: RevisitUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PropertyCreateWithoutRoomsInput = {
@@ -37137,8 +34923,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutPropertiesInput
     sharedWith?: PropertyShareCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutRoomsInput = {
@@ -37163,8 +34947,6 @@ export namespace Prisma {
     listingPerson?: string | null
     sharedWith?: PropertyShareUncheckedCreateNestedManyWithoutPropertyInput
     inventorySessions?: InventorySessionUncheckedCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataUncheckedCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutRoomsInput = {
@@ -37247,8 +35029,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutPropertiesNestedInput
     sharedWith?: PropertyShareUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUpdateOneWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutRoomsInput = {
@@ -37273,8 +35053,6 @@ export namespace Prisma {
     listingPerson?: NullableStringFieldUpdateOperationsInput | string | null
     sharedWith?: PropertyShareUncheckedUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUncheckedUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUncheckedUpdateOneWithoutPropertyNestedInput
   }
 
   export type RoomImageUpsertWithWhereUniqueWithoutRoomInput = {
@@ -37384,7 +35162,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     options?: PropertyFeatureOptionCreateNestedManyWithoutPropertyFeatureInput
-    properties?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyFeatureInput
   }
 
   export type PropertyFeatureUncheckedCreateWithoutCategoryInput = {
@@ -37396,7 +35173,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     options?: PropertyFeatureOptionUncheckedCreateNestedManyWithoutPropertyFeatureInput
-    properties?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyFeatureInput
   }
 
   export type PropertyFeatureCreateOrConnectWithoutCategoryInput = {
@@ -37465,7 +35241,6 @@ export namespace Prisma {
     value: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutValueFeatureOptionInput
   }
 
   export type PropertyFeatureOptionUncheckedCreateWithoutPropertyFeatureInput = {
@@ -37473,7 +35248,6 @@ export namespace Prisma {
     value: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutValueFeatureOptionInput
   }
 
   export type PropertyFeatureOptionCreateOrConnectWithoutPropertyFeatureInput = {
@@ -37483,39 +35257,6 @@ export namespace Prisma {
 
   export type PropertyFeatureOptionCreateManyPropertyFeatureInputEnvelope = {
     data: PropertyFeatureOptionCreateManyPropertyFeatureInput | PropertyFeatureOptionCreateManyPropertyFeatureInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type PropertyPropertyFeatureCreateWithoutPropertyFeatureInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    property: PropertyCreateNestedOneWithoutPropertyFeaturesInput
-    valueFeatureOption?: PropertyFeatureOptionCreateNestedOneWithoutPropertyFeaturesInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput = {
-    id?: number
-    propertyId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    valueFeatureOptionId?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PropertyPropertyFeatureCreateOrConnectWithoutPropertyFeatureInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    create: XOR<PropertyPropertyFeatureCreateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput>
-  }
-
-  export type PropertyPropertyFeatureCreateManyPropertyFeatureInputEnvelope = {
-    data: PropertyPropertyFeatureCreateManyPropertyFeatureInput | PropertyPropertyFeatureCreateManyPropertyFeatureInput[]
     skipDuplicates?: boolean
   }
 
@@ -37574,22 +35315,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"PropertyFeatureOption"> | Date | string
   }
 
-  export type PropertyPropertyFeatureUpsertWithWhereUniqueWithoutPropertyFeatureInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    update: XOR<PropertyPropertyFeatureUpdateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedUpdateWithoutPropertyFeatureInput>
-    create: XOR<PropertyPropertyFeatureCreateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedCreateWithoutPropertyFeatureInput>
-  }
-
-  export type PropertyPropertyFeatureUpdateWithWhereUniqueWithoutPropertyFeatureInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    data: XOR<PropertyPropertyFeatureUpdateWithoutPropertyFeatureInput, PropertyPropertyFeatureUncheckedUpdateWithoutPropertyFeatureInput>
-  }
-
-  export type PropertyPropertyFeatureUpdateManyWithWhereWithoutPropertyFeatureInput = {
-    where: PropertyPropertyFeatureScalarWhereInput
-    data: XOR<PropertyPropertyFeatureUpdateManyMutationInput, PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyFeatureInput>
-  }
-
   export type PropertyFeatureCreateWithoutOptionsInput = {
     type: $Enums.PropertyFeatureType
     name: JsonNullValueInput | InputJsonValue
@@ -37598,7 +35323,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     category: PropertyFeatureCategoryCreateNestedOneWithoutFeaturesInput
-    properties?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyFeatureInput
   }
 
   export type PropertyFeatureUncheckedCreateWithoutOptionsInput = {
@@ -37610,45 +35334,11 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    properties?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyFeatureInput
   }
 
   export type PropertyFeatureCreateOrConnectWithoutOptionsInput = {
     where: PropertyFeatureWhereUniqueInput
     create: XOR<PropertyFeatureCreateWithoutOptionsInput, PropertyFeatureUncheckedCreateWithoutOptionsInput>
-  }
-
-  export type PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    property: PropertyCreateNestedOneWithoutPropertyFeaturesInput
-    propertyFeature: PropertyFeatureCreateNestedOneWithoutPropertiesInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput = {
-    id?: number
-    propertyFeatureId: number
-    propertyId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PropertyPropertyFeatureCreateOrConnectWithoutValueFeatureOptionInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    create: XOR<PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput>
-  }
-
-  export type PropertyPropertyFeatureCreateManyValueFeatureOptionInputEnvelope = {
-    data: PropertyPropertyFeatureCreateManyValueFeatureOptionInput | PropertyPropertyFeatureCreateManyValueFeatureOptionInput[]
-    skipDuplicates?: boolean
   }
 
   export type PropertyFeatureUpsertWithoutOptionsInput = {
@@ -37670,7 +35360,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: PropertyFeatureCategoryUpdateOneRequiredWithoutFeaturesNestedInput
-    properties?: PropertyPropertyFeatureUpdateManyWithoutPropertyFeatureNestedInput
   }
 
   export type PropertyFeatureUncheckedUpdateWithoutOptionsInput = {
@@ -37682,308 +35371,9 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    properties?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyFeatureNestedInput
   }
 
-  export type PropertyPropertyFeatureUpsertWithWhereUniqueWithoutValueFeatureOptionInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    update: XOR<PropertyPropertyFeatureUpdateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedUpdateWithoutValueFeatureOptionInput>
-    create: XOR<PropertyPropertyFeatureCreateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedCreateWithoutValueFeatureOptionInput>
-  }
-
-  export type PropertyPropertyFeatureUpdateWithWhereUniqueWithoutValueFeatureOptionInput = {
-    where: PropertyPropertyFeatureWhereUniqueInput
-    data: XOR<PropertyPropertyFeatureUpdateWithoutValueFeatureOptionInput, PropertyPropertyFeatureUncheckedUpdateWithoutValueFeatureOptionInput>
-  }
-
-  export type PropertyPropertyFeatureUpdateManyWithWhereWithoutValueFeatureOptionInput = {
-    where: PropertyPropertyFeatureScalarWhereInput
-    data: XOR<PropertyPropertyFeatureUpdateManyMutationInput, PropertyPropertyFeatureUncheckedUpdateManyWithoutValueFeatureOptionInput>
-  }
-
-  export type PropertyCreateWithoutPropertyFeaturesInput = {
-    reference: string
-    name?: string | null
-    street?: string | null
-    city?: string | null
-    state?: string | null
-    postalCode?: string | null
-    country?: string | null
-    address?: string | null
-    imagePath?: string | null
-    roomCount?: number
-    imageCount?: number
-    inventoryStatus?: $Enums.InventoryStatus
-    startedAt?: Date | string | null
-    completedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    listingPerson?: string | null
-    user: UserCreateNestedOneWithoutPropertiesInput
-    rooms?: RoomCreateNestedManyWithoutPropertyInput
-    sharedWith?: PropertyShareCreateNestedManyWithoutPropertyInput
-    inventorySessions?: InventorySessionCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataCreateNestedOneWithoutPropertyInput
-  }
-
-  export type PropertyUncheckedCreateWithoutPropertyFeaturesInput = {
-    id?: number
-    reference: string
-    name?: string | null
-    street?: string | null
-    city?: string | null
-    state?: string | null
-    postalCode?: string | null
-    country?: string | null
-    address?: string | null
-    imagePath?: string | null
-    roomCount?: number
-    imageCount?: number
-    inventoryStatus?: $Enums.InventoryStatus
-    startedAt?: Date | string | null
-    completedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    userId: number
-    listingPerson?: string | null
-    rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
-    sharedWith?: PropertyShareUncheckedCreateNestedManyWithoutPropertyInput
-    inventorySessions?: InventorySessionUncheckedCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataUncheckedCreateNestedOneWithoutPropertyInput
-  }
-
-  export type PropertyCreateOrConnectWithoutPropertyFeaturesInput = {
-    where: PropertyWhereUniqueInput
-    create: XOR<PropertyCreateWithoutPropertyFeaturesInput, PropertyUncheckedCreateWithoutPropertyFeaturesInput>
-  }
-
-  export type PropertyFeatureCreateWithoutPropertiesInput = {
-    type: $Enums.PropertyFeatureType
-    name: JsonNullValueInput | InputJsonValue
-    sort?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    category: PropertyFeatureCategoryCreateNestedOneWithoutFeaturesInput
-    options?: PropertyFeatureOptionCreateNestedManyWithoutPropertyFeatureInput
-  }
-
-  export type PropertyFeatureUncheckedCreateWithoutPropertiesInput = {
-    id?: number
-    categoryId: number
-    type: $Enums.PropertyFeatureType
-    name: JsonNullValueInput | InputJsonValue
-    sort?: number
-    isActive?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    options?: PropertyFeatureOptionUncheckedCreateNestedManyWithoutPropertyFeatureInput
-  }
-
-  export type PropertyFeatureCreateOrConnectWithoutPropertiesInput = {
-    where: PropertyFeatureWhereUniqueInput
-    create: XOR<PropertyFeatureCreateWithoutPropertiesInput, PropertyFeatureUncheckedCreateWithoutPropertiesInput>
-  }
-
-  export type PropertyFeatureOptionCreateWithoutPropertyFeaturesInput = {
-    value: JsonNullValueInput | InputJsonValue
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    propertyFeature: PropertyFeatureCreateNestedOneWithoutOptionsInput
-  }
-
-  export type PropertyFeatureOptionUncheckedCreateWithoutPropertyFeaturesInput = {
-    id?: number
-    propertyFeatureId: number
-    value: JsonNullValueInput | InputJsonValue
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PropertyFeatureOptionCreateOrConnectWithoutPropertyFeaturesInput = {
-    where: PropertyFeatureOptionWhereUniqueInput
-    create: XOR<PropertyFeatureOptionCreateWithoutPropertyFeaturesInput, PropertyFeatureOptionUncheckedCreateWithoutPropertyFeaturesInput>
-  }
-
-  export type PropertyUpsertWithoutPropertyFeaturesInput = {
-    update: XOR<PropertyUpdateWithoutPropertyFeaturesInput, PropertyUncheckedUpdateWithoutPropertyFeaturesInput>
-    create: XOR<PropertyCreateWithoutPropertyFeaturesInput, PropertyUncheckedCreateWithoutPropertyFeaturesInput>
-    where?: PropertyWhereInput
-  }
-
-  export type PropertyUpdateToOneWithWhereWithoutPropertyFeaturesInput = {
-    where?: PropertyWhereInput
-    data: XOR<PropertyUpdateWithoutPropertyFeaturesInput, PropertyUncheckedUpdateWithoutPropertyFeaturesInput>
-  }
-
-  export type PropertyUpdateWithoutPropertyFeaturesInput = {
-    reference?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    street?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    imagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    roomCount?: IntFieldUpdateOperationsInput | number
-    imageCount?: IntFieldUpdateOperationsInput | number
-    inventoryStatus?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
-    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    listingPerson?: NullableStringFieldUpdateOperationsInput | string | null
-    user?: UserUpdateOneRequiredWithoutPropertiesNestedInput
-    rooms?: RoomUpdateManyWithoutPropertyNestedInput
-    sharedWith?: PropertyShareUpdateManyWithoutPropertyNestedInput
-    inventorySessions?: InventorySessionUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUpdateOneWithoutPropertyNestedInput
-  }
-
-  export type PropertyUncheckedUpdateWithoutPropertyFeaturesInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    reference?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    street?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    imagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    roomCount?: IntFieldUpdateOperationsInput | number
-    imageCount?: IntFieldUpdateOperationsInput | number
-    inventoryStatus?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
-    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: IntFieldUpdateOperationsInput | number
-    listingPerson?: NullableStringFieldUpdateOperationsInput | string | null
-    rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
-    sharedWith?: PropertyShareUncheckedUpdateManyWithoutPropertyNestedInput
-    inventorySessions?: InventorySessionUncheckedUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUncheckedUpdateOneWithoutPropertyNestedInput
-  }
-
-  export type PropertyFeatureUpsertWithoutPropertiesInput = {
-    update: XOR<PropertyFeatureUpdateWithoutPropertiesInput, PropertyFeatureUncheckedUpdateWithoutPropertiesInput>
-    create: XOR<PropertyFeatureCreateWithoutPropertiesInput, PropertyFeatureUncheckedCreateWithoutPropertiesInput>
-    where?: PropertyFeatureWhereInput
-  }
-
-  export type PropertyFeatureUpdateToOneWithWhereWithoutPropertiesInput = {
-    where?: PropertyFeatureWhereInput
-    data: XOR<PropertyFeatureUpdateWithoutPropertiesInput, PropertyFeatureUncheckedUpdateWithoutPropertiesInput>
-  }
-
-  export type PropertyFeatureUpdateWithoutPropertiesInput = {
-    type?: EnumPropertyFeatureTypeFieldUpdateOperationsInput | $Enums.PropertyFeatureType
-    name?: JsonNullValueInput | InputJsonValue
-    sort?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    category?: PropertyFeatureCategoryUpdateOneRequiredWithoutFeaturesNestedInput
-    options?: PropertyFeatureOptionUpdateManyWithoutPropertyFeatureNestedInput
-  }
-
-  export type PropertyFeatureUncheckedUpdateWithoutPropertiesInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    categoryId?: IntFieldUpdateOperationsInput | number
-    type?: EnumPropertyFeatureTypeFieldUpdateOperationsInput | $Enums.PropertyFeatureType
-    name?: JsonNullValueInput | InputJsonValue
-    sort?: IntFieldUpdateOperationsInput | number
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    options?: PropertyFeatureOptionUncheckedUpdateManyWithoutPropertyFeatureNestedInput
-  }
-
-  export type PropertyFeatureOptionUpsertWithoutPropertyFeaturesInput = {
-    update: XOR<PropertyFeatureOptionUpdateWithoutPropertyFeaturesInput, PropertyFeatureOptionUncheckedUpdateWithoutPropertyFeaturesInput>
-    create: XOR<PropertyFeatureOptionCreateWithoutPropertyFeaturesInput, PropertyFeatureOptionUncheckedCreateWithoutPropertyFeaturesInput>
-    where?: PropertyFeatureOptionWhereInput
-  }
-
-  export type PropertyFeatureOptionUpdateToOneWithWhereWithoutPropertyFeaturesInput = {
-    where?: PropertyFeatureOptionWhereInput
-    data: XOR<PropertyFeatureOptionUpdateWithoutPropertyFeaturesInput, PropertyFeatureOptionUncheckedUpdateWithoutPropertyFeaturesInput>
-  }
-
-  export type PropertyFeatureOptionUpdateWithoutPropertyFeaturesInput = {
-    value?: JsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    propertyFeature?: PropertyFeatureUpdateOneRequiredWithoutOptionsNestedInput
-  }
-
-  export type PropertyFeatureOptionUncheckedUpdateWithoutPropertyFeaturesInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyFeatureId?: IntFieldUpdateOperationsInput | number
-    value?: JsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyCreateWithoutFeaturesDataInput = {
-    reference: string
-    name?: string | null
-    street?: string | null
-    city?: string | null
-    state?: string | null
-    postalCode?: string | null
-    country?: string | null
-    address?: string | null
-    imagePath?: string | null
-    roomCount?: number
-    imageCount?: number
-    inventoryStatus?: $Enums.InventoryStatus
-    startedAt?: Date | string | null
-    completedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    listingPerson?: string | null
-    user: UserCreateNestedOneWithoutPropertiesInput
-    rooms?: RoomCreateNestedManyWithoutPropertyInput
-    sharedWith?: PropertyShareCreateNestedManyWithoutPropertyInput
-    inventorySessions?: InventorySessionCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyInput
-  }
-
-  export type PropertyUncheckedCreateWithoutFeaturesDataInput = {
-    id?: number
-    reference: string
-    name?: string | null
-    street?: string | null
-    city?: string | null
-    state?: string | null
-    postalCode?: string | null
-    country?: string | null
-    address?: string | null
-    imagePath?: string | null
-    roomCount?: number
-    imageCount?: number
-    inventoryStatus?: $Enums.InventoryStatus
-    startedAt?: Date | string | null
-    completedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    userId: number
-    listingPerson?: string | null
-    rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
-    sharedWith?: PropertyShareUncheckedCreateNestedManyWithoutPropertyInput
-    inventorySessions?: InventorySessionUncheckedCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyInput
-  }
-
-  export type PropertyCreateOrConnectWithoutFeaturesDataInput = {
-    where: PropertyWhereUniqueInput
-    create: XOR<PropertyCreateWithoutFeaturesDataInput, PropertyUncheckedCreateWithoutFeaturesDataInput>
-  }
-
-  export type UserCreateWithoutUpdatedFeaturesDataInput = {
+  export type UserCreateWithoutFeatureSheetsInput = {
     email: string
     name: string
     password?: string | null
@@ -38003,7 +35393,7 @@ export namespace Prisma {
     revisits?: RevisitCreateNestedManyWithoutUserInput
   }
 
-  export type UserUncheckedCreateWithoutUpdatedFeaturesDataInput = {
+  export type UserUncheckedCreateWithoutFeatureSheetsInput = {
     id?: number
     email: string
     name: string
@@ -38024,85 +35414,23 @@ export namespace Prisma {
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
   }
 
-  export type UserCreateOrConnectWithoutUpdatedFeaturesDataInput = {
+  export type UserCreateOrConnectWithoutFeatureSheetsInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutUpdatedFeaturesDataInput, UserUncheckedCreateWithoutUpdatedFeaturesDataInput>
+    create: XOR<UserCreateWithoutFeatureSheetsInput, UserUncheckedCreateWithoutFeatureSheetsInput>
   }
 
-  export type PropertyUpsertWithoutFeaturesDataInput = {
-    update: XOR<PropertyUpdateWithoutFeaturesDataInput, PropertyUncheckedUpdateWithoutFeaturesDataInput>
-    create: XOR<PropertyCreateWithoutFeaturesDataInput, PropertyUncheckedCreateWithoutFeaturesDataInput>
-    where?: PropertyWhereInput
-  }
-
-  export type PropertyUpdateToOneWithWhereWithoutFeaturesDataInput = {
-    where?: PropertyWhereInput
-    data: XOR<PropertyUpdateWithoutFeaturesDataInput, PropertyUncheckedUpdateWithoutFeaturesDataInput>
-  }
-
-  export type PropertyUpdateWithoutFeaturesDataInput = {
-    reference?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    street?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    imagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    roomCount?: IntFieldUpdateOperationsInput | number
-    imageCount?: IntFieldUpdateOperationsInput | number
-    inventoryStatus?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
-    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    listingPerson?: NullableStringFieldUpdateOperationsInput | string | null
-    user?: UserUpdateOneRequiredWithoutPropertiesNestedInput
-    rooms?: RoomUpdateManyWithoutPropertyNestedInput
-    sharedWith?: PropertyShareUpdateManyWithoutPropertyNestedInput
-    inventorySessions?: InventorySessionUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutPropertyNestedInput
-  }
-
-  export type PropertyUncheckedUpdateWithoutFeaturesDataInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    reference?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    street?: NullableStringFieldUpdateOperationsInput | string | null
-    city?: NullableStringFieldUpdateOperationsInput | string | null
-    state?: NullableStringFieldUpdateOperationsInput | string | null
-    postalCode?: NullableStringFieldUpdateOperationsInput | string | null
-    country?: NullableStringFieldUpdateOperationsInput | string | null
-    address?: NullableStringFieldUpdateOperationsInput | string | null
-    imagePath?: NullableStringFieldUpdateOperationsInput | string | null
-    roomCount?: IntFieldUpdateOperationsInput | number
-    imageCount?: IntFieldUpdateOperationsInput | number
-    inventoryStatus?: EnumInventoryStatusFieldUpdateOperationsInput | $Enums.InventoryStatus
-    startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: IntFieldUpdateOperationsInput | number
-    listingPerson?: NullableStringFieldUpdateOperationsInput | string | null
-    rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
-    sharedWith?: PropertyShareUncheckedUpdateManyWithoutPropertyNestedInput
-    inventorySessions?: InventorySessionUncheckedUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyNestedInput
-  }
-
-  export type UserUpsertWithoutUpdatedFeaturesDataInput = {
-    update: XOR<UserUpdateWithoutUpdatedFeaturesDataInput, UserUncheckedUpdateWithoutUpdatedFeaturesDataInput>
-    create: XOR<UserCreateWithoutUpdatedFeaturesDataInput, UserUncheckedCreateWithoutUpdatedFeaturesDataInput>
+  export type UserUpsertWithoutFeatureSheetsInput = {
+    update: XOR<UserUpdateWithoutFeatureSheetsInput, UserUncheckedUpdateWithoutFeatureSheetsInput>
+    create: XOR<UserCreateWithoutFeatureSheetsInput, UserUncheckedCreateWithoutFeatureSheetsInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutUpdatedFeaturesDataInput = {
+  export type UserUpdateToOneWithWhereWithoutFeatureSheetsInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutUpdatedFeaturesDataInput, UserUncheckedUpdateWithoutUpdatedFeaturesDataInput>
+    data: XOR<UserUpdateWithoutFeatureSheetsInput, UserUncheckedUpdateWithoutFeatureSheetsInput>
   }
 
-  export type UserUpdateWithoutUpdatedFeaturesDataInput = {
+  export type UserUpdateWithoutFeatureSheetsInput = {
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     password?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38122,7 +35450,7 @@ export namespace Prisma {
     revisits?: RevisitUpdateManyWithoutUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutUpdatedFeaturesDataInput = {
+  export type UserUncheckedUpdateWithoutFeatureSheetsInput = {
     id?: IntFieldUpdateOperationsInput | number
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -38410,7 +35738,7 @@ export namespace Prisma {
     activities?: UserActivityCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentCreateNestedManyWithoutUserInput
     revisits?: RevisitCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInventorySessionsInput = {
@@ -38431,7 +35759,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentUncheckedCreateNestedManyWithoutUserInput
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInventorySessionsInput = {
@@ -38460,8 +35788,6 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutPropertiesInput
     rooms?: RoomCreateNestedManyWithoutPropertyInput
     sharedWith?: PropertyShareCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutInventorySessionsInput = {
@@ -38486,8 +35812,6 @@ export namespace Prisma {
     listingPerson?: string | null
     rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
     sharedWith?: PropertyShareUncheckedCreateNestedManyWithoutPropertyInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedCreateNestedManyWithoutPropertyInput
-    featuresData?: PropertyFeaturesDataUncheckedCreateNestedOneWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutInventorySessionsInput = {
@@ -38523,7 +35847,7 @@ export namespace Prisma {
     activities?: UserActivityUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUpdateManyWithoutUserNestedInput
     revisits?: RevisitUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInventorySessionsInput = {
@@ -38544,7 +35868,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUncheckedUpdateManyWithoutUserNestedInput
     revisits?: RevisitUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PropertyUpsertWithoutInventorySessionsInput = {
@@ -38579,8 +35903,6 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutPropertiesNestedInput
     rooms?: RoomUpdateManyWithoutPropertyNestedInput
     sharedWith?: PropertyShareUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUpdateOneWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutInventorySessionsInput = {
@@ -38605,8 +35927,6 @@ export namespace Prisma {
     listingPerson?: NullableStringFieldUpdateOperationsInput | string | null
     rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
     sharedWith?: PropertyShareUncheckedUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUncheckedUpdateOneWithoutPropertyNestedInput
   }
 
   export type UserCreateWithoutActivitiesInput = {
@@ -38626,7 +35946,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentCreateNestedManyWithoutUserInput
     revisits?: RevisitCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutActivitiesInput = {
@@ -38647,7 +35967,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUncheckedCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentUncheckedCreateNestedManyWithoutUserInput
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutActivitiesInput = {
@@ -38683,7 +36003,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUpdateManyWithoutUserNestedInput
     revisits?: RevisitUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActivitiesInput = {
@@ -38704,7 +36024,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUncheckedUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUncheckedUpdateManyWithoutUserNestedInput
     revisits?: RevisitUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CanvassingVisitCreateWithoutVisitUsersInput = {
@@ -38787,7 +36107,7 @@ export namespace Prisma {
     activities?: UserActivityCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentCreateNestedManyWithoutUserInput
     revisits?: RevisitCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCanvassingVisitsInput = {
@@ -38808,7 +36128,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentUncheckedCreateNestedManyWithoutUserInput
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCanvassingVisitsInput = {
@@ -38913,7 +36233,7 @@ export namespace Prisma {
     activities?: UserActivityUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUpdateManyWithoutUserNestedInput
     revisits?: RevisitUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCanvassingVisitsInput = {
@@ -38934,7 +36254,7 @@ export namespace Prisma {
     activities?: UserActivityUncheckedUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUncheckedUpdateManyWithoutUserNestedInput
     revisits?: RevisitUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CanvassingVisitCreateWithoutOriginalRevisitsInput = {
@@ -39281,7 +36601,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserCreateNestedManyWithoutUserInput
     activities?: UserActivityCreateNestedManyWithoutUserInput
     revisits?: RevisitCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutVisitCommentsInput = {
@@ -39302,7 +36622,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUncheckedCreateNestedManyWithoutUserInput
     activities?: UserActivityUncheckedCreateNestedManyWithoutUserInput
     revisits?: RevisitUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutVisitCommentsInput = {
@@ -39407,7 +36727,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUpdateManyWithoutUserNestedInput
     activities?: UserActivityUpdateManyWithoutUserNestedInput
     revisits?: RevisitUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutVisitCommentsInput = {
@@ -39428,7 +36748,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUncheckedUpdateManyWithoutUserNestedInput
     activities?: UserActivityUncheckedUpdateManyWithoutUserNestedInput
     revisits?: RevisitUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CanvassingVisitCreateWithoutRevisitsInput = {
@@ -39511,7 +36831,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserCreateNestedManyWithoutUserInput
     activities?: UserActivityCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRevisitsInput = {
@@ -39532,7 +36852,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUncheckedCreateNestedManyWithoutUserInput
     activities?: UserActivityUncheckedCreateNestedManyWithoutUserInput
     visitComments?: CanvassingVisitCommentUncheckedCreateNestedManyWithoutUserInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedCreateNestedManyWithoutUpdatedByUserInput
+    featureSheets?: FeatureSheetUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRevisitsInput = {
@@ -39637,7 +36957,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUpdateManyWithoutUserNestedInput
     activities?: UserActivityUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRevisitsInput = {
@@ -39658,7 +36978,7 @@ export namespace Prisma {
     canvassingVisits?: CanvassingVisitUserUncheckedUpdateManyWithoutUserNestedInput
     activities?: UserActivityUncheckedUpdateManyWithoutUserNestedInput
     visitComments?: CanvassingVisitCommentUncheckedUpdateManyWithoutUserNestedInput
-    updatedFeaturesData?: PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+    featureSheets?: FeatureSheetUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PropertyCreateManyUserInput = {
@@ -39752,11 +37072,12 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type PropertyFeaturesDataCreateManyUpdatedByUserInput = {
+  export type FeatureSheetCreateManyUserInput = {
     id?: number
-    propertyId: number
-    features?: JsonNullValueInput | InputJsonValue
+    name: string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -39781,8 +37102,6 @@ export namespace Prisma {
     rooms?: RoomUpdateManyWithoutPropertyNestedInput
     sharedWith?: PropertyShareUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUpdateOneWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutUserInput = {
@@ -39807,8 +37126,6 @@ export namespace Prisma {
     rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
     sharedWith?: PropertyShareUncheckedUpdateManyWithoutPropertyNestedInput
     inventorySessions?: InventorySessionUncheckedUpdateManyWithoutPropertyNestedInput
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyNestedInput
-    featuresData?: PropertyFeaturesDataUncheckedUpdateOneWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateManyWithoutUserInput = {
@@ -40038,26 +37355,29 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PropertyFeaturesDataUpdateWithoutUpdatedByUserInput = {
-    features?: JsonNullValueInput | InputJsonValue
+  export type FeatureSheetUpdateWithoutUserInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: IntFieldUpdateOperationsInput | number
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    property?: PropertyUpdateOneRequiredWithoutFeaturesDataNestedInput
-  }
-
-  export type PropertyFeaturesDataUncheckedUpdateWithoutUpdatedByUserInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    features?: JsonNullValueInput | InputJsonValue
-    schemaVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PropertyFeaturesDataUncheckedUpdateManyWithoutUpdatedByUserInput = {
+  export type FeatureSheetUncheckedUpdateWithoutUserInput = {
     id?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    features?: JsonNullValueInput | InputJsonValue
+    name?: StringFieldUpdateOperationsInput | string
+    values?: JsonNullValueInput | InputJsonValue
     schemaVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeatureSheetUncheckedUpdateManyWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    values?: JsonNullValueInput | InputJsonValue
+    schemaVersion?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -40087,18 +37407,6 @@ export namespace Prisma {
     endTime?: Date | string | null
     duration?: number | null
     deviceType?: string | null
-  }
-
-  export type PropertyPropertyFeatureCreateManyPropertyInput = {
-    id?: number
-    propertyFeatureId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    valueFeatureOptionId?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
   }
 
   export type RoomUpdateWithoutPropertyInput = {
@@ -40182,41 +37490,6 @@ export namespace Prisma {
     endTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
     deviceType?: NullableStringFieldUpdateOperationsInput | string | null
-  }
-
-  export type PropertyPropertyFeatureUpdateWithoutPropertyInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    propertyFeature?: PropertyFeatureUpdateOneRequiredWithoutPropertiesNestedInput
-    valueFeatureOption?: PropertyFeatureOptionUpdateOneWithoutPropertyFeaturesNestedInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateWithoutPropertyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyFeatureId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    valueFeatureOptionId?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyFeatureId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    valueFeatureOptionId?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RoomImageCreateManyRoomInput = {
@@ -40304,7 +37577,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     options?: PropertyFeatureOptionUpdateManyWithoutPropertyFeatureNestedInput
-    properties?: PropertyPropertyFeatureUpdateManyWithoutPropertyFeatureNestedInput
   }
 
   export type PropertyFeatureUncheckedUpdateWithoutCategoryInput = {
@@ -40316,7 +37588,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     options?: PropertyFeatureOptionUncheckedUpdateManyWithoutPropertyFeatureNestedInput
-    properties?: PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyFeatureNestedInput
   }
 
   export type PropertyFeatureUncheckedUpdateManyWithoutCategoryInput = {
@@ -40336,23 +37607,10 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type PropertyPropertyFeatureCreateManyPropertyFeatureInput = {
-    id?: number
-    propertyId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    valueFeatureOptionId?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type PropertyFeatureOptionUpdateWithoutPropertyFeatureInput = {
     value?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    propertyFeatures?: PropertyPropertyFeatureUpdateManyWithoutValueFeatureOptionNestedInput
   }
 
   export type PropertyFeatureOptionUncheckedUpdateWithoutPropertyFeatureInput = {
@@ -40360,94 +37618,11 @@ export namespace Prisma {
     value?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    propertyFeatures?: PropertyPropertyFeatureUncheckedUpdateManyWithoutValueFeatureOptionNestedInput
   }
 
   export type PropertyFeatureOptionUncheckedUpdateManyWithoutPropertyFeatureInput = {
     id?: IntFieldUpdateOperationsInput | number
     value?: JsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureUpdateWithoutPropertyFeatureInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    property?: PropertyUpdateOneRequiredWithoutPropertyFeaturesNestedInput
-    valueFeatureOption?: PropertyFeatureOptionUpdateOneWithoutPropertyFeaturesNestedInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateWithoutPropertyFeatureInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    valueFeatureOptionId?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateManyWithoutPropertyFeatureInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    valueFeatureOptionId?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureCreateManyValueFeatureOptionInput = {
-    id?: number
-    propertyFeatureId: number
-    propertyId: number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: boolean | null
-    valueInt?: number | null
-    valueFloat?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PropertyPropertyFeatureUpdateWithoutValueFeatureOptionInput = {
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    property?: PropertyUpdateOneRequiredWithoutPropertyFeaturesNestedInput
-    propertyFeature?: PropertyFeatureUpdateOneRequiredWithoutPropertiesNestedInput
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateWithoutValueFeatureOptionInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyFeatureId?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PropertyPropertyFeatureUncheckedUpdateManyWithoutValueFeatureOptionInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    propertyFeatureId?: IntFieldUpdateOperationsInput | number
-    propertyId?: IntFieldUpdateOperationsInput | number
-    valueText?: NullableJsonNullValueInput | InputJsonValue
-    valueBool?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    valueInt?: NullableIntFieldUpdateOperationsInput | number | null
-    valueFloat?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
